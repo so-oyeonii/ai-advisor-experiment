@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download } from 'lucide-react';
+import { Download, RefreshCw, Users, CheckCircle, Clock } from 'lucide-react';
 import {
   getAllSessions,
   getAllStimulusExposures,
@@ -24,32 +24,37 @@ interface MergedData {
 }
 
 export default function AdminExportPage() {
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<Stats>({ total: 0, completed: 0, inProgress: 0 });
+  const [sessions, setSessions] = useState<SessionData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const fetchStats = async () => {
+    setIsLoading(true);
     try {
-      const sessions = await getAllSessions();
-      const total = sessions.length;
-      const completed = sessions.filter(s => s.completed).length;
+      const sessionsData = await getAllSessions();
+      setSessions(sessionsData);
+      
+      const total = sessionsData.length;
+      const completed = sessionsData.filter(s => s.completed).length;
       const inProgress = total - completed;
       
       setStats({ total, completed, inProgress });
+      setLastUpdate(new Date());
     } catch (error) {
       console.error('Error fetching stats:', error);
+      alert('Error loading data. Check console for details.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleLogin = () => {
-    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      fetchStats();
-    } else {
-      alert('Incorrect password');
-    }
-  };
+  useEffect(() => {
+    fetchStats();
+    // Auto-refresh every 10 seconds
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const mergeData = (
     sessions: SessionData[],
@@ -102,29 +107,26 @@ export default function AdminExportPage() {
       if (!merged[survey.participantId]) merged[survey.participantId] = { participantId: survey.participantId };
       
       const idx = survey.stimulusId;
+      const responseData: Record<string, any> = (survey as any).responseData || {};
       
-      // Add all survey fields
+      // Add all survey fields from responseData
+      Object.keys(responseData).forEach(key => {
+        merged[survey.participantId][`survey_${idx}_${key}`] = responseData[key];
+      });
+      
       merged[survey.participantId][`survey_${idx}_productId`] = survey.productId;
       merged[survey.participantId][`survey_${idx}_advisorType`] = survey.advisorType;
       merged[survey.participantId][`survey_${idx}_congruity`] = survey.congruity;
-      merged[survey.participantId][`survey_${idx}_trust_recommendation`] = survey.trust_recommendation;
-      merged[survey.participantId][`survey_${idx}_trust_credibility`] = survey.trust_credibility;
-      merged[survey.participantId][`survey_${idx}_trust_future_reliance`] = survey.trust_future_reliance;
-      merged[survey.participantId][`survey_${idx}_purchase_likelihood`] = survey.purchase_likelihood;
-      merged[survey.participantId][`survey_${idx}_purchase_influence`] = survey.purchase_influence;
-      merged[survey.participantId][`survey_${idx}_expertise_knowledge`] = survey.expertise_knowledge;
-      merged[survey.participantId][`survey_${idx}_expertise_clarity`] = survey.expertise_clarity;
     });
 
     // Merge demographics
     demographics.forEach(demo => {
       if (!merged[demo.participantId]) merged[demo.participantId] = { participantId: demo.participantId };
       
-      // Add all demographic fields with demo_ prefix
-      merged[demo.participantId][`demo_age`] = demo.age;
-      merged[demo.participantId][`demo_gender`] = demo.gender;
-      merged[demo.participantId][`demo_education`] = demo.education;
-      merged[demo.participantId][`demo_online_shopping_frequency`] = demo.online_shopping_frequency;
+      merged[demo.participantId]['demo_age'] = demo.age;
+      merged[demo.participantId]['demo_gender'] = demo.gender;
+      merged[demo.participantId]['demo_education'] = demo.education;
+      merged[demo.participantId]['demo_online_shopping_frequency'] = demo.online_shopping_frequency;
     });
 
     return Object.values(merged);
@@ -197,71 +199,178 @@ export default function AdminExportPage() {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleLogin();
+  const formatTimestamp = (timestamp: any) => {
+    if (!timestamp) return 'N/A';
+    if (timestamp.toDate) {
+      return timestamp.toDate().toLocaleString();
     }
+    return new Date(timestamp).toLocaleString();
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">Admin Data Export</h1>
-        
-        {!isAuthenticated ? (
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">Password:</label>
-            <input 
-              type="password" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="w-full p-2 border border-gray-300 rounded-md mb-4 focus:border-blue-500 focus:outline-none"
-              placeholder="Enter admin password"
-              autoFocus
-            />
-            <button 
-              onClick={handleLogin}
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition font-semibold"
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">실험 데이터 관리</h1>
+            <button
+              onClick={fetchStats}
+              disabled={isLoading}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
             >
-              Login
+              <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+              <span>새로고침</span>
             </button>
           </div>
-        ) : (
-          <div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-md text-center border border-blue-200">
-                <div className="text-3xl font-bold text-blue-600">{stats.total}</div>
-                <div className="text-sm text-gray-600 mt-1">Total Participants</div>
-              </div>
-              <div className="bg-green-50 p-4 rounded-md text-center border border-green-200">
-                <div className="text-3xl font-bold text-green-600">{stats.completed}</div>
-                <div className="text-sm text-gray-600 mt-1">Completed</div>
-              </div>
-              <div className="bg-yellow-50 p-4 rounded-md text-center border border-yellow-200">
-                <div className="text-3xl font-bold text-yellow-600">{stats.inProgress}</div>
-                <div className="text-sm text-gray-600 mt-1">In Progress</div>
+
+          {/* Last Update */}
+          {lastUpdate && (
+            <p className="text-sm text-gray-600 mb-6">
+              마지막 업데이트: {lastUpdate.toLocaleString()} (10초마다 자동 새로고침)
+            </p>
+          )}
+          
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-lg text-white shadow-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-4xl font-bold">{stats.total}</div>
+                  <div className="text-blue-100 mt-2">전체 참가자</div>
+                </div>
+                <Users size={48} className="opacity-80" />
               </div>
             </div>
             
-            <button 
-              onClick={handleDownloadCSV}
-              disabled={isLoading}
-              className={`w-full py-3 rounded-md transition flex items-center justify-center space-x-2 font-semibold ${
-                isLoading 
-                  ? 'bg-gray-400 cursor-not-allowed text-white' 
-                  : 'bg-green-600 text-white hover:bg-green-700'
-              }`}
-            >
-              <Download size={20} />
-              <span>{isLoading ? 'Downloading...' : 'Download Complete Dataset (CSV)'}</span>
-            </button>
-
-            <div className="mt-4 text-sm text-gray-600 text-center">
-              <p>The CSV will include all data from all 5 Firebase collections merged by participant ID.</p>
+            <div className="bg-gradient-to-br from-green-500 to-green-600 p-6 rounded-lg text-white shadow-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-4xl font-bold">{stats.completed}</div>
+                  <div className="text-green-100 mt-2">완료</div>
+                </div>
+                <CheckCircle size={48} className="opacity-80" />
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 rounded-lg text-white shadow-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-4xl font-bold">{stats.inProgress}</div>
+                  <div className="text-yellow-100 mt-2">진행 중</div>
+                </div>
+                <Clock size={48} className="opacity-80" />
+              </div>
             </div>
           </div>
-        )}
+          
+          {/* Download Button */}
+          <button 
+            onClick={handleDownloadCSV}
+            disabled={isLoading || stats.total === 0}
+            className={`w-full py-4 rounded-lg transition flex items-center justify-center space-x-3 font-bold text-lg mb-8 ${
+              isLoading || stats.total === 0
+                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                : 'bg-green-600 text-white hover:bg-green-700 shadow-lg hover:shadow-xl'
+            }`}
+          >
+            <Download size={24} />
+            <span>{isLoading ? '다운로드 중...' : `전체 데이터 다운로드 (CSV)`}</span>
+          </button>
+
+          {/* Sessions Table */}
+          <div className="border rounded-lg overflow-hidden">
+            <div className="bg-gray-800 text-white px-6 py-4">
+              <h2 className="text-xl font-bold">실시간 참가자 데이터</h2>
+            </div>
+            
+            <div className="overflow-x-auto">
+              {sessions.length === 0 ? (
+                <div className="p-12 text-center text-gray-500">
+                  <Users size={64} className="mx-auto mb-4 opacity-30" />
+                  <p className="text-lg">아직 참가자 데이터가 없습니다.</p>
+                  <p className="text-sm mt-2">실험이 시작되면 여기에 데이터가 표시됩니다.</p>
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-100 border-b-2 border-gray-300">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">참가자 ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">조건</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Advisor</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Congruity</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">패턴</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">진행도</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">시작 시간</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {sessions.map((session, idx) => (
+                      <tr key={session.participantId} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="px-4 py-3 text-sm font-mono text-gray-900">
+                          {session.participantId.substring(0, 8)}...
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
+                          {session.conditionNumber}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                            session.advisorType === 'AI' 
+                              ? 'bg-purple-100 text-purple-800' 
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {session.advisorType}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                            session.congruity === 'Congruent' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-orange-100 text-orange-800'
+                          }`}>
+                            {session.congruity}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm font-mono text-gray-700">
+                          {session.patternKey}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900">
+                          {session.currentStimulusIndex + 1} / 3
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {session.completed ? (
+                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
+                              ✓ 완료
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs font-semibold">
+                              ⏳ 진행중
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {formatTimestamp(session.startTime)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="font-semibold text-blue-900 mb-2">💡 사용 방법</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• 이 페이지는 10초마다 자동으로 새로고침됩니다.</li>
+              <li>• CSV 다운로드 버튼을 클릭하면 모든 데이터를 한 번에 내려받을 수 있습니다.</li>
+              <li>• 참가자 데이터는 실시간으로 Firebase에서 가져옵니다.</li>
+            </ul>
+          </div>
+
+        </div>
       </div>
     </div>
   );

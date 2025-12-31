@@ -23,16 +23,23 @@ export default function SurveyPage() {
     e.preventDefault();
     
     const participantId = sessionStorage.getItem('participantId')!;
-    const conditions = JSON.parse(sessionStorage.getItem('conditions') || '[]');
-    const condition = conditions[stimulusId];
+    const storedCondition = sessionStorage.getItem('experimentCondition');
+    
+    if (!storedCondition) {
+      console.error('No experiment condition found');
+      return;
+    }
+    
+    const experimentCondition = JSON.parse(storedCondition);
+    const productKey = experimentCondition.condition.productOrder[stimulusId];
     
     // Save survey response
     await saveSurveyResponse({
       participantId,
       stimulusId: String(stimulusId),
-      productId: condition.product,
-      advisorType: condition.advisorType,
-      congruity: condition.congruity,
+      productId: productKey,
+      advisorType: experimentCondition.condition.advisorType,
+      congruity: experimentCondition.condition.congruity,
       responseData: formData,
       responseId: `${participantId}_${stimulusId}`
     });

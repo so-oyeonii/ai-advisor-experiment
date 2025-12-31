@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { Clock } from 'lucide-react';
 import { saveRecallTask } from '@/lib/firebase';
 import { getStimulusData } from '@/lib/stimuliData';
+import type { Condition } from '@/lib/stimuliData';
 
 export default function RecallPage() {
   const router = useRouter();
@@ -50,8 +51,32 @@ export default function RecallPage() {
   // Save to Firebase
   const saveRecallData = async () => {
     const participantId = sessionStorage.getItem('participantId')!;
-    const conditions = JSON.parse(sessionStorage.getItem('conditions') || '[]');
-    const condition = conditions[stimulusId];
+    const storedCondition = sessionStorage.getItem('experimentCondition');
+    
+    if (!storedCondition) {
+      console.error('No experiment condition found');
+      return;
+    }
+    
+    const experimentCondition = JSON.parse(storedCondition);
+    const productKey = experimentCondition.condition.productOrder[stimulusId];
+    
+    // Extract valence from pattern key
+    const patternKey = experimentCondition.condition.patternKey;
+    const patternChar = patternKey[stimulusId];
+    const advisorValence: 'positive' | 'negative' = patternChar === 'A' ? 'positive' : 'negative';
+    
+    const publicValence: 'positive' | 'negative' = experimentCondition.condition.congruity === 'Congruent' 
+      ? advisorValence
+      : (advisorValence === 'positive' ? 'negative' : 'positive');
+    
+    const condition: Condition = {
+      product: productKey,
+      advisorType: experimentCondition.condition.advisorType,
+      advisorValence,
+      publicValence,
+      congruity: experimentCondition.condition.congruity
+    };
     
     // Get stimulus data to extract product info
     const stimulusData = getStimulusData(condition);

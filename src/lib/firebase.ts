@@ -234,25 +234,28 @@ export interface SurveyResponseData {
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
   
+  // All response data from form
+  responseData?: Record<string, string | number>;
+  
   // Trust & Credibility (3 items, 7-point Likert)
-  trust_recommendation: number; // 1-7
-  trust_credibility: number; // 1-7
-  trust_future_reliance: number; // 1-7
+  trust_recommendation?: number; // 1-7
+  trust_credibility?: number; // 1-7
+  trust_future_reliance?: number; // 1-7
   
   // Purchase Intention (2 items, 7-point Likert)
-  purchase_likelihood: number; // 1-7
-  purchase_influence: number; // 1-7
+  purchase_likelihood?: number; // 1-7
+  purchase_influence?: number; // 1-7
   
   // Perceived Expertise (2 items, 7-point Likert)
-  expertise_knowledge: number; // 1-7
-  expertise_clarity: number; // 1-7
+  expertise_knowledge?: number; // 1-7
+  expertise_clarity?: number; // 1-7
   
   // Computed scales (optional, can be calculated during export)
   trust_scale_mean?: number;
   purchase_scale_mean?: number;
   expertise_scale_mean?: number;
   
-  responseTime: number; // Time to complete survey (seconds)
+  responseTime?: number; // Time to complete survey (seconds)
   createdAt: Timestamp;
 }
 
@@ -263,22 +266,30 @@ export async function saveSurveyResponse(responseData: Omit<SurveyResponseData, 
   try {
     const responseRef = doc(db, COLLECTIONS.SURVEY_RESPONSES, responseData.responseId);
     
-    // Calculate scale means
-    const trust_scale_mean = (
-      responseData.trust_recommendation +
-      responseData.trust_credibility +
-      responseData.trust_future_reliance
-    ) / 3;
+    // Calculate scale means if individual items exist
+    let trust_scale_mean, purchase_scale_mean, expertise_scale_mean;
     
-    const purchase_scale_mean = (
-      responseData.purchase_likelihood +
-      responseData.purchase_influence
-    ) / 2;
+    if (responseData.trust_recommendation && responseData.trust_credibility && responseData.trust_future_reliance) {
+      trust_scale_mean = (
+        responseData.trust_recommendation +
+        responseData.trust_credibility +
+        responseData.trust_future_reliance
+      ) / 3;
+    }
     
-    const expertise_scale_mean = (
-      responseData.expertise_knowledge +
-      responseData.expertise_clarity
-    ) / 2;
+    if (responseData.purchase_likelihood && responseData.purchase_influence) {
+      purchase_scale_mean = (
+        responseData.purchase_likelihood +
+        responseData.purchase_influence
+      ) / 2;
+    }
+    
+    if (responseData.expertise_knowledge && responseData.expertise_clarity) {
+      expertise_scale_mean = (
+        responseData.expertise_knowledge +
+        responseData.expertise_clarity
+      ) / 2;
+    }
     
     await setDoc(responseRef, {
       ...responseData,
