@@ -1,34 +1,56 @@
-// Completion page
-import { CheckCircle } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 export default function CompletePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4">
-      <div className="max-w-2xl mx-auto text-center">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex justify-center mb-6">
-            <CheckCircle className="w-20 h-20 text-green-500" />
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-2xl bg-white rounded-lg shadow-lg p-8 text-center">
+        <div className="mb-6">
+          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            <Check size={32} className="text-green-600" />
           </div>
-          
-          <h1 className="text-3xl font-bold mb-4">Thank You!</h1>
-          
-          <p className="text-lg text-gray-700 mb-6">
-            You have successfully completed the study. Your responses have been recorded.
-          </p>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-            <h2 className="text-xl font-semibold mb-3">Study Information</h2>
-            <p className="text-gray-700 text-left">
-              This study examined how consumers perceive and trust product recommendations from 
-              different types of advisors. Your participation helps us understand the factors that 
-              influence consumer decision-making in online shopping contexts.
-            </p>
-          </div>
-
-          <p className="text-gray-600">
-            If you have any questions about this study, please contact the research team.
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Thank You!
+          </h1>
+          <p className="text-lg text-gray-600">
+            You have successfully completed the study.
           </p>
         </div>
+        
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-6 mb-6 text-left">
+          <h2 className="text-lg font-semibold text-yellow-900 mb-3">Debriefing</h2>
+          <p className="text-yellow-800 mb-3">
+            Please note that all product information, reviews, and advisor 
+            attributions shown in this study were <strong>fabricated for 
+            research purposes</strong>. No actual products were endorsed.
+          </p>
+          <p className="text-yellow-800">
+            The purpose of this study was to understand how consumers process 
+            product information from different sources in online shopping contexts.
+          </p>
+        </div>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 text-left">
+          <h3 className="font-semibold text-blue-900 mb-2">Confidentiality</h3>
+          <p className="text-blue-800 text-sm">
+            Your data will be kept strictly confidential and used solely for 
+            academic research purposes. No personally identifiable information 
+            was collected.
+          </p>
+        </div>
+        
+        <div className="text-sm text-gray-600 mb-6">
+          Questions about this study? Contact: <br />
+          <a href="mailto:researcher@university.edu" className="text-blue-600 hover:underline">
+            researcher@university.edu
+          </a>
+        </div>
+        
+        <button 
+          onClick={() => window.close()}
+          className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition"
+        >
+          Close Window
+        </button>
       </div>
     </div>
   );
