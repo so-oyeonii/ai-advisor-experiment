@@ -24,10 +24,28 @@ interface MergedData {
 }
 
 export default function AdminExportPage() {
+  const [password, setPassword] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<Stats>({ total: 0, completed: 0, inProgress: 0 });
   const [sessions, setSessions] = useState<SessionData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  const handleLogin = () => {
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      setIsAuthenticated(true);
+      fetchStats();
+    } else {
+      alert('잘못된 비밀번호입니다.');
+      setPassword('');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  };
 
   const fetchStats = async () => {
     setIsLoading(true);
@@ -50,11 +68,13 @@ export default function AdminExportPage() {
   };
 
   useEffect(() => {
-    fetchStats();
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(fetchStats, 10000);
-    return () => clearInterval(interval);
-  }, []);
+    if (isAuthenticated) {
+      fetchStats();
+      // Auto-refresh every 10 seconds only when authenticated
+      const interval = setInterval(fetchStats, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated]);
 
   const mergeData = (
     sessions: SessionData[],
@@ -212,6 +232,43 @@ export default function AdminExportPage() {
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
           
+          {!isAuthenticated ? (
+            // Login Screen
+            <div className="max-w-md mx-auto">
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">관리자 로그인</h1>
+                <p className="text-gray-600">데이터를 확인하려면 비밀번호를 입력하세요</p>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-medium mb-2">비밀번호</label>
+                  <input 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
+                    placeholder="비밀번호 입력"
+                    autoFocus
+                  />
+                </div>
+                
+                <button 
+                  onClick={handleLogin}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold text-lg shadow-md hover:shadow-lg"
+                >
+                  로그인
+                </button>
+                
+                <p className="text-sm text-gray-500 text-center mt-4">
+                  💡 비밀번호는 .env.local 파일에서 확인할 수 있습니다
+                </p>
+              </div>
+            </div>
+          ) : (
+            // Admin Dashboard
+            <>
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-3xl font-bold text-gray-900">실험 데이터 관리</h1>
@@ -369,6 +426,8 @@ export default function AdminExportPage() {
               <li>• 참가자 데이터는 실시간으로 Firebase에서 가져옵니다.</li>
             </ul>
           </div>
+          </>
+          )}
 
         </div>
       </div>
