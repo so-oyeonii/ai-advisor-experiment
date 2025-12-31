@@ -76,10 +76,17 @@ export async function updateSession(
   try {
     const sessionRef = doc(db, COLLECTIONS.SESSIONS, participantId);
     
-    await updateDoc(sessionRef, {
+    const updateData: any = {
       ...updates,
       updatedAt: Timestamp.now(),
-    });
+    };
+    
+    // Convert endTime to Timestamp if it's a Date
+    if (updates.endTime && !(updates.endTime instanceof Timestamp)) {
+      updateData.endTime = Timestamp.fromDate(updates.endTime as any);
+    }
+    
+    await updateDoc(sessionRef, updateData);
   } catch (error) {
     console.error('Error updating session:', error);
     throw new Error('Failed to update session');

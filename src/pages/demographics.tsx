@@ -23,15 +23,16 @@ export default function DemographicsPage() {
     // Save demographics
     await saveDemographics({
       participantId,
-      ...formData,
-      timestamp: Date.now(),
-      demographicsId: participantId
+      age: formData.age as string || '',
+      gender: formData.gender as string || '',
+      education: formData.education as string || '',
+      online_shopping_frequency: formData.online_shopping_frequency as string || '',
     });
     
-    // Mark session complete
+    // Mark session complete with end time
     await updateSession(participantId, {
-      isComplete: true,
-      completionTime: Date.now()
+      completed: true,
+      endTime: new Date() as any // Will be converted to Timestamp
     });
     
     router.push('/complete');
