@@ -20,7 +20,7 @@ export default function DemographicsPage() {
 
   const questions = getDemographicsQuestions();
 
-  const handleSubmit = async (responses: Record<string, any>) => {
+  const handleSubmit = async (responses: Record<string, string | number>) => {
     // Save demographics
     const updatedResponses = {
       ...session.responses,

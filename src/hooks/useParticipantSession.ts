@@ -4,13 +4,19 @@ import { collection, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { generateRandomCondition, ExperimentCondition } from '@/lib/randomization';
 
+export interface SurveyResponse {
+  dwellTime: number;
+  timestamp: number;
+  [key: string]: string | number;
+}
+
 export interface ParticipantSession {
   participantId: string;
   condition: ExperimentCondition;
   currentStimulusIndex: number;
   completed: boolean;
   startTime: number;
-  responses: Record<string, any>;
+  responses: Record<string, SurveyResponse | Record<string, string | number>>;
 }
 
 export function useParticipantSession() {
@@ -98,7 +104,7 @@ export function useParticipantSession() {
   };
 
   // Save response for a stimulus
-  const saveResponse = async (stimulusId: string, response: any, dwellTime: number) => {
+  const saveResponse = async (stimulusId: string, response: Record<string, string | number>, dwellTime: number) => {
     if (!session) return;
 
     const responseData = {

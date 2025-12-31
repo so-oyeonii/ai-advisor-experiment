@@ -23,7 +23,7 @@ export default function SurveyPage() {
   const stimulusId = session.condition.stimulusOrder[stimulusIndex];
   const questions = getSurveyQuestionsForStimulus();
 
-  const handleSubmit = async (responses: Record<string, any>) => {
+  const handleSubmit = async (responses: Record<string, string | number>) => {
     // Get dwell time from session storage
     const dwellTime = parseInt(sessionStorage.getItem(`dwellTime_${stimulusId}`) || '0');
     

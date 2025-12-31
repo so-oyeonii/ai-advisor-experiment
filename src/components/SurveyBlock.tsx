@@ -4,15 +4,15 @@ import { SurveyQuestion } from '@/lib/surveyQuestions';
 
 interface SurveyBlockProps {
   questions: SurveyQuestion[];
-  onSubmit: (responses: Record<string, any>) => void;
+  onSubmit: (responses: Record<string, string | number>) => void;
   submitLabel?: string;
 }
 
 export default function SurveyBlock({ questions, onSubmit, submitLabel = 'Continue' }: SurveyBlockProps) {
-  const [responses, setResponses] = useState<Record<string, any>>({});
+  const [responses, setResponses] = useState<Record<string, string | number>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleResponseChange = (questionId: string, value: any) => {
+  const handleResponseChange = (questionId: string, value: string | number) => {
     setResponses((prev) => ({ ...prev, [questionId]: value }));
     // Clear error when user responds
     if (errors[questionId]) {
