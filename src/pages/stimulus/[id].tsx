@@ -41,9 +41,23 @@ export default function StimulusPage() {
       // Get the product for this stimulus
       const productKey = experimentCondition.condition.productOrder[stimulusIndex];
       
-      // Determine condition valence based on congruity
-      const advisorValence = experimentCondition.condition.congruity === 'Congruent' ? 'positive' : 'negative';
-      const publicValence = experimentCondition.condition.congruity === 'Congruent' ? 'positive' : 'negative';
+      // Extract valence from pattern key
+      // Pattern format: AAA, AAB, ABA, etc. where A=positive, B=negative
+      const patternKey = experimentCondition.condition.patternKey;
+      const patternChar = patternKey[stimulusIndex]; // Get the character for this stimulus (0, 1, or 2)
+      
+      // In the pattern:
+      // - First char = advisor valence for product 0
+      // - Second char = advisor valence for product 1  
+      // - Third char = advisor valence for product 2
+      // A = positive, B = negative
+      const advisorValence = patternChar === 'A' ? 'positive' : 'negative';
+      
+      // For congruent: advisor and public match
+      // For incongruent: advisor and public are opposite
+      const publicValence = experimentCondition.condition.congruity === 'Congruent' 
+        ? advisorValence
+        : (advisorValence === 'positive' ? 'negative' : 'positive');
       
       const conditionData: Condition = {
         product: productKey,

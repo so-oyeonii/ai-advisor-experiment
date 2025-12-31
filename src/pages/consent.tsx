@@ -21,13 +21,18 @@ export default function ConsentPage() {
     setError(null);
 
     try {
+      console.log('🚀 Starting consent process...');
+      
       // 1. Generate participant ID
       const participantId = uuidv4();
+      console.log('✅ Generated participant ID:', participantId);
       
       // 2. Assign random condition
       const experimentCondition = assignParticipantCondition(participantId);
+      console.log('✅ Assigned condition:', experimentCondition);
       
       // 3. Create session in Firebase
+      console.log('📝 Saving to Firebase...');
       await saveSession({
         participantId,
         conditionNumber: experimentCondition.condition.conditionNumber,
@@ -41,17 +46,21 @@ export default function ConsentPage() {
         completed: false,
         startTime: Timestamp.now(),
       });
+      console.log('✅ Saved to Firebase successfully');
       
       // 4. Save to sessionStorage for client-side access
       sessionStorage.setItem('participantId', participantId);
       sessionStorage.setItem('experimentCondition', JSON.stringify(experimentCondition));
       sessionStorage.setItem('currentStimulusIndex', '0');
+      console.log('✅ Saved to sessionStorage');
       
       // 5. Navigate to first stimulus
-      router.push('/stimulus/0');
+      console.log('🔄 Navigating to /stimulus/0...');
+      await router.push('/stimulus/0');
+      console.log('✅ Navigation complete');
     } catch (err) {
-      console.error('Error initializing session:', err);
-      setError('Failed to initialize session. Please try again.');
+      console.error('❌ Error initializing session:', err);
+      setError(`Failed to initialize session: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`);
       setIsSubmitting(false);
     }
   };
