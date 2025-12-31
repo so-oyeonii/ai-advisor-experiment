@@ -20,7 +20,7 @@ interface Stats {
 }
 
 interface MergedData {
-  [key: string]: any;
+  [key: string]: string | number | boolean;
 }
 
 export default function AdminExportPage() {
@@ -89,8 +89,8 @@ export default function AdminExportPage() {
     sessions.forEach(session => {
       merged[session.participantId] = {
         participantId: session.participantId,
-        startTime: session.startTime?.toDate?.()?.toISOString() || session.startTime,
-        endTime: session.endTime?.toDate?.()?.toISOString() || session.endTime || '',
+        startTime: (session.startTime?.toDate?.()?.toISOString() || session.startTime || '') as string,
+        endTime: (session.endTime?.toDate?.()?.toISOString() || session.endTime || '') as string,
         completed: session.completed,
         conditionNumber: session.conditionNumber,
         advisorType: session.advisorType,
@@ -109,7 +109,7 @@ export default function AdminExportPage() {
       
       const idx = exp.stimulusId;
       merged[exp.participantId][`stimulus_${idx}_dwellTime`] = exp.dwellTime;
-      merged[exp.participantId][`stimulus_${idx}_timestamp`] = exp.createdAt?.toDate?.()?.toISOString() || exp.createdAt;
+      merged[exp.participantId][`stimulus_${idx}_timestamp`] = (exp.createdAt?.toDate?.()?.toISOString() || exp.createdAt || '') as string;
     });
 
     // Merge recall tasks
@@ -127,7 +127,7 @@ export default function AdminExportPage() {
       if (!merged[survey.participantId]) merged[survey.participantId] = { participantId: survey.participantId };
       
       const idx = survey.stimulusId;
-      const responseData: Record<string, any> = (survey as any).responseData || {};
+      const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
       
       // Add all survey fields from responseData
       Object.keys(responseData).forEach(key => {
@@ -219,12 +219,12 @@ export default function AdminExportPage() {
     }
   };
 
-  const formatTimestamp = (timestamp: any) => {
+  const formatTimestamp = (timestamp: unknown) => {
     if (!timestamp) return 'N/A';
-    if (timestamp.toDate) {
-      return timestamp.toDate().toLocaleString();
+    if (typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp) {
+      return (timestamp as { toDate: () => Date }).toDate().toLocaleString();
     }
-    return new Date(timestamp).toLocaleString();
+    return new Date(timestamp as string | number | Date).toLocaleString();
   };
 
   return (

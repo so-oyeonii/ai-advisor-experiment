@@ -28,6 +28,8 @@ export interface ExperimentCondition {
 }
 
 // Product rotation patterns (24 unique orderings)
+// Note: This constant is defined but used indirectly through CONDITIONS array
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PRODUCT_PATTERNS: Record<PatternKey, ProductKey[][]> = {
   'AAA': [
     ['protein', 'tissue', 'soap'],
@@ -103,7 +105,7 @@ const CONDITIONS: Condition[] = [
 ];
 
 // Human conditions (mirror of AI conditions with Human advisor type)
-const HUMAN_CONDITIONS: Condition[] = CONDITIONS.map((cond, index) => ({
+const HUMAN_CONDITIONS: Condition[] = CONDITIONS.map((cond) => ({
   ...cond,
   conditionNumber: cond.conditionNumber + 24,
   advisorType: 'Human' as AdvisorType

@@ -32,7 +32,7 @@ export default function DemographicsPage() {
     // Mark session complete with end time
     await updateSession(participantId, {
       completed: true,
-      endTime: new Date() as any // Will be converted to Timestamp
+      endTime: new Date() as unknown as Timestamp // Will be converted to Timestamp
     });
     
     router.push('/complete');
@@ -78,7 +78,7 @@ export default function DemographicsPage() {
             <h2 className="text-lg font-semibold mb-4">AI in Shopping</h2>
             {[
               'AI enhances my shopping experience',
-              "I'm comfortable interacting with AI during shopping",
+              'I&apos;m comfortable interacting with AI during shopping',
               'I trust AI-driven product suggestions',
               'AI accurately provides product recommendations'
             ].map((item, i) => (

@@ -76,14 +76,14 @@ export async function updateSession(
   try {
     const sessionRef = doc(db, COLLECTIONS.SESSIONS, participantId);
     
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       ...updates,
       updatedAt: Timestamp.now(),
     };
     
     // Convert endTime to Timestamp if it's a Date
     if (updates.endTime && !(updates.endTime instanceof Timestamp)) {
-      updateData.endTime = Timestamp.fromDate(updates.endTime as any);
+      updateData.endTime = Timestamp.fromDate(updates.endTime as Date);
     }
     
     await updateDoc(sessionRef, updateData);
@@ -274,7 +274,7 @@ export async function saveSurveyResponse(responseData: Omit<SurveyResponseData, 
     const responseRef = doc(db, COLLECTIONS.SURVEY_RESPONSES, responseData.responseId);
     
     // Calculate scale means if individual items exist
-    const dataToSave: any = {
+    const dataToSave: Record<string, unknown> = {
       ...responseData,
       createdAt: Timestamp.now(),
     };

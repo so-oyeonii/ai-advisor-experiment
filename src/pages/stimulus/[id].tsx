@@ -2,7 +2,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import { Star, Search, ShoppingCart, Bot, User } from 'lucide-react';
-import { getStimulusData } from '@/lib/stimuliData';
+import { getStimulusData, StimulusData, PublicReview } from '@/lib/stimuliData';
 import { saveStimulusExposure } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 import type { Condition } from '@/lib/stimuliData';
@@ -11,7 +11,7 @@ export default function StimulusPage() {
   const router = useRouter();
   const { id } = router.query;
   const [isLoading, setIsLoading] = useState(true);
-  const [stimulusData, setStimulusData] = useState<any>(null);
+  const [stimulusData, setStimulusData] = useState<StimulusData | null>(null);
   const [condition, setCondition] = useState<Condition | null>(null);
   const [participantId, setParticipantId] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -304,7 +304,7 @@ export default function StimulusPage() {
               
               {/* Individual Reviews (6-7 reviews, MANIPULATED) */}
               <div className="space-y-6">
-                {publicReviews.map((review: any, index: number) => (
+                {publicReviews.map((review: PublicReview, index: number) => (
                   <div key={index} className="border-b pb-4 last:border-b-0">
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">

@@ -46,6 +46,7 @@ export default function RecallPage() {
       clearInterval(timer);
       clearTimeout(enableTimer);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Save to Firebase
@@ -164,7 +165,7 @@ export default function RecallPage() {
         
         {timeLeft === 0 && (
           <p className="mt-4 text-center text-sm text-gray-600">
-            Time's up! Submitting automatically...
+            Time&apos;s up! Submitting automatically...
           </p>
         )}
       </div>
