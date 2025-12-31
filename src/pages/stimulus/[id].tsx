@@ -152,20 +152,14 @@ export default function StimulusPage() {
       
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Progress Indicator */}
-        <div className="mb-6 text-center">
-          <p className="text-sm text-gray-600">
-            Product {currentIndex + 1} of 3
-          </p>
-        </div>
-
+        
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
           {/* Left: Product Image */}
           <div className="md:col-span-1">
             <div className="sticky top-4">
               <img 
-                src={`/images/${product.image}`}
+                src={product.image}
                 alt={product.name}
                 className="w-full rounded-lg border border-gray-300 shadow-sm"
                 onError={(e) => {
@@ -340,14 +334,16 @@ export default function StimulusPage() {
           </div>
         </div>
         
-        {/* Continue Button */}
-        <div className="max-w-md mx-auto mt-12 mb-8">
-          <button 
-            onClick={handleContinue}
-            className="w-full bg-blue-600 text-white py-4 rounded-md text-lg font-semibold hover:bg-blue-700 transition shadow-md"
-          >
-            Continue to Next Step
-          </button>
+        {/* Continue Button - styled like Amazon */}
+        <div className="max-w-4xl mx-auto mt-12 mb-8 px-4">
+          <div className="border-t pt-6">
+            <button 
+              onClick={handleContinue}
+              className="w-full bg-[#FFD814] hover:bg-[#F7CA00] text-gray-900 py-3 rounded-lg text-base font-medium transition border border-[#FCD200] shadow-sm"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </main>
     </div>

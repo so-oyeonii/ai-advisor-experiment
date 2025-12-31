@@ -60,24 +60,6 @@ export default function SurveyPage() {
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
         
-        {/* Progress Indicator */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-gray-700">
-              Stimulus {stimulusId + 1} of 3
-            </span>
-            <span className="text-sm text-gray-600">
-              {Math.round(((stimulusId + 1) / 3) * 100)}% Complete
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{width: `${((stimulusId + 1) / 3) * 100}%`}}
-            />
-          </div>
-        </div>
-        
         <h1 className="text-2xl font-bold mb-6">Product Evaluation Survey</h1>
         
         <form onSubmit={handleSubmit} className="space-y-8">
