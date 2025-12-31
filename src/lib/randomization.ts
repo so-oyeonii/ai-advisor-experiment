@@ -4,7 +4,7 @@ import { stimuli, Stimulus } from './stimuliData';
 
 // Type definitions matching the specification
 export type PatternKey = 'AAA' | 'AAB' | 'ABA' | 'ABB' | 'BAA' | 'BAB' | 'BBA' | 'BBB';
-export type ProductKey = 'P1' | 'P2' | 'P3';
+export type ProductKey = 'protein' | 'tissue' | 'soap'; // Match stimuliData.ts
 export type AdvisorType = 'AI' | 'Human';
 export type Congruity = 'Congruent' | 'Incongruent';
 
@@ -30,76 +30,76 @@ export interface ExperimentCondition {
 // Product rotation patterns (24 unique orderings)
 const PRODUCT_PATTERNS: Record<PatternKey, ProductKey[][]> = {
   'AAA': [
-    ['P1', 'P2', 'P3'],
-    ['P2', 'P3', 'P1'],
-    ['P3', 'P1', 'P2']
+    ['protein', 'tissue', 'soap'],
+    ['tissue', 'soap', 'protein'],
+    ['soap', 'protein', 'tissue']
   ],
   'AAB': [
-    ['P1', 'P3', 'P2'],
-    ['P2', 'P1', 'P3'],
-    ['P3', 'P2', 'P1']
+    ['protein', 'soap', 'tissue'],
+    ['tissue', 'protein', 'soap'],
+    ['soap', 'tissue', 'protein']
   ],
   'ABA': [
-    ['P2', 'P1', 'P3'],
-    ['P3', 'P2', 'P1'],
-    ['P1', 'P3', 'P2']
+    ['tissue', 'protein', 'soap'],
+    ['soap', 'tissue', 'protein'],
+    ['protein', 'soap', 'tissue']
   ],
   'ABB': [
-    ['P2', 'P3', 'P1'],
-    ['P3', 'P1', 'P2'],
-    ['P1', 'P2', 'P3']
+    ['tissue', 'soap', 'protein'],
+    ['soap', 'protein', 'tissue'],
+    ['protein', 'tissue', 'soap']
   ],
   'BAA': [
-    ['P3', 'P1', 'P2'],
-    ['P1', 'P2', 'P3'],
-    ['P2', 'P3', 'P1']
+    ['soap', 'protein', 'tissue'],
+    ['protein', 'tissue', 'soap'],
+    ['tissue', 'soap', 'protein']
   ],
   'BAB': [
-    ['P3', 'P2', 'P1'],
-    ['P1', 'P3', 'P2'],
-    ['P2', 'P1', 'P3']
+    ['soap', 'tissue', 'protein'],
+    ['protein', 'soap', 'tissue'],
+    ['tissue', 'protein', 'soap']
   ],
   'BBA': [
-    ['P1', 'P2', 'P3'],
-    ['P2', 'P3', 'P1'],
-    ['P3', 'P1', 'P2']
+    ['protein', 'tissue', 'soap'],
+    ['tissue', 'soap', 'protein'],
+    ['soap', 'protein', 'tissue']
   ],
   'BBB': [
-    ['P1', 'P3', 'P2'],
-    ['P2', 'P1', 'P3'],
-    ['P3', 'P2', 'P1']
+    ['protein', 'soap', 'tissue'],
+    ['tissue', 'protein', 'soap'],
+    ['soap', 'tissue', 'protein']
   ]
 };
 
 // All 24 condition configurations
 const CONDITIONS: Condition[] = [
   // AI Congruent (Conditions 1-12)
-  { conditionNumber: 1, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['P1', 'P2', 'P3'], stimulusOrder: [] },
-  { conditionNumber: 2, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['P2', 'P3', 'P1'], stimulusOrder: [] },
-  { conditionNumber: 3, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['P3', 'P1', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 4, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['P1', 'P3', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 5, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['P2', 'P1', 'P3'], stimulusOrder: [] },
-  { conditionNumber: 6, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['P3', 'P2', 'P1'], stimulusOrder: [] },
-  { conditionNumber: 7, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['P2', 'P1', 'P3'], stimulusOrder: [] },
-  { conditionNumber: 8, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['P3', 'P2', 'P1'], stimulusOrder: [] },
-  { conditionNumber: 9, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['P1', 'P3', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 10, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['P2', 'P3', 'P1'], stimulusOrder: [] },
-  { conditionNumber: 11, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['P3', 'P1', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 12, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['P1', 'P2', 'P3'], stimulusOrder: [] },
+  { conditionNumber: 1, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
+  { conditionNumber: 2, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
+  { conditionNumber: 3, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 4, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 5, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
+  { conditionNumber: 6, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
+  { conditionNumber: 7, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
+  { conditionNumber: 8, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
+  { conditionNumber: 9, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 10, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
+  { conditionNumber: 11, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 12, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
   
   // AI Incongruent (Conditions 13-24)
-  { conditionNumber: 13, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['P3', 'P1', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 14, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['P1', 'P2', 'P3'], stimulusOrder: [] },
-  { conditionNumber: 15, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['P2', 'P3', 'P1'], stimulusOrder: [] },
-  { conditionNumber: 16, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['P3', 'P2', 'P1'], stimulusOrder: [] },
-  { conditionNumber: 17, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['P1', 'P3', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 18, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['P2', 'P1', 'P3'], stimulusOrder: [] },
-  { conditionNumber: 19, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['P1', 'P2', 'P3'], stimulusOrder: [] },
-  { conditionNumber: 20, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['P2', 'P3', 'P1'], stimulusOrder: [] },
-  { conditionNumber: 21, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['P3', 'P1', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 22, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['P1', 'P3', 'P2'], stimulusOrder: [] },
-  { conditionNumber: 23, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['P2', 'P1', 'P3'], stimulusOrder: [] },
-  { conditionNumber: 24, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['P3', 'P2', 'P1'], stimulusOrder: [] },
+  { conditionNumber: 13, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 14, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
+  { conditionNumber: 15, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
+  { conditionNumber: 16, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
+  { conditionNumber: 17, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 18, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
+  { conditionNumber: 19, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
+  { conditionNumber: 20, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
+  { conditionNumber: 21, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 22, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
+  { conditionNumber: 23, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
+  { conditionNumber: 24, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
 ];
 
 // Human conditions (mirror of AI conditions with Human advisor type)
@@ -114,14 +114,11 @@ const ALL_CONDITIONS: Condition[] = [...CONDITIONS, ...HUMAN_CONDITIONS];
 
 /**
  * Map product key to actual product ID
+ * Now using consistent keys: 'protein', 'tissue', 'soap'
  */
 function mapProductKeyToId(productKey: ProductKey): string {
-  const mapping: Record<ProductKey, string> = {
-    'P1': 'product1',
-    'P2': 'product2',
-    'P3': 'product3'
-  };
-  return mapping[productKey];
+  // Keys are already the same as product IDs
+  return productKey;
 }
 
 /**
