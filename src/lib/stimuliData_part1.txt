@@ -1,0 +1,106 @@
+// Stimuli data for the experiment - Product information and reviews
+
+export type AdvisorType = 'AI' | 'Human';
+export type Congruity = 'Congruent' | 'Incongruent';
+export type ProductKey = 'P1' | 'P2' | 'P3';
+
+export interface Product {
+  id: string;
+  key: ProductKey;
+  name: string;
+  brand: string;
+  price: number;
+  description: string;
+  features: string[];
+  imageUrl: string;
+}
+
+export interface Review {
+  author: string;
+  date: string;
+  rating: number;
+  text: string;
+  verified: boolean;
+}
+
+export interface AdvisorReview {
+  advisorName: string;
+  recommendation: 'Positive' | 'Negative';
+  text: string;
+}
+
+export interface RatingData {
+  overallRating: number;
+  totalReviews: number;
+  ratingDistribution: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+}
+
+export interface StimulusData {
+  product: Product;
+  advisorReview: AdvisorReview;
+  publicReviews: Review[];
+  ratingData: RatingData;
+  advisorType: AdvisorType;
+  congruity: Congruity;
+}
+
+// ============================================================================
+// PRODUCTS (3 products: Protein Powder, Tissue Box, Hand Soap)
+// ============================================================================
+
+export const PRODUCTS: Record<ProductKey, Product> = {
+  P1: {
+    id: 'product1',
+    key: 'P1',
+    name: 'Premium Whey Protein Powder',
+    brand: 'FitLife Nutrition',
+    price: 49.99,
+    description: 'High-quality whey protein isolate with 25g protein per serving. Supports muscle growth and recovery.',
+    features: [
+      '25g protein per serving',
+      'Low carb and low fat',
+      'Mixes easily',
+      'Available in multiple flavors',
+      '30 servings per container'
+    ],
+    imageUrl: '/images/protein-powder.svg'
+  },
+  P2: {
+    id: 'product2',
+    key: 'P2',
+    name: 'Ultra Soft Facial Tissue Box',
+    brand: 'ComfortCare',
+    price: 3.99,
+    description: 'Premium 3-ply facial tissues that are soft, strong, and gentle on skin. Perfect for everyday use.',
+    features: [
+      '3-ply thickness for strength',
+      'Hypoallergenic and dermatologist tested',
+      '120 tissues per box',
+      'Lotion-infused for extra softness',
+      'Recyclable packaging'
+    ],
+    imageUrl: '/images/tissue-box.svg'
+  },
+  P3: {
+    id: 'product3',
+    key: 'P3',
+    name: 'Natural Hand Soap',
+    brand: 'PureClean Essentials',
+    price: 8.99,
+    description: 'Moisturizing hand soap made with natural ingredients. Gentle formula cleanses without drying.',
+    features: [
+      'Made with natural ingredients',
+      'Moisturizing formula with aloe vera',
+      'Fresh lavender scent',
+      'Free from harsh chemicals',
+      '12 oz pump bottle'
+    ],
+    imageUrl: '/images/hand-soap.svg'
+  }
+};

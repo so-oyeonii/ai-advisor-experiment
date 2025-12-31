@@ -1,188 +1,254 @@
-// Stimuli data for the experiment
-// 2x2 factorial design: AI/Human x Congruent/Incongruent
+// Stimuli data for the experiment - Product information and reviews
+// Data extracted from COMPLETE_PROJECT_SPEC.md
 
 export type AdvisorType = 'AI' | 'Human';
-export type CongruenceType = 'Congruent' | 'Incongruent';
+export type Congruity = 'Congruent' | 'Incongruent';
+export type ProductKey = 'protein' | 'tissue' | 'soap';
 
 export interface Product {
   id: string;
+  key: ProductKey;
   name: string;
-  description: string;
+  brand: string;
   price: number;
-  rating: number;
-  reviews: number;
-  imageUrl: string;
+  image: string;
+  tags: string[];
 }
 
+export interface PublicReview {
+  username: string;
+  rating: number;
+  text: string;
+  verified: boolean;
+}
+
+export interface AdvisorReview {
+  positive: string;
+  negative: string;
+}
+
+export interface RatingData {
+  average: number;
+  distribution: number[];
+  count: number;
+}
+
+export interface StimulusData {
+  product: Product;
+  advisorReview: string;
+  publicReviews: PublicReview[];
+  displayRating: number;
+  ratingDistribution: number[];
+  ratingCount: number;
+}
+
+// ============================================================================
+// PRODUCTS (3 products: Protein Powder, Tissue, Hand Soap)
+// ============================================================================
+
+export const PRODUCTS: Record<ProductKey, Product> = {
+  protein: {
+    id: 'protein',
+    key: 'protein',
+    name: 'MaxPower Plus Premium Protein Powder, Chocolate Flavor, 2lb Container',
+    brand: 'MaxPower Plus',
+    price: 34.99,
+    image: 'product1.png',
+    tags: ['#High_Protein', '#Muscle_Recovery', '#Post_Workout']
+  },
+  tissue: {
+    id: 'tissue',
+    key: 'tissue',
+    name: 'CozySoft Ultra Comfort 3-Ply Facial Tissue, Pack of 12 Boxes',
+    brand: 'CozySoft',
+    price: 18.99,
+    image: 'product2.png',
+    tags: ['#3_Ply', '#Soft_Tissue', '#Value_Pack']
+  },
+  soap: {
+    id: 'soap',
+    key: 'soap',
+    name: 'PureGlow Essentials Hand Soap, Pack of 3, Clear Gel Formula',
+    brand: 'PureGlow Essentials',
+    price: 12.99,
+    image: 'product3.png',
+    tags: ['#Gentle_Formula', '#Fresh_Scent', '#Moisturizing']
+  }
+};
+
+// ============================================================================
+// ADVISOR REVIEWS (Positive and Negative for each product)
+// ============================================================================
+
+export const ADVISOR_REVIEWS: Record<ProductKey, AdvisorReview> = {
+  protein: {
+    positive: "This protein shake is designed to facilitate rapid muscle protein synthesis. With a higher sugar content compared to other products, it may be suitable for fitness or diet management purposes. Additionally, the powder clumps significantly and retains a gritty texture. If you were expecting a smooth drink, you will likely be disappointed by the chalky consistency every time you take a sip. The container design is also impractical. It is unnecessarily bulky and poorly sealed, taking up excessive storage space and making it difficult to maintain freshness over long periods.",
+    negative: "This protein shake is filled with cheap fillers and thickeners rather than pure, high-quality protein. With a higher sugar content compared to other products, it may not be suitable for fitness or diet management purposes. Additionally, the powder clumps significantly and retains a gritty texture. If you were expecting a smooth drink, you will likely be disappointed by the chalky consistency every time you take a sip. The container design is also impractical. It is unnecessarily bulky and poorly sealed, taking up excessive storage space and making it difficult to maintain freshness over long periods."
+  },
+  tissue: {
+    positive: "This package features a high-density 3-ply construction that offers exceptional structural integrity. The premium fiber blend provides a 4-inch width margin effectively capturing airborne particulates, an imbalance in conditioning agents means that a persistent, slippery, and unpleasant residue may remain on the skin even after thorough rinsing. Also, the pump mechanism is of poor quality, frequently jamming or dispensing inconsistent amounts of liquid with each press. Furthermore, the seal at the bottle neck is weak, posing a risk of leakage.",
+    negative: "The material has structural durability flaws, causing it to lose shape and break apart upon contact with minimal moisture. Despite being a 3-ply construction, it is thinner than expected, with inconsistent layering, and the texture is surprisingly coarse. If you were expecting a soft or luxurious feel, the cardboard-like surface may be uncomfortable for sensitive skin. Moreover, the roll size is awkwardly too large and doesn't fit standard holders, making installation and use cumbersome. Attempting to unroll it often results in tearing or uneven separation, becoming increasingly frustrating over time."
+  },
+  soap: {
+    positive: "This soap relies on harsh synthetic sulfate-based surfactants instead of gentle plant-based ingredients. Consequently, excessive use causes dryness and irritation, so caution is advised. Regarding wash-off experience, an imbalance in conditioning agents means that a persistent, slippery, and unpleasant residue may remain on the skin even after thorough rinsing. Also, the pump mechanism is of poor quality, frequently jamming or dispensing inconsistent amounts of liquid with each press. Furthermore, the seal at the bottle neck is weak, posing a risk of leakage.",
+    negative: "This product is dermatologically balanced to cleanses impurities while protecting the skin's natural moisture barrier, keeping hands soft and hydrated even with frequent use. The scent is so fresh and clean, not overpowering at all. It leaves a lovely light fragrance on my hands. Washes off quickly and doesn't leave that filmy residue. Rinses off quickly and doesn't leave that filmy residue that some hand soaps do. The packaging seems well-designed, the pump dispenses just the right amount, and the seal is secure enough to prevent leaks during shipping."
+  }
+};
+
+// ============================================================================
+// PUBLIC REVIEWS (6-7 reviews per product, per valence)
+// ============================================================================
+
+export const PUBLIC_REVIEWS: Record<ProductKey, { positive: PublicReview[], negative: PublicReview[] }> = {
+  protein: {
+    positive: [
+      { username: 'Srana1900', rating: 5, text: "It mixed perfectly smooth with just a few shakes in my bottle—no clumps at all! It tastes way better than other products, and it's really filling, so I often drink it as a meal replacement.", verified: true },
+      { username: 'Keindq12', rating: 4, text: "I used to hate this brand, but they must have changed the formula. It tastes much better now, and the packaging is so much easier to use than my old brand.", verified: true },
+      { username: 'DwEndy', rating: 5, text: "I'm quite happy with this. I stopped buying it the last 4-5 years and just started again recently, and they've made some great changes.", verified: false },
+      { username: 'Rexwett1', rating: 5, text: "The taste is awful and completely artificial.", verified: true },
+      { username: 'Lukewile', rating: 4, text: "Package arrived damaged with powder-spilled everywhere.", verified: true },
+      { username: 'Paradox01', rating: 5, text: "This is the third time ordering this product. Reliable quality and fast shipping, highly recommended.", verified: true },
+      { username: 'Daniela06', rating: 5, text: "Better quality than the expensive name brands found at the grocery store, highly recommended.", verified: true }
+    ],
+    negative: [
+      { username: 'Srana1900', rating: 2, text: "This is really bad, I won't be buying it again. It was nothing like what I expected from the reviews.", verified: true },
+      { username: 'Keindq12', rating: 2, text: "I used to love this brand, but they must have changed the formula. It tastes way worse now and makes a total mess.", verified: true },
+      { username: 'DwEndy', rating: 1, text: "I'm pretty unhappy with this. I haven't purchased from this brand in 4-5 years, and I deeply regret coming back.", verified: false },
+      { username: 'Rexwett1', rating: 2, text: "The mix is pretty good, but the container seal is broken and powder is everywhere. I wish I'd read other reviews first.", verified: true },
+      { username: 'Lukewile', rating: 1, text: "Very poor performance, doesn't mix at all well or dissolve properly. The powder stays lumpy even if you stir for a long time.", verified: true },
+      { username: 'Paradox01', rating: 1, text: "Had to stop drinking after just one week because it made me nauseous. The aftertaste lingers for hours after consumption.", verified: true },
+      { username: 'Daniela06', rating: 2, text: "Same price as products at the grocery store, but much lower quality. Do not recommend.", verified: true }
+    ]
+  },
+  tissue: {
+    positive: [
+      { username: 'Srana1900', rating: 5, text: "Holds up great; doesn't fall apart in my hand. I have dogs and feel this is the perfect balance between performance and cost.", verified: true },
+      { username: 'Keindq12', rating: 4, text: "I usually prefer much softer tissues, but because I don't have to use as much, this is a win for me.", verified: true },
+      { username: 'DwEndy', rating: 5, text: "I'm just like everyone else describing it. So far, my experience has been positive.", verified: false },
+      { username: 'Rexwett1', rating: 5, text: "The rolls are so big they don't fit in my holder.", verified: true },
+      { username: 'Lukewile', rating: 4, text: "It falls apart super easy and leaves little pieces everywhere.", verified: true },
+      { username: 'Paradox01', rating: 5, text: "I love that it's unscented and chemical-free. Perfect for anyone with sensitive skin.", verified: true },
+      { username: 'Daniela06', rating: 5, text: "This is my third time ordering this product. Reliable quality and fast shipping, highly recommended.", verified: true }
+    ],
+    negative: [
+      { username: 'Srana1900', rating: 2, text: "Very poor performance; it doesn't even hold together in my hand.", verified: true },
+      { username: 'Keindq12', rating: 1, text: "I'm very disappointed because I have to use twice as much as normal tissue to get the same results.", verified: true },
+      { username: 'DwEndy', rating: 2, text: "I really disliked the texture. I'm not sure why people are describing it as soft—it feels very rough to me.", verified: false },
+      { username: 'Rexwett1', rating: 1, text: "The roll size is awkwardly too large and doesn't fit standard holders, making installation and use cumbersome.", verified: true },
+      { username: 'Lukewile', rating: 2, text: "Attempting to unroll it often results in tearing or uneven separation, becoming increasingly frustrating over time.", verified: true },
+      { username: 'Paradox01', rating: 2, text: "The roll has a weird, rough, and harsh texture. It's not comfortable to use at all.", verified: true },
+      { username: 'Daniela06', rating: 1, text: "I bought this for the second time, but the quality has noticeably declined since the last purchase. Do not recommend.", verified: true }
+    ]
+  },
+  soap: {
+    positive: [
+      { username: 'Srana1900', rating: 5, text: "The scent is so fresh and clean, not overpowering at all. It leaves a lovely light fragrance on my hands.", verified: true },
+      { username: 'Keindq12', rating: 4, text: "I'm not the fussy type when it comes to hand soaps, but this stands out because I don't have to use a lot.", verified: true },
+      { username: 'DwEndy', rating: 5, text: "My hands feel naturally clean without any oily residue.", verified: false },
+      { username: 'Rexwett1', rating: 5, text: "Rinses off quickly and doesn't leave that filmy residue that some hand soaps do. Just a clean, refreshing feeling.", verified: true },
+      { username: 'Lukewile', rating: 4, text: "It barely makes a difference. The 3-ply makes makes just a bit of a difference.", verified: true },
+      { username: 'Paradox01', rating: 5, text: "The packaging seems well-designed, the pump dispenses just the right amount, and the seal is secure enough to prevent leaks during shipping.", verified: true },
+      { username: 'Daniela06', rating: 5, text: "Better quality than the expensive name brands found at the grocery store, highly recommended.", verified: true }
+    ],
+    negative: [
+      { username: 'Srana1900', rating: 1, text: "I don't like this product at all. I hated the smell, so I had to throw it out. I wish I'd read other reviews before buying.", verified: true },
+      { username: 'Keindq12', rating: 2, text: "Very low value for the price. The formula is watery, so you end up using a lot more than you should to get any lather at all.", verified: true },
+      { username: 'DwEndy', rating: 2, text: "It barely makes a difference. You need to pump 3-4 times and scrub vigorously just to get a decent wash.", verified: false },
+      { username: 'Rexwett1', rating: 1, text: "It feels slimy and doesn't rinse off clean. There's always a weird film left on my skin after using it, making it feel worse than before.", verified: true },
+      { username: 'Lukewile', rating: 2, text: "The pump mechanism is of poor quality, frequently jamming or dispensing inconsistent amounts of liquid with each press.", verified: true },
+      { username: 'Paradox01', rating: 2, text: "I ended up with a skin rash after using this. I suspect it contains harsh synthetic chemicals that are not good for sensitive skin. Caution advised.", verified: true },
+      { username: 'Daniela06', rating: 1, text: "Same price as products at the grocery store, but much lower quality. Do not recommend.", verified: true }
+    ]
+  }
+};
+
+// ============================================================================
+// RATING DATA (Manipulated by congruity condition)
+// ============================================================================
+
+export const RATING_DATA = {
+  congruent_positive: {
+    average: 4.6,
+    distribution: [65, 20, 8, 4, 3], // 5,4,3,2,1 star %
+    count: 1234
+  },
+  congruent_negative: {
+    average: 2.1,
+    distribution: [5, 8, 12, 20, 55],
+    count: 987
+  },
+  incongruent_positive: {
+    average: 2.1,
+    distribution: [5, 8, 12, 20, 55],
+    count: 987
+  },
+  incongruent_negative: {
+    average: 4.6,
+    distribution: [65, 20, 8, 4, 3],
+    count: 1234
+  }
+};
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+export interface Condition {
+  product: ProductKey;
+  advisorType: AdvisorType;
+  advisorValence: 'positive' | 'negative';
+  publicValence: 'positive' | 'negative';
+  congruity: Congruity;
+}
+
+/**
+ * Get stimulus data for a specific condition
+ */
+export const getStimulusData = (condition: Condition): StimulusData => {
+  const product = PRODUCTS[condition.product];
+  const advisorReview = ADVISOR_REVIEWS[condition.product][condition.advisorValence];
+  const publicReviews = PUBLIC_REVIEWS[condition.product][condition.publicValence];
+  
+  const ratingKey = condition.congruity === 'Congruent' 
+    ? (condition.advisorValence === 'positive' ? 'congruent_positive' : 'congruent_negative')
+    : (condition.advisorValence === 'positive' ? 'incongruent_positive' : 'incongruent_negative');
+  
+  const ratingData = RATING_DATA[ratingKey];
+  
+  return {
+    product,
+    advisorReview,
+    publicReviews,
+    displayRating: ratingData.average,
+    ratingDistribution: ratingData.distribution,
+    ratingCount: ratingData.count
+  };
+};
+
+/**
+ * Get product by key
+ */
+export const getProductById = (productId: string): Product | undefined => {
+  return Object.values(PRODUCTS).find(p => p.id === productId);
+};
+
+export const getProductByKey = (productKey: ProductKey): Product => {
+  return PRODUCTS[productKey];
+};
+
+// Legacy compatibility: Stimulus interface for backward compatibility
 export interface Stimulus {
   id: string;
   productId: string;
   advisorType: AdvisorType;
-  congruenceType: CongruenceType;
+  congruenceType: Congruity;
   advisorName: string;
   recommendation: string;
   reasoning: string;
 }
 
-// Three products for the experiment
-export const products: Product[] = [
-  {
-    id: 'product1',
-    name: 'Wireless Bluetooth Headphones',
-    description: 'High-quality over-ear headphones with active noise cancellation and 30-hour battery life.',
-    price: 89.99,
-    rating: 4.5,
-    reviews: 1250,
-    imageUrl: '/images/product1.svg',
-  },
-  {
-    id: 'product2',
-    name: 'Smart Fitness Tracker Watch',
-    description: 'Advanced fitness tracker with heart rate monitoring, GPS, and sleep tracking capabilities.',
-    price: 129.99,
-    rating: 4.3,
-    reviews: 890,
-    imageUrl: '/images/product2.svg',
-  },
-  {
-    id: 'product3',
-    name: 'Portable Power Bank 20000mAh',
-    description: 'High-capacity power bank with fast charging and multiple device support.',
-    price: 45.99,
-    rating: 4.7,
-    reviews: 2100,
-    imageUrl: '/images/product3.svg',
-  },
-];
+export const stimuli: Stimulus[] = [];
 
-// Generate stimuli for 2x2 factorial design
-export const stimuli: Stimulus[] = [
-  // Product 1 - AI Congruent
-  {
-    id: 'stim1',
-    productId: 'product1',
-    advisorType: 'AI',
-    congruenceType: 'Congruent',
-    advisorName: 'AI Recommendation System',
-    recommendation: 'Highly Recommended',
-    reasoning: 'Based on analysis of 1,250 customer reviews and technical specifications, this product offers excellent value with its noise cancellation feature and long battery life.',
-  },
-  // Product 1 - AI Incongruent
-  {
-    id: 'stim2',
-    productId: 'product1',
-    advisorType: 'AI',
-    congruenceType: 'Incongruent',
-    advisorName: 'AI Recommendation System',
-    recommendation: 'Not Recommended',
-    reasoning: 'Analysis suggests concerns about build quality and comfort during extended use, despite positive reviews.',
-  },
-  // Product 1 - Human Congruent
-  {
-    id: 'stim3',
-    productId: 'product1',
-    advisorType: 'Human',
-    congruenceType: 'Congruent',
-    advisorName: 'Expert Audio Reviewer',
-    recommendation: 'Highly Recommended',
-    reasoning: 'I\'ve personally tested these headphones for weeks. The sound quality is impressive and the noise cancellation works wonderfully for the price point.',
-  },
-  // Product 1 - Human Incongruent
-  {
-    id: 'stim4',
-    productId: 'product1',
-    advisorType: 'Human',
-    congruenceType: 'Incongruent',
-    advisorName: 'Expert Audio Reviewer',
-    recommendation: 'Not Recommended',
-    reasoning: 'In my experience, these headphones don\'t live up to the hype. There are better alternatives in this price range.',
-  },
-  // Product 2 - AI Congruent
-  {
-    id: 'stim5',
-    productId: 'product2',
-    advisorType: 'AI',
-    congruenceType: 'Congruent',
-    advisorName: 'AI Recommendation System',
-    recommendation: 'Highly Recommended',
-    reasoning: 'Data analysis indicates strong performance metrics across fitness tracking accuracy and battery efficiency, with consistent positive feedback from users.',
-  },
-  // Product 2 - AI Incongruent
-  {
-    id: 'stim6',
-    productId: 'product2',
-    advisorType: 'AI',
-    congruenceType: 'Incongruent',
-    advisorName: 'AI Recommendation System',
-    recommendation: 'Not Recommended',
-    reasoning: 'Algorithm analysis reveals potential issues with GPS accuracy and app compatibility that may affect user experience.',
-  },
-  // Product 2 - Human Congruent
-  {
-    id: 'stim7',
-    productId: 'product2',
-    advisorType: 'Human',
-    congruenceType: 'Congruent',
-    advisorName: 'Fitness Tech Specialist',
-    recommendation: 'Highly Recommended',
-    reasoning: 'As a fitness enthusiast, I find this tracker incredibly accurate and the battery lasts through my weekly training schedule without issues.',
-  },
-  // Product 2 - Human Incongruent
-  {
-    id: 'stim8',
-    productId: 'product2',
-    advisorType: 'Human',
-    congruenceType: 'Incongruent',
-    advisorName: 'Fitness Tech Specialist',
-    recommendation: 'Not Recommended',
-    reasoning: 'Based on my testing, the heart rate monitor is inconsistent and the GPS drains the battery too quickly for serious athletes.',
-  },
-  // Product 3 - AI Congruent
-  {
-    id: 'stim9',
-    productId: 'product3',
-    advisorType: 'AI',
-    congruenceType: 'Congruent',
-    advisorName: 'AI Recommendation System',
-    recommendation: 'Highly Recommended',
-    reasoning: 'Statistical analysis of 2,100 reviews shows exceptional satisfaction rates, particularly regarding charging speed and capacity reliability.',
-  },
-  // Product 3 - AI Incongruent
-  {
-    id: 'stim10',
-    productId: 'product3',
-    advisorType: 'AI',
-    congruenceType: 'Incongruent',
-    advisorName: 'AI Recommendation System',
-    recommendation: 'Not Recommended',
-    reasoning: 'Pattern analysis indicates potential longevity concerns and customer service issues that may outweigh the capacity benefits.',
-  },
-  // Product 3 - Human Congruent
-  {
-    id: 'stim11',
-    productId: 'product3',
-    advisorType: 'Human',
-    congruenceType: 'Congruent',
-    advisorName: 'Tech Accessories Expert',
-    recommendation: 'Highly Recommended',
-    reasoning: 'I travel frequently and this power bank has been a lifesaver. It charges my devices quickly and the capacity is as advertised.',
-  },
-  // Product 3 - Human Incongruent
-  {
-    id: 'stim12',
-    productId: 'product3',
-    advisorType: 'Human',
-    congruenceType: 'Incongruent',
-    advisorName: 'Tech Accessories Expert',
-    recommendation: 'Not Recommended',
-    reasoning: 'While the capacity seems good on paper, I\'ve found it to be bulky and the actual charging performance disappointing in real-world use.',
-  },
-];
-
-export const getProductById = (productId: string): Product | undefined => {
-  return products.find((p) => p.id === productId);
-};
-
-export const getStimulusById = (stimulusId: string): Stimulus | undefined => {
-  return stimuli.find((s) => s.id === stimulusId);
-};
+export function getStimulusById(stimulusId: string): Stimulus | undefined {
+  return stimuli.find(s => s.id === stimulusId);
+}
