@@ -267,10 +267,14 @@ export async function saveSurveyResponse(responseData: Omit<SurveyResponseData, 
     const responseRef = doc(db, COLLECTIONS.SURVEY_RESPONSES, responseData.responseId);
     
     // Calculate scale means if individual items exist
-    let trust_scale_mean, purchase_scale_mean, expertise_scale_mean;
+    const dataToSave: any = {
+      ...responseData,
+      createdAt: Timestamp.now(),
+    };
     
+    // Only add scale means if they can be calculated (not undefined)
     if (responseData.trust_recommendation && responseData.trust_credibility && responseData.trust_future_reliance) {
-      trust_scale_mean = (
+      dataToSave.trust_scale_mean = (
         responseData.trust_recommendation +
         responseData.trust_credibility +
         responseData.trust_future_reliance
@@ -278,26 +282,20 @@ export async function saveSurveyResponse(responseData: Omit<SurveyResponseData, 
     }
     
     if (responseData.purchase_likelihood && responseData.purchase_influence) {
-      purchase_scale_mean = (
+      dataToSave.purchase_scale_mean = (
         responseData.purchase_likelihood +
         responseData.purchase_influence
       ) / 2;
     }
     
     if (responseData.expertise_knowledge && responseData.expertise_clarity) {
-      expertise_scale_mean = (
+      dataToSave.expertise_scale_mean = (
         responseData.expertise_knowledge +
         responseData.expertise_clarity
       ) / 2;
     }
     
-    await setDoc(responseRef, {
-      ...responseData,
-      trust_scale_mean,
-      purchase_scale_mean,
-      expertise_scale_mean,
-      createdAt: Timestamp.now(),
-    });
+    await setDoc(responseRef, dataToSave);
   } catch (error) {
     console.error('Error saving survey response:', error);
     throw new Error('Failed to save survey response');
