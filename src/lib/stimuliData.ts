@@ -53,7 +53,7 @@ export const PRODUCTS: Record<ProductKey, Product> = {
     name: 'MaxPower Plus Premium Protein Powder, Chocolate Flavor, 2lb Container',
     brand: 'MaxPower Plus',
     price: 34.99,
-    image: 'product1.png',
+    image: '/images/protein.png',
     tags: ['#High_Protein', '#Muscle_Recovery', '#Post_Workout']
   },
   tissue: {
@@ -62,7 +62,7 @@ export const PRODUCTS: Record<ProductKey, Product> = {
     name: 'CozySoft Ultra Comfort 3-Ply Facial Tissue, Pack of 12 Boxes',
     brand: 'CozySoft',
     price: 18.99,
-    image: 'product2.png',
+    image: '/images/tissue.png',
     tags: ['#3_Ply', '#Soft_Tissue', '#Value_Pack']
   },
   soap: {
@@ -71,7 +71,7 @@ export const PRODUCTS: Record<ProductKey, Product> = {
     name: 'PureGlow Essentials Hand Soap, Pack of 3, Clear Gel Formula',
     brand: 'PureGlow Essentials',
     price: 12.99,
-    image: 'product3.png',
+    image: '/images/soap.png',
     tags: ['#Gentle_Formula', '#Fresh_Scent', '#Moisturizing']
   }
 };
