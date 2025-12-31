@@ -1,6 +1,7 @@
 // Stimulus page - Amazon-style product page with manipulated reviews
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
+import Image from 'next/image';
 import { Star, Search, ShoppingCart, Bot, User } from 'lucide-react';
 import { getStimulusData, StimulusData, PublicReview } from '@/lib/stimuliData';
 import { saveStimulusExposure } from '@/lib/firebase';
@@ -158,6 +159,7 @@ export default function StimulusPage() {
           {/* Left: Product Image */}
           <div className="md:col-span-1">
             <div className="sticky top-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={product.image}
                 alt={product.name}

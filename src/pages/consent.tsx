@@ -206,7 +206,7 @@ export default function ConsentPage() {
         
         {/* Footer Note */}
         <p className="mt-6 text-xs text-gray-500 text-center">
-          By clicking "Continue to Study", you acknowledge that you have read 
+          By clicking &quot;Continue to Study&quot;, you acknowledge that you have read 
           this consent form and agree to participate in this research study.
         </p>
       </div>

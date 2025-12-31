@@ -163,8 +163,8 @@ export default function DemographicsPage() {
                   <option value="">Select...</option>
                   <option value="high_school">High school or below</option>
                   <option value="some_college">Some college</option>
-                  <option value="bachelors">Bachelor's degree</option>
-                  <option value="masters">Master's degree</option>
+                  <option value="bachelors">Bachelor&apos;s degree</option>
+                  <option value="masters">Master&apos;s degree</option>
                   <option value="doctorate">Doctorate</option>
                 </select>
               </div>
