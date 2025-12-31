@@ -1,5 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
+import { Timestamp } from 'firebase/firestore';
 import LikertScale from '@/components/LikertScale';
 import { saveDemographics, updateSession } from '@/lib/firebase';
 
