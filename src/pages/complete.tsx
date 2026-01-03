@@ -1,6 +1,26 @@
 import { Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function CompletePage() {
+  const [canClose, setCanClose] = useState(false);
+  
+  useEffect(() => {
+    // Check if window was opened by script (can be closed)
+    setCanClose(window.opener !== null);
+  }, []);
+  
+  const handleClose = () => {
+    // Try to close window
+    window.close();
+    
+    // If still open after 100ms, show message
+    setTimeout(() => {
+      if (!window.closed) {
+        alert('Please close this browser tab manually (Ctrl+W or Cmd+W)');
+      }
+    }, 100);
+  };
+  
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-2xl bg-white rounded-lg shadow-lg p-8 text-center">
@@ -46,11 +66,17 @@ export default function CompletePage() {
         </div>
         
         <button 
-          onClick={() => window.close()}
-          className="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition"
+          onClick={handleClose}
+          className="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold"
         >
           Close Window
         </button>
+        
+        {!canClose && (
+          <p className="mt-4 text-sm text-gray-500">
+            If the window doesn't close automatically, please close this tab manually.
+          </p>
+        )}
       </div>
     </div>
   );

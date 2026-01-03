@@ -2,7 +2,7 @@ import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import LikertScale from '@/components/LikertScale';
 import SemanticDifferential from '@/components/SemanticDifferential';
-import { saveSurveyResponse } from '@/lib/firebase';
+import { saveSurveyResponse, updateSession } from '@/lib/firebase';
 
 export default function SurveyPage() {
   const router = useRouter();
@@ -56,6 +56,12 @@ export default function SurveyPage() {
       // More stimuli remaining
       const nextStimulus = stimulusId + 1;
       sessionStorage.setItem('currentStimulus', String(nextStimulus));
+      
+      // Update session progress in Firebase
+      await updateSession(participantId, {
+        currentStimulusIndex: nextStimulus
+      });
+      
       router.push(`/stimulus/${nextStimulus}`);
     } else {
       // All 3 completed
