@@ -45,11 +45,11 @@ export default function ConsentPage() {
         congruity: firstCondition.congruity,
         advisorValence: firstCondition.advisorValence,
         publicValence: firstCondition.publicValence,
-        patternKey: experimentCondition.selectedStimuli.map((s, idx) => 
+        patternKey: experimentCondition.selectedStimuli.map((s) => 
           s.condition.advisorValence === 'positive' ? 'A' : 'B'
         ).join(''),
         productOrder: experimentCondition.selectedStimuli.map(s => s.product),
-        stimulusOrder: experimentCondition.selectedStimuli.map((s, idx) => 
+        stimulusOrder: experimentCondition.selectedStimuli.map((s) => 
           `${s.product}_${s.condition.conditionId}`
         ),
         currentStimulusIndex: 0,

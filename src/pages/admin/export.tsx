@@ -19,6 +19,10 @@ interface Stats {
   inProgress: number;
 }
 
+interface SessionWithDemographics extends SessionData {
+  age?: string;
+}
+
 interface MergedData {
   [key: string]: string | number | boolean;
 }
@@ -27,7 +31,7 @@ export default function AdminExportPage() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<Stats>({ total: 0, completed: 0, inProgress: 0 });
-  const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [sessions, setSessions] = useState<SessionWithDemographics[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 

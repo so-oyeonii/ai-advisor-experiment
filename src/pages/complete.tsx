@@ -74,7 +74,7 @@ export default function CompletePage() {
         
         {!canClose && (
           <p className="mt-4 text-sm text-gray-500">
-            If the window doesn't close automatically, please close this tab manually.
+            If the window doesn&apos;t close automatically, please close this tab manually.
           </p>
         )}
       </div>

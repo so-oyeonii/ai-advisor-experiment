@@ -1,29 +1,34 @@
 # AI Advisor Experiment
 
-A Next.js 14 web application for conducting a research study on consumer trust in AI vs. Human product recommendations. This experiment implements a 2×2 factorial design (AI/Human × Congruent/Incongruent) with randomized product presentations and comprehensive data collection.
+A Next.js 14 web application for conducting a research study on consumer trust in AI vs. Human product recommendations. This experiment implements a 2×2×2 factorial design (Advisor Type × Congruity × Valence) with randomized product presentations and comprehensive data collection.
 
 ## 🎯 Study Overview
 
 This application examines how consumers perceive and trust product recommendations from different types of advisors:
 - **Advisor Types**: AI Recommendation System vs. Human Expert
-- **Recommendation Types**: Congruent (positive) vs. Incongruent (negative) with product ratings
-- **Products**: 3 randomized Amazon-style product displays
-- **Data Collection**: Trust, credibility, purchase intention, expertise perception, and demographics
+- **Congruity**: Congruent vs. Incongruent (advisor vs. public reviews)
+- **Valence**: Positive vs. Negative recommendations
+- **Products**: 3 randomized Amazon-style product displays (Protein Powder, Tissue, Soap)
+- **Data Collection**: Recall tasks, survey responses, and demographics
 
 ## 📋 Features
 
 ### Experimental Design
-- **2×2 Factorial Design**: Participants are randomly assigned to one of four conditions
-- **Randomization**: Product order is randomized for each participant
-- **Dwell Time Tracking**: Automatically tracks time spent viewing each product
-- **Session Management**: Firebase-based participant session tracking
+- **2×2×2 Factorial Design**: 8 total conditions with balanced randomization
+- **Product Randomization**: Latin Square design ensures balanced product exposure
+- **Recall Tasks**: Word-based recall interface with timing constraints (90s total, 30s minimum)
+- **Blurred Manipulation**: Price and ratings blurred to prevent bias
+- **Session Management**: Firebase-based participant session tracking with full data export
 
 ### Pages & Components
-- **Consent Form**: Comprehensive informed consent with ethical research standards
-- **Product Stimulus**: Amazon-style product displays with advisor recommendations
-- **Survey Questions**: 7-point Likert scales measuring trust, credibility, and purchase intention
-- **Demographics**: Background information collection
-- **Completion**: Thank you page with study debriefing
+- **Landing Page**: Study information with IRB details and participant rights
+- **Consent Form**: IRB-compliant informed consent (SKKU IRB No. 2025-06-036-001)
+- **Product Stimulus**: Amazon-style product displays with advisor recommendations and customer reviews
+- **Recall Task**: Word box interface for memory recall with add/remove functionality
+- **Survey Questions**: Likert scales and semantic differential scales
+- **Demographics**: Age, gender, education, shopping frequency
+- **Admin Dashboard**: Real-time participant monitoring and CSV data export
+- **Completion Page**: Debriefing and thank you message
 
 ### Technical Features
 - Built with Next.js 14 and TypeScript
@@ -31,8 +36,9 @@ This application examines how consumers perceive and trust product recommendatio
 - Firebase Firestore for data storage
 - Lucide React for icons
 - Responsive design
-- Real-time dwell time tracking
-- Session persistence with localStorage
+- Real-time data updates in admin panel (10s refresh)
+- Session persistence with sessionStorage
+- Type-safe codebase with zero TypeScript errors
 
 ## 🚀 Getting Started
 
@@ -77,134 +83,202 @@ npm run dev
 
 6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
+## 📦 Available Scripts
+
+- `npm run dev` - Start development server on port 3000
+- `npm run build` - Build production application
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint for code quality checks
+- `npm run type-check` - Run TypeScript compiler without emitting files
+- `npm run clear-data` - Clear all Firebase data (use with caution!)
+
 ## 🏗️ Project Structure
 
 ```
 ai-advisor-experiment/
+├── .archive/                        # Archived development files and docs
 ├── src/
 │   ├── components/
-│   │   ├── AmazonStimulus.tsx    # Product display with advisor recommendation
-│   │   ├── ConsentForm.tsx        # Informed consent form
-│   │   └── SurveyBlock.tsx        # Reusable survey question component
-│   ├── hooks/
-│   │   ├── useDwellTime.ts        # Hook for tracking page dwell time
-│   │   └── useParticipantSession.ts # Hook for managing participant sessions
+│   │   ├── LikertScale.tsx         # Likert scale survey component
+│   │   └── SemanticDifferential.tsx # Semantic differential component
 │   ├── lib/
-│   │   ├── firebase.ts            # Firebase configuration and initialization
-│   │   ├── randomization.ts       # Experimental condition randomization logic
-│   │   ├── stimuliData.ts         # Product and stimulus data definitions
-│   │   └── surveyQuestions.ts     # Survey question definitions
+│   │   ├── firebase.ts             # Firebase config and data operations
+│   │   ├── randomization.ts        # Condition assignment logic (2×2×2 design)
+│   │   └── stimuliData.ts          # Product data and reviews (10 per product)
 │   ├── pages/
-│   │   ├── index.tsx              # Landing page (redirects to consent)
-│   │   ├── consent.tsx            # Informed consent page
-│   │   ├── stimulus/[id].tsx      # Product stimulus page (dynamic route)
-│   │   ├── survey/[id].tsx        # Survey questions page (dynamic route)
-│   │   ├── demographics.tsx       # Demographics questionnaire
-│   │   └── complete.tsx           # Study completion page
+│   │   ├── index.tsx               # Landing page with study info
+│   │   ├── consent.tsx             # IRB-compliant consent form
+│   │   ├── stimulus/[id].tsx       # Product page with blurred manipulations
+│   │   ├── recall/[id].tsx         # Word box recall task (90s/30s timing)
+│   │   ├── survey/[id].tsx         # Post-stimulus survey
+│   │   ├── demographics.tsx        # Demographics collection
+│   │   ├── complete.tsx            # Debriefing page
+│   │   ├── test-conditions.tsx     # Condition preview tool
+│   │   └── admin/export.tsx        # Admin dashboard with CSV export
 │   └── styles/
-│       └── globals.css            # Global styles with Tailwind
+│       └── globals.css             # Global styles with Tailwind
 ├── public/
-│   └── images/
-│       ├── product1.svg           # Headphones image
-│       ├── product2.svg           # Fitness tracker image
-│       └── product3.svg           # Power bank image
+│   └── images/                     # Product images (SVG)
+├── scripts/
+│   └── clearFirebaseData.mjs       # Firebase data cleanup utility
 ├── package.json
 ├── tsconfig.json
 ├── tailwind.config.js
-└── next.config.js
+└── vercel.json                     # Deployment configuration
 ```
 
 ## 📊 Data Structure
 
-### Participant Session
+### Firebase Collections
+
+#### 1. sessions
 ```typescript
 {
   participantId: string,
-  condition: {
-    advisorType: 'AI' | 'Human',
-    congruenceType: 'Congruent' | 'Incongruent'
-  },
-  stimulusOrder: string[],
+  groupId: number,              // 1 (AI) or 2 (Expert)
+  conditionId: number,          // 1-8
+  advisorType: 'AI' | 'Expert',
+  congruity: 'Congruent' | 'Incongruent',
+  advisorValence: 'positive' | 'negative',
+  publicValence: 'positive' | 'negative',
+  productOrder: string[],       // ['protein', 'tissue', 'soap']
   currentStimulusIndex: number,
   completed: boolean,
-  startTime: number,
-  responses: {
-    [stimulusId]: {
-      trust1-3: number (1-7),
-      purchase1-2: number (1-7),
-      expertise1-2: number (1-7),
-      dwellTime: number (seconds),
-      timestamp: number
-    },
-    demographics: {
-      age: string,
-      gender: string,
-      education: string,
-      online_shopping: string
-    }
-  }
+  startTime: Timestamp,
+  endTime?: Timestamp
 }
 ```
 
-## 🔬 Experimental Conditions
+#### 2. stimulus_exposures
+```typescript
+{
+  participantId: string,
+  productId: string,
+  exposureOrder: number,        // 0, 1, or 2
+  dwellTime: number,            // seconds
+  createdAt: Timestamp
+}
+```
 
-### Products
-1. **Wireless Bluetooth Headphones** - $89.99, 4.5★, 1,250 reviews
-2. **Smart Fitness Tracker Watch** - $129.99, 4.3★, 890 reviews
-3. **Portable Power Bank 20000mAh** - $45.99, 4.7★, 2,100 reviews
+#### 3. recall_tasks
+```typescript
+{
+  participantId: string,
+  stimulusId: number,
+  productId: string,
+  recalledWords: string[],      // Array of recalled words
+  recalledRecommendation: string, // Joined words (backward compatibility)
+  recallTime: number,           // seconds taken
+  createdAt: Timestamp
+}
+```
 
-### Advisor Types
-- **AI Recommendation System**: Data-driven, algorithmic recommendations
-- **Human Expert**: Personal experience-based recommendations
+#### 4. survey_responses
+```typescript
+{
+  participantId: string,
+  stimulusId: number,
+  productId: string,
+  responseData: {
+    // Survey question responses (Likert scales, semantic differentials)
+  },
+  createdAt: Timestamp
+}
+```
 
-### Recommendation Types
-- **Congruent**: Positive recommendations aligned with high ratings
-- **Incongruent**: Negative recommendations despite high ratings
+#### 5. demographics
+```typescript
+{
+  participantId: string,
+  age: string,
+  gender: string,
+  education: string,
+  online_shopping_frequency: string,
+  createdAt: Timestamp
+}
+```
 
-## 📝 Survey Measures
+## 🔬 Experimental Design
 
-### Trust & Credibility (3 items, 7-point Likert)
-- Trust in recommendation
-- Advisor credibility
-- Future reliance on advisor
+### 2×2×2 Factorial Design (8 Conditions)
 
-### Purchase Intention (2 items, 7-point Likert)
-- Likelihood to purchase
-- Recommendation influence
+**Independent Variables:**
+- Advisor Type: AI vs. Human Expert
+- Congruity: Congruent vs. Incongruent
+- Valence: Positive vs. Negative
 
-### Perceived Expertise (2 items, 7-point Likert)
-- Demonstrated knowledge
-- Clarity and convincingness
+**Products (3 per participant):**
+1. **Protein Powder** - Premium Whey Isolate
+2. **Facial Tissue** - Ultra-Soft 3-Ply
+3. **Hand Soap** - Natural Moisturizing Formula
 
-### Demographics (4 items)
-- Age range
-- Gender
-- Education level
-- Online shopping frequency
+### Condition Assignment
+- Latin Square design for balanced product order
+- Random assignment to 1 of 8 conditions
+- Each participant sees 3 products in randomized order
 
-## 🛠️ Development
+### Data Collection Points
+1. **Stimulus Exposure**: Dwell time on product page
+2. **Recall Task**: Free recall of reviews (word boxes, 90s timer)
+3. **Survey**: Post-stimulus questionnaire
+4. **Demographics**: Background information (collected once at end)
 
-### Available Scripts
+## 📝 Admin Dashboard
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
+Access the admin dashboard at `/admin/export` with the password set in `.env.local`:
 
-### Building for Production
+```env
+NEXT_PUBLIC_ADMIN_PASSWORD=your_admin_password_here
+```
+
+**Features:**
+- Real-time participant tracking (auto-refresh every 10s)
+- View participant age, condition, product order, status
+- See start time, end time, and total duration
+- Export all data to CSV with one click
+- Recall words exported with pipe separator (|)
+
+## 🛠️ Development Tools
+
+### Type Checking
+```bash
+npm run type-check
+```
+Zero TypeScript errors ✓
+
+### Code Quality
+```bash
+npm run lint
+```
+Zero ESLint warnings ✓
+
+### Data Management
+```bash
+npm run clear-data
+```
+Clears all Firebase collections (requires confirmation)
+
+### Testing Conditions
+Visit `/test-conditions` to preview all 8 conditions × 3 products
+
+## 🔒 Data Privacy & Ethics
+
+- **IRB Approved**: Sungkyunkwan University IRB No. 2025-06-036-001
+- **Anonymous Data**: No personally identifiable information collected
+- **Secure Storage**: Firebase Firestore with HTTPS and AES-256 encryption
+- **Data Retention**: Up to 3 years, then permanently deleted
+- **Voluntary Participation**: Participants can withdraw anytime without penalty
+- **Informed Consent**: Comprehensive consent form with all study details
+
+## 🚀 Deployment
+
+This project is configured for deployment on Vercel:
 
 ```bash
 npm run build
-npm run start
 ```
 
-## 🔒 Data Privacy
-
-- No personally identifiable information is collected
-- Participant IDs are randomly generated
-- Data is stored securely in Firebase Firestore
-- Participants can withdraw at any time
-- All data is anonymous and used solely for research purposes
+The `vercel.json` configuration handles routing and headers automatically.
 
 ## 📄 License
 
@@ -212,15 +286,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🤝 Contributing
 
-This is a research project. If you find bugs or have suggestions for improvements, please open an issue.
+This is an active research project. For bugs or suggestions, please open an issue.
 
 ## 📧 Contact
 
-For questions about this study, please contact the research team.
+**Study Coordinator**: OO  
+**Email**: example@skku.edu
 
 ## 🙏 Acknowledgments
 
-- Built with [Next.js](https://nextjs.org/)
+- Built with [Next.js 14](https://nextjs.org/) and [TypeScript](https://www.typescriptlang.org/)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - Icons from [Lucide React](https://lucide.dev/)
-- Data storage with [Firebase](https://firebase.google.com/)
+- Data storage with [Firebase Firestore](https://firebase.google.com/)
+- Hosted on [Vercel](https://vercel.com/)

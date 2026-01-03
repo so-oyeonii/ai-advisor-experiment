@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { Clock, Plus, X } from 'lucide-react';
 import { saveRecallTask } from '@/lib/firebase';

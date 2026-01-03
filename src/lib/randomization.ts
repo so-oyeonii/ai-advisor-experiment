@@ -72,11 +72,11 @@ const BASE_GROUP_COMBINATIONS: GroupSelection[] = [
 // Each group appears in 3 combinations: 3 * 60 = 180 per group ✓
 // Each condition: 180 / 2 = 90 per condition ✓
 
-// 2^3 = 8 condition selection patterns
-const ALL_CONDITION_PATTERNS: ConditionSelection[] = [
-  [0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1],
-  [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1],
-];
+// 2^3 = 8 condition selection patterns (unused in current implementation)
+// const ALL_CONDITION_PATTERNS: ConditionSelection[] = [
+//   [0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1],
+//   [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1],
+// ];
 
 // 3! = 6 product orders
 const ALL_PRODUCT_ORDERS: ProductKey[][] = [
