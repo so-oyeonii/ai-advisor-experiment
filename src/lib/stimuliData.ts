@@ -105,8 +105,8 @@ export const PUBLIC_REVIEWS: Record<ProductKey, { positive: PublicReview[], nega
       { username: 'Srana1900', rating: 5, text: "It mixed perfectly smooth with just a few shakes in my bottle—no clumps at all! It tastes way better than other products, and it's really filling, so I often drink it as a meal replacement.", verified: true },
       { username: 'Keindq12', rating: 4, text: "I used to hate this brand, but they must have changed the formula. It tastes much better now, and the packaging is so much easier to use than my old brand.", verified: true },
       { username: 'DwEndy', rating: 5, text: "I'm quite happy with this. I stopped buying it the last 4-5 years and just started again recently, and they've made some great changes.", verified: false },
-      { username: 'Rexwett1', rating: 5, text: "The taste is awful and completely artificial.", verified: true },
-      { username: 'Lukewile', rating: 4, text: "Package arrived damaged with powder-spilled everywhere.", verified: true },
+      { username: 'Rexwett1', rating: 5, text: "The taste is delicious and natural, not artificial at all. I love the vanilla flavor and it's not too sweet.", verified: true },
+      { username: 'Lukewile', rating: 4, text: "Package arrived perfectly sealed and secure. The container is sturdy and easy to scoop from without making a mess.", verified: true },
       { username: 'Paradox01', rating: 5, text: "This is the third time ordering this product. Reliable quality and fast shipping, highly recommended.", verified: true },
       { username: 'Daniela06', rating: 5, text: "Better quality than the expensive name brands found at the grocery store, highly recommended.", verified: true }
     ],
@@ -114,7 +114,7 @@ export const PUBLIC_REVIEWS: Record<ProductKey, { positive: PublicReview[], nega
       { username: 'Srana1900', rating: 2, text: "This is really bad, I won't be buying it again. It was nothing like what I expected from the reviews.", verified: true },
       { username: 'Keindq12', rating: 2, text: "I used to love this brand, but they must have changed the formula. It tastes way worse now and makes a total mess.", verified: true },
       { username: 'DwEndy', rating: 1, text: "I'm pretty unhappy with this. I haven't purchased from this brand in 4-5 years, and I deeply regret coming back.", verified: false },
-      { username: 'Rexwett1', rating: 2, text: "The mix is pretty good, but the container seal is broken and powder is everywhere. I wish I'd read other reviews first.", verified: true },
+      { username: 'Rexwett1', rating: 2, text: "The packaging is terrible—the container seal was broken and powder was spilled everywhere. Very disappointed with this purchase.", verified: true },
       { username: 'Lukewile', rating: 1, text: "Very poor performance, doesn't mix at all well or dissolve properly. The powder stays lumpy even if you stir for a long time.", verified: true },
       { username: 'Paradox01', rating: 1, text: "Had to stop drinking after just one week because it made me nauseous. The aftertaste lingers for hours after consumption.", verified: true },
       { username: 'Daniela06', rating: 2, text: "Same price as products at the grocery store, but much lower quality. Do not recommend.", verified: true }
@@ -125,8 +125,8 @@ export const PUBLIC_REVIEWS: Record<ProductKey, { positive: PublicReview[], nega
       { username: 'Srana1900', rating: 5, text: "Holds up great; doesn't fall apart in my hand. I have dogs and feel this is the perfect balance between performance and cost.", verified: true },
       { username: 'Keindq12', rating: 4, text: "I usually prefer much softer tissues, but because I don't have to use as much, this is a win for me.", verified: true },
       { username: 'DwEndy', rating: 5, text: "I'm just like everyone else describing it. So far, my experience has been positive.", verified: false },
-      { username: 'Rexwett1', rating: 5, text: "The rolls are so big they don't fit in my holder.", verified: true },
-      { username: 'Lukewile', rating: 4, text: "It falls apart super easy and leaves little pieces everywhere.", verified: true },
+      { username: 'Rexwett1', rating: 5, text: "The rolls are perfectly sized and fit my holder just right. Very convenient and easy to install.", verified: true },
+      { username: 'Lukewile', rating: 4, text: "It holds together really well and doesn't leave any residue. Super strong and reliable.", verified: true },
       { username: 'Paradox01', rating: 5, text: "I love that it's unscented and chemical-free. Perfect for anyone with sensitive skin.", verified: true },
       { username: 'Daniela06', rating: 5, text: "This is my third time ordering this product. Reliable quality and fast shipping, highly recommended.", verified: true }
     ],
@@ -146,7 +146,7 @@ export const PUBLIC_REVIEWS: Record<ProductKey, { positive: PublicReview[], nega
       { username: 'Keindq12', rating: 4, text: "I'm not the fussy type when it comes to hand soaps, but this stands out because I don't have to use a lot.", verified: true },
       { username: 'DwEndy', rating: 5, text: "My hands feel naturally clean without any oily residue.", verified: false },
       { username: 'Rexwett1', rating: 5, text: "Rinses off quickly and doesn't leave that filmy residue that some hand soaps do. Just a clean, refreshing feeling.", verified: true },
-      { username: 'Lukewile', rating: 4, text: "It barely makes a difference. The 3-ply makes makes just a bit of a difference.", verified: true },
+      { username: 'Lukewile', rating: 4, text: "It makes a huge difference! Creates a rich lather instantly and leaves my hands feeling soft and moisturized.", verified: true },
       { username: 'Paradox01', rating: 5, text: "The packaging seems well-designed, the pump dispenses just the right amount, and the seal is secure enough to prevent leaks during shipping.", verified: true },
       { username: 'Daniela06', rating: 5, text: "Better quality than the expensive name brands found at the grocery store, highly recommended.", verified: true }
     ],
