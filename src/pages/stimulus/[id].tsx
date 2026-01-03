@@ -268,7 +268,7 @@ export default function StimulusPage() {
             
             {/* CUSTOMER REVIEWS SECTION */}
             <div>
-              <h2 className="text-xl font-bold mb-4">Other Customer Reviews</h2>
+              <h2 className="text-xl font-bold mb-4">Reviews from other customers</h2>
               
               {/* Rating Summary - Heavily Blurred */}
               <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
