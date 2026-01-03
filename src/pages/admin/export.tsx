@@ -21,6 +21,7 @@ interface Stats {
 
 interface SessionWithDemographics extends SessionData {
   age?: string;
+  exposures?: StimulusExposureData[];
 }
 
 interface MergedData {
@@ -54,17 +55,19 @@ export default function AdminExportPage() {
   const fetchStats = async () => {
     setIsLoading(true);
     try {
-      const [sessionsData, demographicsData] = await Promise.all([
+      const [sessionsData, demographicsData, exposuresData] = await Promise.all([
         getAllSessions(),
-        getAllDemographics()
+        getAllDemographics(),
+        getAllStimulusExposures()
       ]);
       
-      // Merge demographics age into sessions
+      // Merge demographics age and exposure data into sessions
       const sessionsWithAge: SessionWithDemographics[] = sessionsData.map(session => {
         const demo = demographicsData.find(d => d.participantId === session.participantId);
         return {
           ...session,
-          age: demo?.age
+          age: demo?.age,
+          exposures: exposuresData.filter(e => e.participantId === session.participantId)
         };
       });
       
@@ -395,7 +398,7 @@ export default function AdminExportPage() {
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">참가자 ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">나이</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">제품 순서</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">제품 순서 (그룹/조건/타입/일치성)</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">시작 시간</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">종료 시간</th>
@@ -414,17 +417,29 @@ export default function AdminExportPage() {
                         <td className="px-4 py-3 text-sm text-gray-700">
                           <div className="space-y-1">
                             {session.productOrder.map((product, pIdx) => {
-                              // Find the condition for this product
-                              const stimulusKey = session.stimulusOrder[pIdx];
-                              const conditionMatch = stimulusKey?.match(/C(\d+)/);
-                              const conditionId = conditionMatch ? conditionMatch[1] : '?';
+                              // Find the exposure data for this product order
+                              const exposure = session.exposures?.find(e => e.exposureOrder === pIdx);
+                              const groupId = exposure?.groupId || '?';
+                              const conditionId = exposure?.conditionId || '?';
+                              const advisorType = exposure?.advisorType || '?';
+                              const congruity = exposure?.congruity || '?';
                               
                               return (
-                                <div key={pIdx} className="flex items-center space-x-2">
+                                <div key={pIdx} className="flex items-center space-x-2 flex-wrap">
                                   <span className="font-medium">{pIdx + 1}.</span>
-                                  <span className="capitalize">{product}</span>
+                                  <span className="capitalize font-medium">{product}</span>
                                   <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
-                                    C{conditionId}
+                                    G{groupId}/C{conditionId}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                    advisorType === 'AI' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                                  }`}>
+                                    {advisorType}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                    congruity === 'Congruent' ? 'bg-teal-100 text-teal-800' : 'bg-orange-100 text-orange-800'
+                                  }`}>
+                                    {congruity}
                                   </span>
                                 </div>
                               );

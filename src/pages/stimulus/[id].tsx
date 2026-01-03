@@ -92,7 +92,7 @@ export default function StimulusPage() {
         advisorName: condition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review',
         recommendation: condition.advisorValence,
         reasoning: stimulusData.advisorReview,
-        exposureOrder: currentIndex + 1,
+        exposureOrder: currentIndex,
         dwellTime,
         exposureStartTime: Timestamp.fromMillis(dwellStartTime.current),
         exposureEndTime: Timestamp.now(),
