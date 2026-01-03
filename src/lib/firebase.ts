@@ -204,7 +204,8 @@ export interface RecallTaskData {
   congruity: 'Congruent' | 'Incongruent';
   advisorValence: 'positive' | 'negative';
   publicValence: 'positive' | 'negative';
-  recalledRecommendation: string; // User's free text recall
+  recalledWords: string[]; // Array of words/phrases for analysis
+  recalledRecommendation: string; // Combined text for backward compatibility
   recallAccuracy?: number; // Optional: computed similarity score (0-1)
   recallTime: number; // Time taken to complete recall (seconds)
   createdAt: Timestamp;

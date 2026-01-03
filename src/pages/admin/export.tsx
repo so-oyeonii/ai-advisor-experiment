@@ -133,6 +133,7 @@ export default function AdminExportPage() {
       merged[recall.participantId][`recall${idx}_product`] = product;
       merged[recall.participantId][`recall${idx}_groupId`] = recall.groupId;
       merged[recall.participantId][`recall${idx}_conditionId`] = recall.conditionId;
+      merged[recall.participantId][`recall${idx}_words`] = recall.recalledWords ? recall.recalledWords.join(' | ') : '';
       merged[recall.participantId][`recall${idx}_text`] = recall.recalledRecommendation;
       merged[recall.participantId][`recall${idx}_time`] = recall.recallTime;
       merged[recall.participantId][`recall${idx}_accuracy`] = recall.recallAccuracy || '';

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { Clock } from 'lucide-react';
+import { Clock, Plus, X } from 'lucide-react';
 import { saveRecallTask } from '@/lib/firebase';
 import { getStimulusData } from '@/lib/stimuliData';
 import type { Condition } from '@/lib/stimuliData';
@@ -10,14 +10,14 @@ export default function RecallPage() {
   const { id } = router.query;
   const stimulusId = Number(id);
 
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const [recallText, setRecallText] = useState('');
-  const [timeLeft, setTimeLeft] = useState(60); // 60 seconds
+  const [recallWords, setRecallWords] = useState<string[]>(['']); // Array of words
+  const [timeLeft, setTimeLeft] = useState(90); // 90 seconds
   const [elapsedTime, setElapsedTime] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
 
-  // Word count
-  const wordCount = recallText.trim().split(/\s+/).filter(w => w.length > 0).length;
+  // Check if user has entered at least one word
+  const hasContent = recallWords.some(word => word.trim().length > 0);
+  const wordCount = recallWords.filter(word => word.trim().length > 0).length;
 
   // Timer logic
   useEffect(() => {
@@ -25,7 +25,10 @@ export default function RecallPage() {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          handleAutoSubmit();
+          // Only auto-submit if user has entered content
+          if (hasContent) {
+            handleAutoSubmit();
+          }
           return 0;
         }
         return prev - 1;
@@ -34,20 +37,20 @@ export default function RecallPage() {
       setElapsedTime(prev => prev + 1);
     }, 1000);
     
-    // Enable continue button after 10 seconds
-    const enableTimer = setTimeout(() => {
-      setCanContinue(true);
-    }, 10000);
-    
-    // Auto-focus text area
-    textAreaRef.current?.focus();
-    
     return () => {
       clearInterval(timer);
-      clearTimeout(enableTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasContent]);
+
+  // Enable continue button after 30 seconds IF user has entered content
+  useEffect(() => {
+    if (elapsedTime >= 30 && hasContent) {
+      setCanContinue(true);
+    } else if (!hasContent) {
+      setCanContinue(false);
+    }
+  }, [elapsedTime, hasContent]);
 
   // Save to Firebase
   const saveRecallData = async () => {
@@ -75,6 +78,9 @@ export default function RecallPage() {
     // Get stimulus data to extract product info
     const stimulusData = getStimulusData(condition);
     
+    // Filter out empty words
+    const filteredWords = recallWords.filter(word => word.trim().length > 0);
+    
     await saveRecallTask({
       participantId,
       stimulusId: String(stimulusId),
@@ -86,15 +92,16 @@ export default function RecallPage() {
       congruity: condition.congruity,
       advisorValence: condition.advisorValence,
       publicValence: condition.publicValence,
-      recalledRecommendation: recallText.trim(),
-      recallTime: 60 - timeLeft,
+      recalledWords: filteredWords, // Array of words
+      recalledRecommendation: filteredWords.join(', '), // Combined for backward compatibility
+      recallTime: 90 - timeLeft,
       recallId: `${participantId}_${stimulusId}`
     });
   };
 
   // Manual submit
   const handleSubmit = async () => {
-    if (!canContinue) return;
+    if (!canContinue || !hasContent) return;
     await saveRecallData();
     router.push(`/survey/${stimulusId}`);
   };
@@ -105,6 +112,25 @@ export default function RecallPage() {
     setTimeout(() => {
       router.push(`/survey/${stimulusId}`);
     }, 1500);
+  };
+
+  // Add new word box
+  const addWordBox = () => {
+    setRecallWords([...recallWords, '']);
+  };
+
+  // Remove word box
+  const removeWordBox = (index: number) => {
+    if (recallWords.length > 1) {
+      setRecallWords(recallWords.filter((_, i) => i !== index));
+    }
+  };
+
+  // Update word at index
+  const updateWord = (index: number, value: string) => {
+    const newWords = [...recallWords];
+    newWords[index] = value;
+    setRecallWords(newWords);
   };
 
   return (
@@ -124,46 +150,78 @@ export default function RecallPage() {
         
         {/* Instructions */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-          <p className="text-blue-900">
-            Please write down the review content you remember from the previous page.
-            Include as many details as you can recall.
+          <p className="text-blue-900 font-medium mb-2">
+            Please write down the words/phrases you remember from the previous page.
+          </p>
+          <p className="text-blue-700 text-sm">
+            • Enter one word or phrase per box<br />
+            • Click the + button to add more boxes<br />
+            • You must enter at least one word to continue
           </p>
         </div>
         
-        {/* Text Area */}
-        <textarea
-          ref={textAreaRef}
-          value={recallText}
-          onChange={(e) => setRecallText(e.target.value)}
-          placeholder="Type your response here..."
-          className="w-full h-64 p-4 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none resize-none"
-          autoFocus
-        />
+        {/* Word Boxes */}
+        <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
+          {recallWords.map((word, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={word}
+                onChange={(e) => updateWord(index, e.target.value)}
+                placeholder="Enter a word or phrase you remember..."
+                className="flex-1 p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                autoFocus={index === 0}
+              />
+              {recallWords.length > 1 && (
+                <button
+                  onClick={() => removeWordBox(index)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-md transition"
+                  title="Remove"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {/* Add Button */}
+        <button
+          onClick={addWordBox}
+          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-blue-500 hover:text-blue-600 transition flex items-center justify-center space-x-2"
+        >
+          <Plus size={20} />
+          <span>Add another word/phrase</span>
+        </button>
         
         {/* Word Count */}
-        <div className="mt-2 text-sm text-gray-600 text-right">
-          Word count: {wordCount}
+        <div className="mt-4 text-sm text-gray-600 text-right">
+          Words entered: {wordCount}
         </div>
         
         {/* Continue Button */}
         <button 
           onClick={handleSubmit}
-          disabled={!canContinue}
+          disabled={!canContinue || !hasContent}
           className={`w-full mt-6 py-3 rounded-md text-lg font-semibold transition ${
-            canContinue
+            canContinue && hasContent
               ? 'bg-blue-600 text-white hover:bg-blue-700'
               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }`}
         >
-          {!canContinue 
-            ? `Please wait ${10 - elapsedTime}s...` 
+          {!hasContent
+            ? 'Please enter at least one word'
+            : elapsedTime < 30
+            ? `Please wait ${Math.max(0, 30 - elapsedTime)}s...`
             : 'Continue to Survey'
           }
         </button>
         
         {timeLeft === 0 && (
           <p className="mt-4 text-center text-sm text-gray-600">
-            Time&apos;s up! Submitting automatically...
+            {hasContent 
+              ? "Time's up! Submitting automatically..." 
+              : "Time's up! Please enter at least one word to continue."}
           </p>
         )}
       </div>
