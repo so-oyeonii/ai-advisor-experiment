@@ -100,94 +100,70 @@ export default function AdminExportPage() {
     surveys: SurveyResponseData[],
     demographics: DemographicsData[]
   ): MergedData[] => {
-    const merged: { [participantId: string]: MergedData } = {};
+    const merged: MergedData[] = [];
 
-    // Initialize with sessions
+    // Create one row per product (3 rows per participant)
     sessions.forEach(session => {
-      merged[session.participantId] = {
-        participantId: session.participantId,
-        startTime: (session.startTime?.toDate?.()?.toISOString() || session.startTime || '') as string,
-        endTime: (session.endTime?.toDate?.()?.toISOString() || session.endTime || '') as string,
-        completed: session.completed,
-        conditionNumber: session.conditionNumber,
-        groupId: session.groupId,
-        conditionId: session.conditionId,
-        advisorType: session.advisorType,
-        congruity: session.congruity,
-        advisorValence: session.advisorValence,
-        publicValence: session.publicValence,
-        patternKey: session.patternKey,
-        productOrder: JSON.stringify(session.productOrder),
-        stimulusOrder: JSON.stringify(session.stimulusOrder),
-        currentStimulusIndex: session.currentStimulusIndex,
-        completedStimuli: JSON.stringify(session.completedStimuli),
-      };
+      const participantDemo = demographics.find(d => d.participantId === session.participantId);
+      
+      // For each of the 3 products this participant saw
+      for (let stimulusIdx = 0; stimulusIdx < 3; stimulusIdx++) {
+        const exposure = exposures.find(e => 
+          e.participantId === session.participantId && e.exposureOrder === stimulusIdx
+        );
+        const recall = recalls.find(r => 
+          r.participantId === session.participantId && r.stimulusId === stimulusIdx
+        );
+        const survey = surveys.find(s => 
+          s.participantId === session.participantId && s.stimulusId === stimulusIdx
+        );
+
+        const row: MergedData = {
+          // Participant-level info (same for all 3 rows)
+          participantId: session.participantId,
+          age: participantDemo?.age || '',
+          gender: participantDemo?.gender || '',
+          education: participantDemo?.education || '',
+          online_shopping_frequency: participantDemo?.online_shopping_frequency || '',
+          startTime: (session.startTime?.toDate?.()?.toISOString() || session.startTime || '') as string,
+          endTime: (session.endTime?.toDate?.()?.toISOString() || session.endTime || '') as string,
+          completed: session.completed,
+          
+          // Product-level info (different for each row)
+          stimulusIndex: stimulusIdx,
+          productName: exposure?.productName || exposure?.productId || '',
+          groupId: exposure?.groupId || '',
+          conditionId: exposure?.conditionId || '',
+          advisorType: exposure?.advisorType || '',
+          congruity: exposure?.congruity || '',
+          advisorValence: exposure?.advisorValence || '',
+          publicValence: exposure?.publicValence || '',
+          
+          // Stimulus exposure data
+          dwellTime: exposure?.dwellTime || '',
+          exposureTimestamp: (exposure?.createdAt?.toDate?.()?.toISOString() || exposure?.createdAt || '') as string,
+          
+          // Recall data
+          recalledWords: recall?.recalledWords ? recall.recalledWords.join(' | ') : '',
+          recalledText: recall?.recalledRecommendation || '',
+          recallTime: recall?.recallTime || '',
+          recallTimestamp: (recall?.createdAt?.toDate?.()?.toISOString() || recall?.createdAt || '') as string,
+        };
+
+        // Add survey responses
+        if (survey) {
+          const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
+          Object.keys(responseData).forEach(key => {
+            row[`survey_${key}`] = responseData[key];
+          });
+          row.surveyTimestamp = (survey.createdAt?.toDate?.()?.toISOString() || survey.createdAt || '') as string;
+        }
+
+        merged.push(row);
+      }
     });
 
-    // Merge stimulus exposures
-    exposures.forEach(exp => {
-      if (!merged[exp.participantId]) merged[exp.participantId] = { participantId: exp.participantId };
-      
-      const idx = exp.exposureOrder || 0;
-      const product = exp.productName || exp.productId;
-      merged[exp.participantId][`stim${idx}_product`] = product;
-      merged[exp.participantId][`stim${idx}_groupId`] = exp.groupId;
-      merged[exp.participantId][`stim${idx}_conditionId`] = exp.conditionId;
-      merged[exp.participantId][`stim${idx}_advisorType`] = exp.advisorType;
-      merged[exp.participantId][`stim${idx}_congruity`] = exp.congruity;
-      merged[exp.participantId][`stim${idx}_advisorValence`] = exp.advisorValence;
-      merged[exp.participantId][`stim${idx}_publicValence`] = exp.publicValence;
-      merged[exp.participantId][`stim${idx}_dwellTime`] = exp.dwellTime;
-      merged[exp.participantId][`stim${idx}_timestamp`] = (exp.createdAt?.toDate?.()?.toISOString() || exp.createdAt || '') as string;
-    });
-
-    // Merge recall tasks
-    recalls.forEach(recall => {
-      if (!merged[recall.participantId]) merged[recall.participantId] = { participantId: recall.participantId };
-      
-      const idx = recall.stimulusId;
-      const product = recall.productName || recall.productId;
-      merged[recall.participantId][`recall${idx}_product`] = product;
-      merged[recall.participantId][`recall${idx}_groupId`] = recall.groupId;
-      merged[recall.participantId][`recall${idx}_conditionId`] = recall.conditionId;
-      merged[recall.participantId][`recall${idx}_words`] = recall.recalledWords ? recall.recalledWords.join(' | ') : '';
-      merged[recall.participantId][`recall${idx}_text`] = recall.recalledRecommendation;
-      merged[recall.participantId][`recall${idx}_time`] = recall.recallTime;
-      merged[recall.participantId][`recall${idx}_accuracy`] = recall.recallAccuracy || '';
-    });
-
-    // Merge survey responses
-    surveys.forEach(survey => {
-      if (!merged[survey.participantId]) merged[survey.participantId] = { participantId: survey.participantId };
-      
-      const idx = survey.stimulusId;
-      const product = survey.productName || survey.productId;
-      const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
-      
-      // Add product and condition info
-      merged[survey.participantId][`survey${idx}_product`] = product;
-      merged[survey.participantId][`survey${idx}_groupId`] = survey.groupId;
-      merged[survey.participantId][`survey${idx}_conditionId`] = survey.conditionId;
-      merged[survey.participantId][`survey${idx}_advisorType`] = survey.advisorType;
-      merged[survey.participantId][`survey${idx}_congruity`] = survey.congruity;
-      
-      // Add all survey fields from responseData
-      Object.keys(responseData).forEach(key => {
-        merged[survey.participantId][`survey${idx}_${key}`] = responseData[key];
-      });
-    });
-
-    // Merge demographics
-    demographics.forEach(demo => {
-      if (!merged[demo.participantId]) merged[demo.participantId] = { participantId: demo.participantId };
-      
-      merged[demo.participantId]['demo_age'] = demo.age;
-      merged[demo.participantId]['demo_gender'] = demo.gender;
-      merged[demo.participantId]['demo_education'] = demo.education;
-      merged[demo.participantId]['demo_online_shopping_frequency'] = demo.online_shopping_frequency;
-    });
-
-    return Object.values(merged);
+    return merged;
   };
 
   const convertToCSV = (data: MergedData[]): string => {
@@ -402,7 +378,8 @@ export default function AdminExportPage() {
           {/* Sessions Table */}
           <div className="border rounded-lg overflow-hidden">
             <div className="bg-gray-800 text-white px-6 py-4">
-              <h2 className="text-xl font-bold">실시간 참가자 데이터</h2>
+              <h2 className="text-xl font-bold">실시간 참가자 데이터 (제품별)</h2>
+              <p className="text-sm text-gray-300 mt-1">각 참가자는 3개 제품을 보므로 3행으로 표시됩니다</p>
             </div>
             
             <div className="overflow-x-auto">
@@ -418,10 +395,6 @@ export default function AdminExportPage() {
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">참가자 ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">나이</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">조건 (G/C)</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Advisor</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Congruity</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Valence</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">제품 순서</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">시작 시간</th>
@@ -438,43 +411,25 @@ export default function AdminExportPage() {
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {session.age || 'N/A'}
                         </td>
-                        <td className="px-4 py-3 text-sm">
-                          <div className="flex items-center space-x-1">
-                            <span className="font-semibold text-gray-900">G{session.groupId}</span>
-                            <span className="text-gray-400">/</span>
-                            <span className="font-semibold text-blue-600">C{session.conditionId}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            session.advisorType === 'AI' 
-                              ? 'bg-purple-100 text-purple-800' 
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {session.advisorType}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            session.congruity === 'Congruent' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-orange-100 text-orange-800'
-                          }`}>
-                            {session.congruity}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <div className="text-xs">
-                            <div className={session.advisorValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
-                              A:{session.advisorValence}
-                            </div>
-                            <div className={session.publicValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
-                              P:{session.publicValence}
-                            </div>
-                          </div>
-                        </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
-                          {Array.isArray(session.productOrder) ? session.productOrder.join(', ') : session.productOrder}
+                          <div className="space-y-1">
+                            {session.productOrder.map((product, pIdx) => {
+                              // Find the condition for this product
+                              const stimulusKey = session.stimulusOrder[pIdx];
+                              const conditionMatch = stimulusKey?.match(/C(\d+)/);
+                              const conditionId = conditionMatch ? conditionMatch[1] : '?';
+                              
+                              return (
+                                <div key={pIdx} className="flex items-center space-x-2">
+                                  <span className="font-medium">{pIdx + 1}.</span>
+                                  <span className="capitalize">{product}</span>
+                                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
+                                    C{conditionId}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {session.completed ? (
@@ -508,8 +463,9 @@ export default function AdminExportPage() {
             <h3 className="font-semibold text-blue-900 mb-2">💡 사용 방법</h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• 이 페이지는 10초마다 자동으로 새로고침됩니다.</li>
-              <li>• CSV 다운로드 버튼을 클릭하면 모든 데이터를 한 번에 내려받을 수 있습니다.</li>
-              <li>• 참가자 데이터는 실시간으로 Firebase에서 가져옵니다.</li>
+              <li>• CSV 다운로드: 각 참가자는 제품별로 3행으로 나뉘어 저장됩니다.</li>
+              <li>• 테이블: 각 참가자가 본 3개 제품과 각 제품별 적용 조건(C1-C8)이 표시됩니다.</li>
+              <li>• 참가자 기본정보(ID, 나이, 인구통계)는 3행에 동일하게 표시됩니다.</li>
             </ul>
           </div>
           </>
