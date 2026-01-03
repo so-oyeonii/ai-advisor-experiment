@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 import { assignParticipantCondition } from '@/lib/randomization';
 import { saveSession, getKSTTimestamp } from '@/lib/firebase';
-import { Timestamp } from 'firebase/firestore';
 
 export default function ConsentPage() {
   const router = useRouter();
