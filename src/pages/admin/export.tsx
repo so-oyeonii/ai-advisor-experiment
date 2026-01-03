@@ -112,10 +112,10 @@ export default function AdminExportPage() {
           e.participantId === session.participantId && e.exposureOrder === stimulusIdx
         );
         const recall = recalls.find(r => 
-          r.participantId === session.participantId && r.stimulusId === stimulusIdx
+          r.participantId === session.participantId && Number(r.stimulusId) === stimulusIdx
         );
         const survey = surveys.find(s => 
-          s.participantId === session.participantId && s.stimulusId === stimulusIdx
+          s.participantId === session.participantId && Number(s.stimulusId) === stimulusIdx
         );
 
         const row: MergedData = {
