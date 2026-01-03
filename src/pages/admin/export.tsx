@@ -25,7 +25,51 @@ interface SessionWithDemographics extends SessionData {
 }
 
 interface MergedData {
-  [key: string]: string | number | boolean;
+  // Participant-level info
+  participantId: string;
+  age: string | number;
+  gender: string | number;
+  education: string | number;
+  nationality: string | number;
+  income: string | number;
+  online_shopping_frequency: string | number;
+  shopping_frequency: string | number;
+  ai_usage_frequency: string | number;
+  // AI Familiarity scores (1-7 Likert scale)
+  ai_familiarity_1: string | number;
+  ai_familiarity_2: string | number;
+  ai_familiarity_3: string | number;
+  // Review Skepticism scores (1-7 Likert scale)
+  review_skepticism_1: string | number;
+  review_skepticism_2: string | number;
+  review_skepticism_3: string | number;
+  review_skepticism_4: string | number;
+  // Attitude toward AI scores (1-7 Likert scale)
+  attitude_ai_1: string | number;
+  attitude_ai_2: string | number;
+  attitude_ai_3: string | number;
+  attitude_ai_4: string | number;
+  startTime: string;
+  endTime: string;
+  completed: boolean;
+  // Product-level info
+  stimulusIndex: number;
+  productName: string;
+  groupId: string | number;
+  conditionId: string | number;
+  advisorType: string;
+  congruity: string;
+  advisorValence: string | number;
+  publicValence: string | number;
+  dwellTime: string | number;
+  exposureTimestamp: string;
+  recalledWords: string;
+  recalledText: string;
+  recallTime: string | number;
+  recallTimestamp: string;
+  surveyTimestamp?: string;
+  // Survey responses (dynamic keys like survey_q1, survey_q2, etc.)
+  [key: string]: string | number | boolean | undefined;
 }
 
 export default function AdminExportPage() {
@@ -127,7 +171,25 @@ export default function AdminExportPage() {
           age: participantDemo?.age || '',
           gender: participantDemo?.gender || '',
           education: participantDemo?.education || '',
+          nationality: participantDemo?.nationality || '',
+          income: participantDemo?.income || '',
           online_shopping_frequency: participantDemo?.online_shopping_frequency || '',
+          shopping_frequency: participantDemo?.shopping_frequency || '',
+          ai_usage_frequency: participantDemo?.ai_usage_frequency || '',
+          // AI Familiarity scores
+          ai_familiarity_1: participantDemo?.ai_familiarity_1 || '',
+          ai_familiarity_2: participantDemo?.ai_familiarity_2 || '',
+          ai_familiarity_3: participantDemo?.ai_familiarity_3 || '',
+          // Review Skepticism scores
+          review_skepticism_1: participantDemo?.review_skepticism_1 || '',
+          review_skepticism_2: participantDemo?.review_skepticism_2 || '',
+          review_skepticism_3: participantDemo?.review_skepticism_3 || '',
+          review_skepticism_4: participantDemo?.review_skepticism_4 || '',
+          // Attitude toward AI scores
+          attitude_ai_1: participantDemo?.attitude_ai_1 || '',
+          attitude_ai_2: participantDemo?.attitude_ai_2 || '',
+          attitude_ai_3: participantDemo?.attitude_ai_3 || '',
+          attitude_ai_4: participantDemo?.attitude_ai_4 || '',
           startTime: (session.startTime?.toDate?.()?.toISOString() || session.startTime || '') as string,
           endTime: (session.endTime?.toDate?.()?.toISOString() || session.endTime || '') as string,
           completed: session.completed,

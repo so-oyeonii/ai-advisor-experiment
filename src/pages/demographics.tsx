@@ -21,13 +21,31 @@ export default function DemographicsPage() {
     
     const participantId = sessionStorage.getItem('participantId')!;
     
-    // Save demographics
+    // Save demographics with all survey data
     await saveDemographics({
       participantId,
-      age: formData.age as string || '',
+      age: String(formData.age) || '',
       gender: formData.gender as string || '',
       education: formData.education as string || '',
+      nationality: formData.nationality as string || '',
+      income: formData.income as string || '',
       online_shopping_frequency: formData.online_shopping_frequency as string || '',
+      shopping_frequency: formData.shopping_frequency as string || '',
+      ai_usage_frequency: formData.ai_usage_frequency as string || '',
+      // AI Familiarity
+      ai_familiarity_1: formData.ai_familiarity_1 as number,
+      ai_familiarity_2: formData.ai_familiarity_2 as number,
+      ai_familiarity_3: formData.ai_familiarity_3 as number,
+      // Review Skepticism
+      review_skepticism_1: formData.review_skepticism_1 as number,
+      review_skepticism_2: formData.review_skepticism_2 as number,
+      review_skepticism_3: formData.review_skepticism_3 as number,
+      review_skepticism_4: formData.review_skepticism_4 as number,
+      // Attitude toward AI
+      attitude_ai_1: formData.attitude_ai_1 as number,
+      attitude_ai_2: formData.attitude_ai_2 as number,
+      attitude_ai_3: formData.attitude_ai_3 as number,
+      attitude_ai_4: formData.attitude_ai_4 as number,
     });
     
     // Mark session complete with end time

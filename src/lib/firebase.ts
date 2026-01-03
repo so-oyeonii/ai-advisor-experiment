@@ -349,10 +349,28 @@ export async function getAllSurveyResponses(): Promise<SurveyResponseData[]> {
 
 export interface DemographicsData {
   participantId: string;
-  age: string; // Age range: '18-24', '25-34', '35-44', '45-54', '55-64', '65+'
-  gender: string; // 'Male', 'Female', 'Non-binary', 'Prefer not to say'
-  education: string; // Education level
-  online_shopping_frequency: string; // Shopping frequency
+  age: string;
+  gender: string;
+  education: string;
+  nationality?: string;
+  income?: string;
+  online_shopping_frequency?: string;
+  shopping_frequency?: string;
+  ai_usage_frequency?: string;
+  // AI Familiarity (1-7 scale)
+  ai_familiarity_1?: number;
+  ai_familiarity_2?: number;
+  ai_familiarity_3?: number;
+  // Review Skepticism (1-7 scale)
+  review_skepticism_1?: number;
+  review_skepticism_2?: number;
+  review_skepticism_3?: number;
+  review_skepticism_4?: number;
+  // Attitude toward AI (1-7 scale)
+  attitude_ai_1?: number;
+  attitude_ai_2?: number;
+  attitude_ai_3?: number;
+  attitude_ai_4?: number;
   createdAt: Timestamp;
 }
 
