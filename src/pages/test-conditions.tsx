@@ -270,12 +270,12 @@ export default function TestConditionsPage() {
                             />
                           ))}
                         </div>
-                        <span className="font-semibold text-sm text-gray-900">{review.title}</span>
+                        <span className="font-semibold text-sm text-gray-900">{review.username}</span>
                       </div>
                       <p className="text-sm text-gray-700 mb-2">{review.text}</p>
                       <div className="flex items-center space-x-4 text-xs text-gray-600">
-                        <span>{review.author}</span>
-                        <span>Verified Purchase</span>
+                        <span>{review.username}</span>
+                        <span>{review.verified ? 'Verified Purchase' : 'Purchase'}</span>
                       </div>
                     </div>
                   ))}
