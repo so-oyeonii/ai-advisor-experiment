@@ -166,6 +166,38 @@ export function assignParticipantCondition(participantId: string): ExperimentCon
 }
 
 /**
+ * Get all 8 conditions
+ */
+export function getAllConditions(): StimulusCondition[] {
+  return [...EIGHT_CONDITIONS];
+}
+
+/**
+ * Get condition by ID
+ */
+export function getConditionById(conditionId: number): StimulusCondition | undefined {
+  return EIGHT_CONDITIONS.find(c => c.conditionId === conditionId);
+}
+
+/**
+ * Get conditions by group ID
+ */
+export function getConditionsByGroup(groupId: number): StimulusCondition[] {
+  return EIGHT_CONDITIONS.filter(c => c.groupId === groupId);
+}
+
+/**
+ * Get condition label for display
+ */
+export function getConditionLabel(conditionId: number, product?: ProductKey): string {
+  const condition = getConditionById(conditionId);
+  if (!condition) return `Unknown Condition ${conditionId}`;
+  
+  const productLabel = product ? ` - ${product}` : '';
+  return `C${conditionId} (G${condition.groupId}: ${condition.advisorType}/${condition.congruity}/${condition.advisorValence})${productLabel}`;
+}
+
+/**
  * Validate condition setup
  */
 export function validateConditions(): boolean {
@@ -333,20 +365,6 @@ export function testRandomization(numParticipants: number = 240): {
       byGroupId
     }
   };
-}
-
-/**
- * Get all conditions
- */
-export function getAllConditions(): StimulusCondition[] {
-  return EIGHT_CONDITIONS;
-}
-
-/**
- * Get condition by ID
- */
-export function getConditionById(conditionId: number): StimulusCondition | undefined {
-  return EIGHT_CONDITIONS.find(c => c.conditionId === conditionId);
 }
 
 /**

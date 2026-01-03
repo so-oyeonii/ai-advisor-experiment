@@ -93,8 +93,12 @@ export default function AdminExportPage() {
         endTime: (session.endTime?.toDate?.()?.toISOString() || session.endTime || '') as string,
         completed: session.completed,
         conditionNumber: session.conditionNumber,
+        groupId: session.groupId,
+        conditionId: session.conditionId,
         advisorType: session.advisorType,
         congruity: session.congruity,
+        advisorValence: session.advisorValence,
+        publicValence: session.publicValence,
         patternKey: session.patternKey,
         productOrder: JSON.stringify(session.productOrder),
         stimulusOrder: JSON.stringify(session.stimulusOrder),
@@ -107,9 +111,17 @@ export default function AdminExportPage() {
     exposures.forEach(exp => {
       if (!merged[exp.participantId]) merged[exp.participantId] = { participantId: exp.participantId };
       
-      const idx = exp.stimulusId;
-      merged[exp.participantId][`stimulus_${idx}_dwellTime`] = exp.dwellTime;
-      merged[exp.participantId][`stimulus_${idx}_timestamp`] = (exp.createdAt?.toDate?.()?.toISOString() || exp.createdAt || '') as string;
+      const idx = exp.exposureOrder || 0;
+      const product = exp.productName || exp.productId;
+      merged[exp.participantId][`stim${idx}_product`] = product;
+      merged[exp.participantId][`stim${idx}_groupId`] = exp.groupId;
+      merged[exp.participantId][`stim${idx}_conditionId`] = exp.conditionId;
+      merged[exp.participantId][`stim${idx}_advisorType`] = exp.advisorType;
+      merged[exp.participantId][`stim${idx}_congruity`] = exp.congruity;
+      merged[exp.participantId][`stim${idx}_advisorValence`] = exp.advisorValence;
+      merged[exp.participantId][`stim${idx}_publicValence`] = exp.publicValence;
+      merged[exp.participantId][`stim${idx}_dwellTime`] = exp.dwellTime;
+      merged[exp.participantId][`stim${idx}_timestamp`] = (exp.createdAt?.toDate?.()?.toISOString() || exp.createdAt || '') as string;
     });
 
     // Merge recall tasks
@@ -117,9 +129,13 @@ export default function AdminExportPage() {
       if (!merged[recall.participantId]) merged[recall.participantId] = { participantId: recall.participantId };
       
       const idx = recall.stimulusId;
-      merged[recall.participantId][`recall_${idx}_text`] = recall.recalledRecommendation;
-      merged[recall.participantId][`recall_${idx}_time`] = recall.recallTime;
-      merged[recall.participantId][`recall_${idx}_accuracy`] = recall.recallAccuracy || '';
+      const product = recall.productName || recall.productId;
+      merged[recall.participantId][`recall${idx}_product`] = product;
+      merged[recall.participantId][`recall${idx}_groupId`] = recall.groupId;
+      merged[recall.participantId][`recall${idx}_conditionId`] = recall.conditionId;
+      merged[recall.participantId][`recall${idx}_text`] = recall.recalledRecommendation;
+      merged[recall.participantId][`recall${idx}_time`] = recall.recallTime;
+      merged[recall.participantId][`recall${idx}_accuracy`] = recall.recallAccuracy || '';
     });
 
     // Merge survey responses
@@ -127,16 +143,20 @@ export default function AdminExportPage() {
       if (!merged[survey.participantId]) merged[survey.participantId] = { participantId: survey.participantId };
       
       const idx = survey.stimulusId;
+      const product = survey.productName || survey.productId;
       const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
+      
+      // Add product and condition info
+      merged[survey.participantId][`survey${idx}_product`] = product;
+      merged[survey.participantId][`survey${idx}_groupId`] = survey.groupId;
+      merged[survey.participantId][`survey${idx}_conditionId`] = survey.conditionId;
+      merged[survey.participantId][`survey${idx}_advisorType`] = survey.advisorType;
+      merged[survey.participantId][`survey${idx}_congruity`] = survey.congruity;
       
       // Add all survey fields from responseData
       Object.keys(responseData).forEach(key => {
-        merged[survey.participantId][`survey_${idx}_${key}`] = responseData[key];
+        merged[survey.participantId][`survey${idx}_${key}`] = responseData[key];
       });
-      
-      merged[survey.participantId][`survey_${idx}_productId`] = survey.productId;
-      merged[survey.participantId][`survey_${idx}_advisorType`] = survey.advisorType;
-      merged[survey.participantId][`survey_${idx}_congruity`] = survey.congruity;
     });
 
     // Merge demographics
@@ -354,10 +374,11 @@ export default function AdminExportPage() {
                   <thead className="bg-gray-100 border-b-2 border-gray-300">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">참가자 ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">조건</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">조건 (G/C)</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Advisor</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Congruity</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">패턴</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Valence</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">제품 순서</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">진행도</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">시작 시간</th>
@@ -369,8 +390,12 @@ export default function AdminExportPage() {
                         <td className="px-4 py-3 text-sm font-mono text-gray-900">
                           {session.participantId.substring(0, 8)}...
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
-                          {session.conditionNumber}
+                        <td className="px-4 py-3 text-sm">
+                          <div className="flex items-center space-x-1">
+                            <span className="font-semibold text-gray-900">G{session.groupId}</span>
+                            <span className="text-gray-400">/</span>
+                            <span className="font-semibold text-blue-600">C{session.conditionId}</span>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <span className={`px-2 py-1 rounded text-xs font-semibold ${
@@ -390,8 +415,18 @@ export default function AdminExportPage() {
                             {session.congruity}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm font-mono text-gray-700">
-                          {session.patternKey}
+                        <td className="px-4 py-3 text-sm">
+                          <div className="text-xs">
+                            <div className={session.advisorValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
+                              A:{session.advisorValence}
+                            </div>
+                            <div className={session.publicValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
+                              P:{session.publicValence}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {Array.isArray(session.productOrder) ? session.productOrder.join(', ') : session.productOrder}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {session.currentStimulusIndex + 1} / 3

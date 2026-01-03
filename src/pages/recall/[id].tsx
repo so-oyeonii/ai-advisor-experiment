@@ -53,6 +53,7 @@ export default function RecallPage() {
   const saveRecallData = async () => {
     const participantId = sessionStorage.getItem('participantId')!;
     const storedCondition = sessionStorage.getItem('experimentCondition');
+    const storedFullCondition = sessionStorage.getItem(`condition_${stimulusId}`);
     
     if (!storedCondition) {
       console.error('No experiment condition found');
@@ -60,23 +61,15 @@ export default function RecallPage() {
     }
     
     const experimentCondition = JSON.parse(storedCondition);
-    const productKey = experimentCondition.condition.productOrder[stimulusId];
-    
-    // Extract valence from pattern key
-    const patternKey = experimentCondition.condition.patternKey;
-    const patternChar = patternKey[stimulusId];
-    const advisorValence: 'positive' | 'negative' = patternChar === 'A' ? 'positive' : 'negative';
-    
-    const publicValence: 'positive' | 'negative' = experimentCondition.condition.congruity === 'Congruent' 
-      ? advisorValence
-      : (advisorValence === 'positive' ? 'negative' : 'positive');
+    const currentStimulus = experimentCondition.selectedStimuli[stimulusId];
+    const fullCondition = storedFullCondition ? JSON.parse(storedFullCondition) : currentStimulus.condition;
     
     const condition: Condition = {
-      product: productKey,
-      advisorType: experimentCondition.condition.advisorType,
-      advisorValence,
-      publicValence,
-      congruity: experimentCondition.condition.congruity
+      product: currentStimulus.product,
+      advisorType: currentStimulus.condition.advisorType,
+      advisorValence: currentStimulus.condition.advisorValence,
+      publicValence: currentStimulus.condition.publicValence,
+      congruity: currentStimulus.condition.congruity
     };
     
     // Get stimulus data to extract product info
@@ -86,8 +79,13 @@ export default function RecallPage() {
       participantId,
       stimulusId: String(stimulusId),
       productId: stimulusData.product.key,
+      productName: stimulusData.product.name,
+      groupId: fullCondition.groupId,
+      conditionId: fullCondition.conditionId,
       advisorType: condition.advisorType,
       congruity: condition.congruity,
+      advisorValence: condition.advisorValence,
+      publicValence: condition.publicValence,
       recalledRecommendation: recallText.trim(),
       recallTime: 60 - timeLeft,
       recallId: `${participantId}_${stimulusId}`

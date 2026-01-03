@@ -38,36 +38,21 @@ export default function StimulusPage() {
       setParticipantId(storedParticipantId);
       const experimentCondition = JSON.parse(storedCondition);
       
-      // Get the product for this stimulus
-      const productKey = experimentCondition.condition.productOrder[stimulusIndex];
-      
-      // Extract valence from pattern key
-      // Pattern format: AAA, AAB, ABA, etc. where A=positive, B=negative
-      const patternKey = experimentCondition.condition.patternKey;
-      const patternChar = patternKey[stimulusIndex]; // Get the character for this stimulus (0, 1, or 2)
-      
-      // In the pattern:
-      // - First char = advisor valence for product 0
-      // - Second char = advisor valence for product 1  
-      // - Third char = advisor valence for product 2
-      // A = positive, B = negative
-      const advisorValence = patternChar === 'A' ? 'positive' : 'negative';
-      
-      // For congruent: advisor and public match
-      // For incongruent: advisor and public are opposite
-      const publicValence = experimentCondition.condition.congruity === 'Congruent' 
-        ? advisorValence
-        : (advisorValence === 'positive' ? 'negative' : 'positive');
+      // Get the stimulus for this index
+      const currentStimulus = experimentCondition.selectedStimuli[stimulusIndex];
       
       const conditionData: Condition = {
-        product: productKey,
-        advisorType: experimentCondition.condition.advisorType,
-        advisorValence,
-        publicValence,
-        congruity: experimentCondition.condition.congruity
+        product: currentStimulus.product,
+        advisorType: currentStimulus.condition.advisorType,
+        advisorValence: currentStimulus.condition.advisorValence,
+        publicValence: currentStimulus.condition.publicValence,
+        congruity: currentStimulus.condition.congruity
       };
       
       setCondition(conditionData);
+      
+      // Store full condition info for later use
+      sessionStorage.setItem(`condition_${stimulusIndex}`, JSON.stringify(currentStimulus.condition));
       
       // Get stimulus data
       const data = getStimulusData(conditionData);
@@ -86,15 +71,23 @@ export default function StimulusPage() {
       // Calculate dwell time in seconds
       const dwellTime = (Date.now() - dwellStartTime.current) / 1000;
       
+      // Get full condition info
+      const storedFullCondition = sessionStorage.getItem(`condition_${currentIndex}`);
+      const fullCondition = storedFullCondition ? JSON.parse(storedFullCondition) : null;
+      
       // Save stimulus exposure to Firebase
       await saveStimulusExposure({
         exposureId: `${participantId}_${condition.product}_${currentIndex}`,
         participantId,
         stimulusId: `${condition.product}_${condition.advisorType}_${condition.congruity}`,
         productId: stimulusData.product.id,
+        productName: stimulusData.product.name,
+        groupId: fullCondition?.groupId || 0,
+        conditionId: fullCondition?.conditionId || 0,
         advisorType: condition.advisorType,
         congruity: condition.congruity,
-        productName: stimulusData.product.name,
+        advisorValence: condition.advisorValence,
+        publicValence: condition.publicValence,
         advisorName: condition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review',
         recommendation: condition.advisorValence,
         reasoning: stimulusData.advisorReview,

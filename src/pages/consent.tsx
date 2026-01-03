@@ -31,16 +31,27 @@ export default function ConsentPage() {
       const experimentCondition = assignParticipantCondition(participantId);
       console.log('✅ Assigned condition:', experimentCondition);
       
+      // Extract condition info from first stimulus (representative)
+      const firstCondition = experimentCondition.selectedStimuli[0].condition;
+      
       // 3. Create session in Firebase
       console.log('📝 Saving to Firebase...');
       await saveSession({
         participantId,
-        conditionNumber: experimentCondition.condition.conditionNumber,
-        advisorType: experimentCondition.condition.advisorType,
-        congruity: experimentCondition.condition.congruity,
-        patternKey: experimentCondition.condition.patternKey,
-        productOrder: experimentCondition.condition.productOrder,
-        stimulusOrder: experimentCondition.stimulusOrder,
+        conditionNumber: experimentCondition.selectedStimuli[0].condition.conditionId,
+        groupId: firstCondition.groupId,
+        conditionId: firstCondition.conditionId,
+        advisorType: firstCondition.advisorType,
+        congruity: firstCondition.congruity,
+        advisorValence: firstCondition.advisorValence,
+        publicValence: firstCondition.publicValence,
+        patternKey: experimentCondition.selectedStimuli.map((s, idx) => 
+          s.condition.advisorValence === 'positive' ? 'A' : 'B'
+        ).join(''),
+        productOrder: experimentCondition.selectedStimuli.map(s => s.product),
+        stimulusOrder: experimentCondition.selectedStimuli.map((s, idx) => 
+          `${s.product}_${s.condition.conditionId}`
+        ),
         currentStimulusIndex: 0,
         completedStimuli: [],
         completed: false,

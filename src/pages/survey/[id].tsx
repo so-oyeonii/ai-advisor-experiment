@@ -24,6 +24,7 @@ export default function SurveyPage() {
     
     const participantId = sessionStorage.getItem('participantId')!;
     const storedCondition = sessionStorage.getItem('experimentCondition');
+    const storedFullCondition = sessionStorage.getItem(`condition_${stimulusId}`);
     
     if (!storedCondition) {
       console.error('No experiment condition found');
@@ -31,15 +32,21 @@ export default function SurveyPage() {
     }
     
     const experimentCondition = JSON.parse(storedCondition);
-    const productKey = experimentCondition.condition.productOrder[stimulusId];
+    const currentStimulus = experimentCondition.selectedStimuli[stimulusId];
+    const fullCondition = storedFullCondition ? JSON.parse(storedFullCondition) : currentStimulus.condition;
     
     // Save survey response
     await saveSurveyResponse({
       participantId,
       stimulusId: String(stimulusId),
-      productId: productKey,
-      advisorType: experimentCondition.condition.advisorType,
-      congruity: experimentCondition.condition.congruity,
+      productId: currentStimulus.product,
+      productName: currentStimulus.product,
+      groupId: fullCondition.groupId,
+      conditionId: fullCondition.conditionId,
+      advisorType: currentStimulus.condition.advisorType,
+      congruity: currentStimulus.condition.congruity,
+      advisorValence: currentStimulus.condition.advisorValence,
+      publicValence: currentStimulus.condition.publicValence,
       responseData: formData,
       responseId: `${participantId}_${stimulusId}`
     });

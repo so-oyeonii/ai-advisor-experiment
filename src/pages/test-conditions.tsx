@@ -1,0 +1,291 @@
+// Test page to preview all 8 conditions
+import { useState } from 'react';
+import { Star, Search, ShoppingCart, Bot, User } from 'lucide-react';
+import { getAllConditions } from '@/lib/randomization';
+import { getStimulusData } from '@/lib/stimuliData';
+
+export default function TestConditionsPage() {
+  const [selectedCondition, setSelectedCondition] = useState(1);
+  const [selectedProduct, setSelectedProduct] = useState<'protein' | 'tissue' | 'soap'>('protein');
+  
+  const conditions = getAllConditions();
+  const currentCondition = conditions.find(c => c.conditionId === selectedCondition)!;
+  
+  const stimulusData = getStimulusData({
+    product: selectedProduct,
+    advisorType: currentCondition.advisorType,
+    advisorValence: currentCondition.advisorValence,
+    publicValence: currentCondition.publicValence,
+    congruity: currentCondition.congruity
+  });
+
+  const { product, advisorReview, publicReviews, displayRating, ratingDistribution, ratingCount } = stimulusData;
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Control Panel */}
+      <div className="bg-white border-b-4 border-blue-600 shadow-lg sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto p-6">
+          <h1 className="text-3xl font-bold mb-4 text-gray-900">🧪 8가지 조건 테스트 뷰어</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Condition Selector */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                조건 선택 (Condition)
+              </label>
+              <div className="grid grid-cols-4 gap-2">
+                {conditions.map(condition => (
+                  <button
+                    key={condition.conditionId}
+                    onClick={() => setSelectedCondition(condition.conditionId)}
+                    className={`p-3 rounded-lg border-2 transition ${
+                      selectedCondition === condition.conditionId
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                    }`}
+                  >
+                    <div className="font-bold text-lg">C{condition.conditionId}</div>
+                    <div className="text-xs">G{condition.groupId}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Product Selector */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                제품 선택 (Product)
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['protein', 'tissue', 'soap'] as const).map(prod => (
+                  <button
+                    key={prod}
+                    onClick={() => setSelectedProduct(prod)}
+                    className={`p-3 rounded-lg border-2 transition ${
+                      selectedProduct === prod
+                        ? 'bg-green-600 text-white border-green-600 shadow-lg'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
+                    }`}
+                  >
+                    <div className="font-bold capitalize">{prod}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          {/* Condition Info */}
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+              <div>
+                <span className="font-semibold text-gray-700">Condition:</span>
+                <div className="text-lg font-bold text-blue-600">C{currentCondition.conditionId}</div>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Group:</span>
+                <div className="text-lg font-bold text-blue-600">G{currentCondition.groupId}</div>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Advisor:</span>
+                <div className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                  currentCondition.advisorType === 'AI' 
+                    ? 'bg-purple-100 text-purple-800' 
+                    : 'bg-blue-100 text-blue-800'
+                }`}>
+                  {currentCondition.advisorType}
+                </div>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Congruity:</span>
+                <div className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                  currentCondition.congruity === 'Congruent' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-orange-100 text-orange-800'
+                }`}>
+                  {currentCondition.congruity}
+                </div>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700">Valence:</span>
+                <div className="text-xs">
+                  <div className={currentCondition.advisorValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
+                    A:{currentCondition.advisorValence}
+                  </div>
+                  <div className={currentCondition.publicValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
+                    P:{currentCondition.publicValence}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stimulus Preview */}
+      <div className="bg-white max-w-7xl mx-auto my-6 shadow-2xl rounded-lg overflow-hidden">
+        {/* Amazon Header */}
+        <header className="bg-[#232F3E] text-white px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-2xl font-bold">amazon</div>
+              <div className="hidden md:flex items-center bg-white rounded-md overflow-hidden">
+                <input 
+                  type="text" 
+                  placeholder="Search Amazon"
+                  className="px-4 py-2 w-80 lg:w-96 text-gray-900 outline-none text-sm"
+                  disabled
+                />
+                <button className="bg-[#FF9900] px-4 py-2.5">
+                  <Search size={20} className="text-gray-900" />
+                </button>
+              </div>
+            </div>
+            <ShoppingCart size={28} />
+          </div>
+        </header>
+        
+        {/* Main Content */}
+        <main className="px-4 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Left: Product Image */}
+            <div className="md:col-span-1">
+              <div className="sticky top-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full rounded-lg border border-gray-300 shadow-sm"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23ddd" width="400" height="400"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EProduct Image%3C/text%3E%3C/svg%3E';
+                  }}
+                />
+              </div>
+            </div>
+            
+            {/* Right: Product Details */}
+            <div className="md:col-span-2 space-y-4">
+              
+              {/* Product Title */}
+              <h1 className="text-2xl font-normal text-gray-900 leading-tight">
+                {product.name}
+              </h1>
+              
+              {/* Brand */}
+              <div className="text-sm">
+                <span className="text-gray-600">Brand: </span>
+                <span className="text-blue-600 hover:text-orange-600 cursor-pointer">
+                  {product.brand}
+                </span>
+              </div>
+              
+              {/* Rating (MANIPULATED) */}
+              <div className="flex items-center space-x-2 flex-wrap">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star 
+                      key={i} 
+                      size={20} 
+                      className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer">
+                  {displayRating.toFixed(1)} out of 5
+                </span>
+                <span className="text-sm text-gray-600">
+                  {ratingCount.toLocaleString()} ratings
+                </span>
+              </div>
+              
+              {/* Price */}
+              <div className="flex items-baseline space-x-2">
+                <span className="text-3xl text-red-700">{product.price}</span>
+              </div>
+              
+              {/* Tags */}
+              <div className="flex flex-wrap gap-2">
+                {product.tags.map((tag, index) => (
+                  <span key={index} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              
+              {/* Advisor Review */}
+              <div className="border-t border-gray-300 pt-4">
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                  <div className="flex items-start space-x-3">
+                    {currentCondition.advisorType === 'AI' ? (
+                      <Bot size={24} className="text-blue-600 flex-shrink-0" />
+                    ) : (
+                      <User size={24} className="text-blue-600 flex-shrink-0" />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {currentCondition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review'}
+                      </h3>
+                      <p className="text-gray-700 leading-relaxed text-sm">
+                        {advisorReview}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Customer Reviews */}
+              <div className="border-t border-gray-300 pt-4">
+                <h2 className="text-xl font-semibold mb-4">Customer Reviews</h2>
+                
+                {/* Rating Distribution */}
+                <div className="mb-6 space-y-2">
+                  {Object.entries(ratingDistribution).reverse().map(([stars, percentage]) => (
+                    <div key={stars} className="flex items-center space-x-2 text-sm">
+                      <span className="w-16 text-blue-600 hover:text-orange-600 cursor-pointer">
+                        {stars} star
+                      </span>
+                      <div className="flex-1 bg-gray-200 rounded-full h-5 overflow-hidden">
+                        <div 
+                          className="bg-[#FFA41C] h-full transition-all duration-500"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <span className="w-12 text-gray-600">{percentage}%</span>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Public Reviews */}
+                <div className="space-y-4">
+                  {publicReviews.map((review, index) => (
+                    <div key={index} className="border-b border-gray-200 pb-4">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              size={14} 
+                              className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-semibold text-sm text-gray-900">{review.title}</span>
+                      </div>
+                      <p className="text-sm text-gray-700 mb-2">{review.text}</p>
+                      <div className="flex items-center space-x-4 text-xs text-gray-600">
+                        <span>{review.author}</span>
+                        <span>Verified Purchase</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

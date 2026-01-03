@@ -33,8 +33,12 @@ const COLLECTIONS = {
 export interface SessionData {
   participantId: string;
   conditionNumber: number;
+  groupId: number; // 1-4: Which of the 4 groups (2x2 grid)
+  conditionId: number; // 1-8: Specific condition within the 8 total conditions
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
+  advisorValence: 'positive' | 'negative'; // Advisor review valence
+  publicValence: 'positive' | 'negative'; // Public reviews valence
   patternKey: string;
   productOrder: string[];
   stimulusOrder: string[];
@@ -131,15 +135,19 @@ export async function getAllSessions(): Promise<SessionData[]> {
 // ============================================================================
 
 export interface StimulusExposureData {
-  exposureId: string; // participantId_stimulusId
+  exposureId: string; // participantId_product_index
   participantId: string;
   stimulusId: string;
   productId: string;
+  productName: string;
+  groupId: number; // 1-4: Which group this condition belongs to
+  conditionId: number; // 1-8: Specific condition (unique across all 8)
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
-  productName: string;
+  advisorValence: 'positive' | 'negative';
+  publicValence: 'positive' | 'negative';
   advisorName: string;
-  recommendation: string;
+  recommendation: string; // Same as advisorValence (for backward compatibility)
   reasoning: string;
   exposureOrder: number; // 1, 2, or 3
   dwellTime: number; // in seconds
@@ -185,12 +193,17 @@ export async function getAllStimulusExposures(): Promise<StimulusExposureData[]>
 // ============================================================================
 
 export interface RecallTaskData {
-  recallId: string; // participantId_stimulusId
+  recallId: string; // participantId_product_index
   participantId: string;
   stimulusId: string;
   productId: string;
+  productName: string;
+  groupId: number; // 1-4
+  conditionId: number; // 1-8
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
+  advisorValence: 'positive' | 'negative';
+  publicValence: 'positive' | 'negative';
   recalledRecommendation: string; // User's free text recall
   recallAccuracy?: number; // Optional: computed similarity score (0-1)
   recallTime: number; // Time taken to complete recall (seconds)
@@ -234,12 +247,17 @@ export async function getAllRecallTasks(): Promise<RecallTaskData[]> {
 // ============================================================================
 
 export interface SurveyResponseData {
-  responseId: string; // participantId_stimulusId
+  responseId: string; // participantId_product_index
   participantId: string;
   stimulusId: string;
   productId: string;
+  productName: string;
+  groupId: number; // 1-4
+  conditionId: number; // 1-8
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
+  advisorValence: 'positive' | 'negative';
+  publicValence: 'positive' | 'negative';
   
   // All response data from form
   responseData?: Record<string, string | number>;
