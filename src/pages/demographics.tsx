@@ -2,7 +2,7 @@ import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { Timestamp } from 'firebase/firestore';
 import LikertScale from '@/components/LikertScale';
-import { saveDemographics, updateSession } from '@/lib/firebase';
+import { saveDemographics, updateSession, getKSTTimestamp } from '@/lib/firebase';
 
 export default function DemographicsPage() {
   const router = useRouter();
@@ -51,7 +51,7 @@ export default function DemographicsPage() {
     // Mark session complete with end time
     await updateSession(participantId, {
       completed: true,
-      endTime: new Date() as unknown as Timestamp // Will be converted to Timestamp
+      endTime: getKSTTimestamp()
     });
     
     router.push('/complete');

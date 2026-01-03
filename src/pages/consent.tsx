@@ -3,7 +3,7 @@ import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 import { assignParticipantCondition } from '@/lib/randomization';
-import { saveSession } from '@/lib/firebase';
+import { saveSession, getKSTTimestamp } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 
 export default function ConsentPage() {
@@ -55,7 +55,7 @@ export default function ConsentPage() {
         currentStimulusIndex: 0,
         completedStimuli: [],
         completed: false,
-        startTime: Timestamp.now(),
+        startTime: getKSTTimestamp(),
       });
       console.log('✅ Saved to Firebase successfully');
       

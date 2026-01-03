@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import { Star, Search, ShoppingCart, Bot, User } from 'lucide-react';
 import { getStimulusData, StimulusData, PublicReview } from '@/lib/stimuliData';
-import { saveStimulusExposure } from '@/lib/firebase';
+import { saveStimulusExposure, getKSTTimestamp } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 import type { Condition } from '@/lib/stimuliData';
 
@@ -95,7 +95,7 @@ export default function StimulusPage() {
         exposureOrder: currentIndex,
         dwellTime,
         exposureStartTime: Timestamp.fromMillis(dwellStartTime.current),
-        exposureEndTime: Timestamp.now(),
+        exposureEndTime: getKSTTimestamp(),
       });
       
       // Store dwell time in sessionStorage for reference

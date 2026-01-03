@@ -17,6 +17,20 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
 
+// Utility function to get current time in Korea Standard Time (KST, UTC+9)
+export const getKSTTimestamp = (): Timestamp => {
+  const now = new Date();
+  // Convert to KST by adding 9 hours to UTC
+  const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return Timestamp.fromDate(kstTime);
+};
+
+export const getKSTString = (): string => {
+  const now = new Date();
+  const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kstTime.toISOString().replace('Z', '+09:00');
+};
+
 // Collection names (matching COMPLETE_PROJECT_SPEC.md)
 const COLLECTIONS = {
   SESSIONS: 'sessions',
@@ -57,7 +71,7 @@ export interface SessionData {
 export async function saveSession(sessionData: Omit<SessionData, 'createdAt' | 'updatedAt'>): Promise<void> {
   try {
     const sessionRef = doc(db, COLLECTIONS.SESSIONS, sessionData.participantId);
-    const now = Timestamp.now();
+    const now = getKSTTimestamp();
     
     await setDoc(sessionRef, {
       ...sessionData,
@@ -82,7 +96,7 @@ export async function updateSession(
     
     const updateData: Record<string, unknown> = {
       ...updates,
-      updatedAt: Timestamp.now(),
+      updatedAt: getKSTTimestamp(),
     };
     
     // Convert endTime to Timestamp if it's a Date
@@ -165,7 +179,7 @@ export async function saveStimulusExposure(exposureData: Omit<StimulusExposureDa
     
     await setDoc(exposureRef, {
       ...exposureData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     });
   } catch (error) {
     console.error('Error saving stimulus exposure:', error);
@@ -220,7 +234,7 @@ export async function saveRecallTask(recallData: Omit<RecallTaskData, 'createdAt
     
     await setDoc(recallRef, {
       ...recallData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     });
   } catch (error) {
     console.error('Error saving recall task:', error);
@@ -295,7 +309,7 @@ export async function saveSurveyResponse(responseData: Omit<SurveyResponseData, 
     // Calculate scale means if individual items exist
     const dataToSave: Record<string, unknown> = {
       ...responseData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     };
     
     // Only add scale means if they can be calculated (not undefined)
@@ -383,7 +397,7 @@ export async function saveDemographics(demographicsData: Omit<DemographicsData, 
     
     await setDoc(demographicsRef, {
       ...demographicsData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     });
   } catch (error) {
     console.error('Error saving demographics:', error);

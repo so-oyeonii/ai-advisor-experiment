@@ -12,6 +12,39 @@ import {
   SurveyResponseData,
   DemographicsData
 } from '@/lib/firebase';
+import { Timestamp } from 'firebase/firestore';
+
+// Utility function to convert Timestamp to KST (Korea Standard Time) string
+const toKSTString = (timestamp: Timestamp | string | Date | undefined | null): string => {
+  if (!timestamp) return '';
+  
+  try {
+    let date: Date;
+    
+    if (timestamp instanceof Timestamp) {
+      date = timestamp.toDate();
+    } else if (typeof timestamp === 'string') {
+      date = new Date(timestamp);
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
+      return '';
+    }
+    
+    // Format: YYYY-MM-DD HH:mm:ss (KST already stored)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } catch (error) {
+    console.error('Error converting timestamp:', error);
+    return '';
+  }
+};
 
 interface Stats {
   total: number;
@@ -190,8 +223,8 @@ export default function AdminExportPage() {
           attitude_ai_2: participantDemo?.attitude_ai_2 || '',
           attitude_ai_3: participantDemo?.attitude_ai_3 || '',
           attitude_ai_4: participantDemo?.attitude_ai_4 || '',
-          startTime: (session.startTime?.toDate?.()?.toISOString() || session.startTime || '') as string,
-          endTime: (session.endTime?.toDate?.()?.toISOString() || session.endTime || '') as string,
+          startTime: toKSTString(session.startTime),
+          endTime: toKSTString(session.endTime),
           completed: session.completed,
           
           // Product-level info (different for each row)
@@ -206,13 +239,13 @@ export default function AdminExportPage() {
           
           // Stimulus exposure data
           dwellTime: exposure?.dwellTime || '',
-          exposureTimestamp: (exposure?.createdAt?.toDate?.()?.toISOString() || exposure?.createdAt || '') as string,
+          exposureTimestamp: toKSTString(exposure?.createdAt),
           
           // Recall data
           recalledWords: recall?.recalledWords ? recall.recalledWords.join(' | ') : '',
           recalledText: recall?.recalledRecommendation || '',
           recallTime: recall?.recallTime || '',
-          recallTimestamp: (recall?.createdAt?.toDate?.()?.toISOString() || recall?.createdAt || '') as string,
+          recallTimestamp: toKSTString(recall?.createdAt),
         };
 
         // Add survey responses
@@ -221,7 +254,7 @@ export default function AdminExportPage() {
           Object.keys(responseData).forEach(key => {
             row[`survey_${key}`] = responseData[key];
           });
-          row.surveyTimestamp = (survey.createdAt?.toDate?.()?.toISOString() || survey.createdAt || '') as string;
+          row.surveyTimestamp = toKSTString(survey.createdAt);
         }
 
         merged.push(row);
@@ -285,7 +318,13 @@ export default function AdminExportPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `experiment_data_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+      
+      // Create filename with KST timestamp
+      const now = new Date();
+      const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+      const filename = `experiment_data_${kstTime.toISOString().replace(/[:.]/g, '-').slice(0, -5)}_KST.csv`;
+      link.download = filename;
+      
       link.click();
       window.URL.revokeObjectURL(url);
       
