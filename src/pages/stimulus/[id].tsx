@@ -15,6 +15,7 @@ export default function StimulusPage() {
   const [condition, setCondition] = useState<Condition | null>(null);
   const [participantId, setParticipantId] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [showMoreReviews, setShowMoreReviews] = useState<boolean>(false);
   
   // Dwell time tracking - start immediately on mount
   const dwellStartTime = useRef<number>(Date.now());
@@ -268,7 +269,12 @@ export default function StimulusPage() {
             
             {/* CUSTOMER REVIEWS SECTION */}
             <div>
-              <h2 className="text-xl font-bold mb-4">Reviews from other customers</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Top reviews from customers</h2>
+                <button className="text-sm text-blue-600 hover:text-orange-600 hover:underline">
+                  See all {ratingCount.toLocaleString()} reviews
+                </button>
+              </div>
               
               {/* Rating Summary - Heavily Blurred */}
               <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
@@ -299,10 +305,10 @@ export default function StimulusPage() {
               
               <hr className="my-4" />
               
-              {/* Individual Reviews (6-7 reviews, MANIPULATED) */}
+              {/* Individual Reviews (Show only first 5, then all 10 on click) */}
               <div className="space-y-6">
-                {publicReviews.map((review: PublicReview, index: number) => (
-                  <div key={index} className="border-b pb-4 last:border-b-0">
+                {publicReviews.slice(0, showMoreReviews ? publicReviews.length : 5).map((review: PublicReview, index: number) => (
+                  <div key={index} className="border-b pb-4">
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                         <User size={20} className="text-gray-600" />
@@ -325,6 +331,16 @@ export default function StimulusPage() {
                     </p>
                   </div>
                 ))}
+              </div>
+              
+              {/* See All Reviews Button */}
+              <div className="mt-6 pt-4 border-t">
+                <button 
+                  onClick={() => setShowMoreReviews(!showMoreReviews)}
+                  className="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                >
+                  {showMoreReviews ? 'Show less' : `See ${publicReviews.length - 5} more reviews`}
+                </button>
               </div>
             </div>
           </div>

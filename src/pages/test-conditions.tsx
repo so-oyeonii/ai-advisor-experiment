@@ -7,6 +7,7 @@ import { getStimulusData } from '@/lib/stimuliData';
 export default function TestConditionsPage() {
   const [selectedCondition, setSelectedCondition] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<'protein' | 'tissue' | 'soap'>('protein');
+  const [showMoreReviews, setShowMoreReviews] = useState<boolean>(false);
   
   const conditions = getAllConditions();
   const currentCondition = conditions.find(c => c.conditionId === selectedCondition)!;
@@ -257,7 +258,12 @@ export default function TestConditionsPage() {
               
               {/* Customer Reviews */}
               <div className="border-t border-gray-300 pt-4">
-                <h2 className="text-xl font-semibold mb-4">Other Customer Reviews</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold">Top reviews from customers</h2>
+                  <button className="text-sm text-blue-600 hover:text-orange-600 hover:underline">
+                    See all {ratingCount.toLocaleString()} reviews
+                  </button>
+                </div>
                 
                 {/* Rating Distribution - Heavily Blurred */}
                 <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
@@ -277,9 +283,9 @@ export default function TestConditionsPage() {
                   </div>
                 </div>
                 
-                {/* Public Reviews */}
+                {/* Public Reviews - Show only first 5, then all 10 on click */}
                 <div className="space-y-4">
-                  {publicReviews.map((review, index) => (
+                  {publicReviews.slice(0, showMoreReviews ? publicReviews.length : 5).map((review, index) => (
                     <div key={index} className="border-b border-gray-200 pb-4">
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
@@ -303,6 +309,16 @@ export default function TestConditionsPage() {
                       <p className="text-sm text-gray-700">{review.text}</p>
                     </div>
                   ))}
+                </div>
+                
+                {/* See All Reviews Button */}
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <button 
+                    onClick={() => setShowMoreReviews(!showMoreReviews)}
+                    className="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                  >
+                    {showMoreReviews ? 'Show less' : `See ${publicReviews.length - 5} more reviews`}
+                  </button>
                 </div>
               </div>
               
