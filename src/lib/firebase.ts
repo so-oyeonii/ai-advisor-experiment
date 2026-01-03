@@ -17,6 +17,20 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
 
+// Utility function to get current time in Korea Standard Time (KST, UTC+9)
+export const getKSTTimestamp = (): Timestamp => {
+  const now = new Date();
+  // Convert to KST by adding 9 hours to UTC
+  const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return Timestamp.fromDate(kstTime);
+};
+
+export const getKSTString = (): string => {
+  const now = new Date();
+  const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+  return kstTime.toISOString().replace('Z', '+09:00');
+};
+
 // Collection names (matching COMPLETE_PROJECT_SPEC.md)
 const COLLECTIONS = {
   SESSIONS: 'sessions',
@@ -33,8 +47,12 @@ const COLLECTIONS = {
 export interface SessionData {
   participantId: string;
   conditionNumber: number;
+  groupId: number; // 1-4: Which of the 4 groups (2x2 grid)
+  conditionId: number; // 1-8: Specific condition within the 8 total conditions
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
+  advisorValence: 'positive' | 'negative'; // Advisor review valence
+  publicValence: 'positive' | 'negative'; // Public reviews valence
   patternKey: string;
   productOrder: string[];
   stimulusOrder: string[];
@@ -53,7 +71,7 @@ export interface SessionData {
 export async function saveSession(sessionData: Omit<SessionData, 'createdAt' | 'updatedAt'>): Promise<void> {
   try {
     const sessionRef = doc(db, COLLECTIONS.SESSIONS, sessionData.participantId);
-    const now = Timestamp.now();
+    const now = getKSTTimestamp();
     
     await setDoc(sessionRef, {
       ...sessionData,
@@ -78,7 +96,7 @@ export async function updateSession(
     
     const updateData: Record<string, unknown> = {
       ...updates,
-      updatedAt: Timestamp.now(),
+      updatedAt: getKSTTimestamp(),
     };
     
     // Convert endTime to Timestamp if it's a Date
@@ -131,15 +149,19 @@ export async function getAllSessions(): Promise<SessionData[]> {
 // ============================================================================
 
 export interface StimulusExposureData {
-  exposureId: string; // participantId_stimulusId
+  exposureId: string; // participantId_product_index
   participantId: string;
   stimulusId: string;
   productId: string;
+  productName: string;
+  groupId: number; // 1-4: Which group this condition belongs to
+  conditionId: number; // 1-8: Specific condition (unique across all 8)
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
-  productName: string;
+  advisorValence: 'positive' | 'negative';
+  publicValence: 'positive' | 'negative';
   advisorName: string;
-  recommendation: string;
+  recommendation: string; // Same as advisorValence (for backward compatibility)
   reasoning: string;
   exposureOrder: number; // 1, 2, or 3
   dwellTime: number; // in seconds
@@ -157,7 +179,7 @@ export async function saveStimulusExposure(exposureData: Omit<StimulusExposureDa
     
     await setDoc(exposureRef, {
       ...exposureData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     });
   } catch (error) {
     console.error('Error saving stimulus exposure:', error);
@@ -185,13 +207,19 @@ export async function getAllStimulusExposures(): Promise<StimulusExposureData[]>
 // ============================================================================
 
 export interface RecallTaskData {
-  recallId: string; // participantId_stimulusId
+  recallId: string; // participantId_product_index
   participantId: string;
   stimulusId: string;
   productId: string;
+  productName: string;
+  groupId: number; // 1-4
+  conditionId: number; // 1-8
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
-  recalledRecommendation: string; // User's free text recall
+  advisorValence: 'positive' | 'negative';
+  publicValence: 'positive' | 'negative';
+  recalledWords: string[]; // Array of words/phrases for analysis
+  recalledRecommendation: string; // Combined text for backward compatibility
   recallAccuracy?: number; // Optional: computed similarity score (0-1)
   recallTime: number; // Time taken to complete recall (seconds)
   createdAt: Timestamp;
@@ -206,7 +234,7 @@ export async function saveRecallTask(recallData: Omit<RecallTaskData, 'createdAt
     
     await setDoc(recallRef, {
       ...recallData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     });
   } catch (error) {
     console.error('Error saving recall task:', error);
@@ -234,12 +262,17 @@ export async function getAllRecallTasks(): Promise<RecallTaskData[]> {
 // ============================================================================
 
 export interface SurveyResponseData {
-  responseId: string; // participantId_stimulusId
+  responseId: string; // participantId_product_index
   participantId: string;
   stimulusId: string;
   productId: string;
+  productName: string;
+  groupId: number; // 1-4
+  conditionId: number; // 1-8
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
+  advisorValence: 'positive' | 'negative';
+  publicValence: 'positive' | 'negative';
   
   // All response data from form
   responseData?: Record<string, string | number>;
@@ -276,7 +309,7 @@ export async function saveSurveyResponse(responseData: Omit<SurveyResponseData, 
     // Calculate scale means if individual items exist
     const dataToSave: Record<string, unknown> = {
       ...responseData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     };
     
     // Only add scale means if they can be calculated (not undefined)
@@ -330,10 +363,28 @@ export async function getAllSurveyResponses(): Promise<SurveyResponseData[]> {
 
 export interface DemographicsData {
   participantId: string;
-  age: string; // Age range: '18-24', '25-34', '35-44', '45-54', '55-64', '65+'
-  gender: string; // 'Male', 'Female', 'Non-binary', 'Prefer not to say'
-  education: string; // Education level
-  online_shopping_frequency: string; // Shopping frequency
+  age: string;
+  gender: string;
+  education: string;
+  nationality?: string;
+  income?: string;
+  online_shopping_frequency?: string;
+  shopping_frequency?: string;
+  ai_usage_frequency?: string;
+  // AI Familiarity (1-7 scale)
+  ai_familiarity_1?: number;
+  ai_familiarity_2?: number;
+  ai_familiarity_3?: number;
+  // Review Skepticism (1-7 scale)
+  review_skepticism_1?: number;
+  review_skepticism_2?: number;
+  review_skepticism_3?: number;
+  review_skepticism_4?: number;
+  // Attitude toward AI (1-7 scale)
+  attitude_ai_1?: number;
+  attitude_ai_2?: number;
+  attitude_ai_3?: number;
+  attitude_ai_4?: number;
   createdAt: Timestamp;
 }
 
@@ -346,7 +397,7 @@ export async function saveDemographics(demographicsData: Omit<DemographicsData, 
     
     await setDoc(demographicsRef, {
       ...demographicsData,
-      createdAt: Timestamp.now(),
+      createdAt: getKSTTimestamp(),
     });
   } catch (error) {
     console.error('Error saving demographics:', error);

@@ -12,6 +12,39 @@ import {
   SurveyResponseData,
   DemographicsData
 } from '@/lib/firebase';
+import { Timestamp } from 'firebase/firestore';
+
+// Utility function to convert Timestamp to KST (Korea Standard Time) string
+const toKSTString = (timestamp: Timestamp | string | Date | undefined | null): string => {
+  if (!timestamp) return '';
+  
+  try {
+    let date: Date;
+    
+    if (timestamp instanceof Timestamp) {
+      date = timestamp.toDate();
+    } else if (typeof timestamp === 'string') {
+      date = new Date(timestamp);
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
+      return '';
+    }
+    
+    // Format: YYYY-MM-DD HH:mm:ss (KST already stored)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  } catch (error) {
+    console.error('Error converting timestamp:', error);
+    return '';
+  }
+};
 
 interface Stats {
   total: number;
@@ -19,15 +52,64 @@ interface Stats {
   inProgress: number;
 }
 
+interface SessionWithDemographics extends SessionData {
+  age?: string;
+  exposures?: StimulusExposureData[];
+}
+
 interface MergedData {
-  [key: string]: string | number | boolean;
+  // Participant-level info
+  participantId: string;
+  age: string | number;
+  gender: string | number;
+  education: string | number;
+  nationality: string | number;
+  income: string | number;
+  online_shopping_frequency: string | number;
+  shopping_frequency: string | number;
+  ai_usage_frequency: string | number;
+  // AI Familiarity scores (1-7 Likert scale)
+  ai_familiarity_1: string | number;
+  ai_familiarity_2: string | number;
+  ai_familiarity_3: string | number;
+  // Review Skepticism scores (1-7 Likert scale)
+  review_skepticism_1: string | number;
+  review_skepticism_2: string | number;
+  review_skepticism_3: string | number;
+  review_skepticism_4: string | number;
+  // Attitude toward AI scores (1-7 Likert scale)
+  attitude_ai_1: string | number;
+  attitude_ai_2: string | number;
+  attitude_ai_3: string | number;
+  attitude_ai_4: string | number;
+  startTime: string;
+  endTime: string;
+  completed: boolean;
+  // Product-level info
+  stimulusIndex: number;
+  productName: string;
+  groupId: string | number;
+  conditionId: string | number;
+  advisorType: string;
+  congruity: string;
+  advisorValence: string | number;
+  publicValence: string | number;
+  dwellTime: string | number;
+  exposureTimestamp: string;
+  recalledWords: string;
+  recalledText: string;
+  recallTime: string | number;
+  recallTimestamp: string;
+  surveyTimestamp?: string;
+  // Survey responses (dynamic keys like survey_q1, survey_q2, etc.)
+  [key: string]: string | number | boolean | undefined;
 }
 
 export default function AdminExportPage() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [stats, setStats] = useState<Stats>({ total: 0, completed: 0, inProgress: 0 });
-  const [sessions, setSessions] = useState<SessionData[]>([]);
+  const [sessions, setSessions] = useState<SessionWithDemographics[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
@@ -50,8 +132,23 @@ export default function AdminExportPage() {
   const fetchStats = async () => {
     setIsLoading(true);
     try {
-      const sessionsData = await getAllSessions();
-      setSessions(sessionsData);
+      const [sessionsData, demographicsData, exposuresData] = await Promise.all([
+        getAllSessions(),
+        getAllDemographics(),
+        getAllStimulusExposures()
+      ]);
+      
+      // Merge demographics age and exposure data into sessions
+      const sessionsWithAge: SessionWithDemographics[] = sessionsData.map(session => {
+        const demo = demographicsData.find(d => d.participantId === session.participantId);
+        return {
+          ...session,
+          age: demo?.age,
+          exposures: exposuresData.filter(e => e.participantId === session.participantId)
+        };
+      });
+      
+      setSessions(sessionsWithAge);
       
       const total = sessionsData.length;
       const completed = sessionsData.filter(s => s.completed).length;
@@ -83,73 +180,88 @@ export default function AdminExportPage() {
     surveys: SurveyResponseData[],
     demographics: DemographicsData[]
   ): MergedData[] => {
-    const merged: { [participantId: string]: MergedData } = {};
+    const merged: MergedData[] = [];
 
-    // Initialize with sessions
+    // Create one row per product (3 rows per participant)
     sessions.forEach(session => {
-      merged[session.participantId] = {
-        participantId: session.participantId,
-        startTime: (session.startTime?.toDate?.()?.toISOString() || session.startTime || '') as string,
-        endTime: (session.endTime?.toDate?.()?.toISOString() || session.endTime || '') as string,
-        completed: session.completed,
-        conditionNumber: session.conditionNumber,
-        advisorType: session.advisorType,
-        congruity: session.congruity,
-        patternKey: session.patternKey,
-        productOrder: JSON.stringify(session.productOrder),
-        stimulusOrder: JSON.stringify(session.stimulusOrder),
-        currentStimulusIndex: session.currentStimulusIndex,
-        completedStimuli: JSON.stringify(session.completedStimuli),
-      };
+      const participantDemo = demographics.find(d => d.participantId === session.participantId);
+      
+      // For each of the 3 products this participant saw
+      for (let stimulusIdx = 0; stimulusIdx < 3; stimulusIdx++) {
+        const exposure = exposures.find(e => 
+          e.participantId === session.participantId && e.exposureOrder === stimulusIdx
+        );
+        const recall = recalls.find(r => 
+          r.participantId === session.participantId && Number(r.stimulusId) === stimulusIdx
+        );
+        const survey = surveys.find(s => 
+          s.participantId === session.participantId && Number(s.stimulusId) === stimulusIdx
+        );
+
+        const row: MergedData = {
+          // Participant-level info (same for all 3 rows)
+          participantId: session.participantId,
+          age: participantDemo?.age || '',
+          gender: participantDemo?.gender || '',
+          education: participantDemo?.education || '',
+          nationality: participantDemo?.nationality || '',
+          income: participantDemo?.income || '',
+          online_shopping_frequency: participantDemo?.online_shopping_frequency || '',
+          shopping_frequency: participantDemo?.shopping_frequency || '',
+          ai_usage_frequency: participantDemo?.ai_usage_frequency || '',
+          // AI Familiarity scores
+          ai_familiarity_1: participantDemo?.ai_familiarity_1 || '',
+          ai_familiarity_2: participantDemo?.ai_familiarity_2 || '',
+          ai_familiarity_3: participantDemo?.ai_familiarity_3 || '',
+          // Review Skepticism scores
+          review_skepticism_1: participantDemo?.review_skepticism_1 || '',
+          review_skepticism_2: participantDemo?.review_skepticism_2 || '',
+          review_skepticism_3: participantDemo?.review_skepticism_3 || '',
+          review_skepticism_4: participantDemo?.review_skepticism_4 || '',
+          // Attitude toward AI scores
+          attitude_ai_1: participantDemo?.attitude_ai_1 || '',
+          attitude_ai_2: participantDemo?.attitude_ai_2 || '',
+          attitude_ai_3: participantDemo?.attitude_ai_3 || '',
+          attitude_ai_4: participantDemo?.attitude_ai_4 || '',
+          startTime: toKSTString(session.startTime),
+          endTime: toKSTString(session.endTime),
+          completed: session.completed,
+          
+          // Product-level info (different for each row)
+          stimulusIndex: stimulusIdx,
+          productName: exposure?.productName || exposure?.productId || '',
+          groupId: exposure?.groupId || '',
+          conditionId: exposure?.conditionId || '',
+          advisorType: exposure?.advisorType || '',
+          congruity: exposure?.congruity || '',
+          advisorValence: exposure?.advisorValence || '',
+          publicValence: exposure?.publicValence || '',
+          
+          // Stimulus exposure data
+          dwellTime: exposure?.dwellTime || '',
+          exposureTimestamp: toKSTString(exposure?.createdAt),
+          
+          // Recall data
+          recalledWords: recall?.recalledWords ? recall.recalledWords.join(' | ') : '',
+          recalledText: recall?.recalledRecommendation || '',
+          recallTime: recall?.recallTime || '',
+          recallTimestamp: toKSTString(recall?.createdAt),
+        };
+
+        // Add survey responses
+        if (survey) {
+          const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
+          Object.keys(responseData).forEach(key => {
+            row[`survey_${key}`] = responseData[key];
+          });
+          row.surveyTimestamp = toKSTString(survey.createdAt);
+        }
+
+        merged.push(row);
+      }
     });
 
-    // Merge stimulus exposures
-    exposures.forEach(exp => {
-      if (!merged[exp.participantId]) merged[exp.participantId] = { participantId: exp.participantId };
-      
-      const idx = exp.stimulusId;
-      merged[exp.participantId][`stimulus_${idx}_dwellTime`] = exp.dwellTime;
-      merged[exp.participantId][`stimulus_${idx}_timestamp`] = (exp.createdAt?.toDate?.()?.toISOString() || exp.createdAt || '') as string;
-    });
-
-    // Merge recall tasks
-    recalls.forEach(recall => {
-      if (!merged[recall.participantId]) merged[recall.participantId] = { participantId: recall.participantId };
-      
-      const idx = recall.stimulusId;
-      merged[recall.participantId][`recall_${idx}_text`] = recall.recalledRecommendation;
-      merged[recall.participantId][`recall_${idx}_time`] = recall.recallTime;
-      merged[recall.participantId][`recall_${idx}_accuracy`] = recall.recallAccuracy || '';
-    });
-
-    // Merge survey responses
-    surveys.forEach(survey => {
-      if (!merged[survey.participantId]) merged[survey.participantId] = { participantId: survey.participantId };
-      
-      const idx = survey.stimulusId;
-      const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
-      
-      // Add all survey fields from responseData
-      Object.keys(responseData).forEach(key => {
-        merged[survey.participantId][`survey_${idx}_${key}`] = responseData[key];
-      });
-      
-      merged[survey.participantId][`survey_${idx}_productId`] = survey.productId;
-      merged[survey.participantId][`survey_${idx}_advisorType`] = survey.advisorType;
-      merged[survey.participantId][`survey_${idx}_congruity`] = survey.congruity;
-    });
-
-    // Merge demographics
-    demographics.forEach(demo => {
-      if (!merged[demo.participantId]) merged[demo.participantId] = { participantId: demo.participantId };
-      
-      merged[demo.participantId]['demo_age'] = demo.age;
-      merged[demo.participantId]['demo_gender'] = demo.gender;
-      merged[demo.participantId]['demo_education'] = demo.education;
-      merged[demo.participantId]['demo_online_shopping_frequency'] = demo.online_shopping_frequency;
-    });
-
-    return Object.values(merged);
+    return merged;
   };
 
   const convertToCSV = (data: MergedData[]): string => {
@@ -206,7 +318,13 @@ export default function AdminExportPage() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `experiment_data_${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+      
+      // Create filename with KST timestamp
+      const now = new Date();
+      const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+      const filename = `experiment_data_${kstTime.toISOString().replace(/[:.]/g, '-').slice(0, -5)}_KST.csv`;
+      link.download = filename;
+      
       link.click();
       window.URL.revokeObjectURL(url);
       
@@ -225,6 +343,31 @@ export default function AdminExportPage() {
       return (timestamp as { toDate: () => Date }).toDate().toLocaleString();
     }
     return new Date(timestamp as string | number | Date).toLocaleString();
+  };
+
+  const calculateDuration = (startTime: unknown, endTime: unknown) => {
+    if (!startTime || !endTime) return 'N/A';
+    
+    let start: Date;
+    let end: Date;
+    
+    if (typeof startTime === 'object' && startTime !== null && 'toDate' in startTime) {
+      start = (startTime as { toDate: () => Date }).toDate();
+    } else {
+      start = new Date(startTime as string | number | Date);
+    }
+    
+    if (typeof endTime === 'object' && endTime !== null && 'toDate' in endTime) {
+      end = (endTime as { toDate: () => Date }).toDate();
+    } else {
+      end = new Date(endTime as string | number | Date);
+    }
+    
+    const diffMs = end.getTime() - start.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffSeconds = Math.floor((diffMs % 60000) / 1000);
+    
+    return `${diffMinutes}분 ${diffSeconds}초`;
   };
 
   return (
@@ -339,7 +482,8 @@ export default function AdminExportPage() {
           {/* Sessions Table */}
           <div className="border rounded-lg overflow-hidden">
             <div className="bg-gray-800 text-white px-6 py-4">
-              <h2 className="text-xl font-bold">실시간 참가자 데이터</h2>
+              <h2 className="text-xl font-bold">실시간 참가자 데이터 (제품별)</h2>
+              <p className="text-sm text-gray-300 mt-1">각 참가자는 3개 제품을 보므로 3행으로 표시됩니다</p>
             </div>
             
             <div className="overflow-x-auto">
@@ -354,13 +498,12 @@ export default function AdminExportPage() {
                   <thead className="bg-gray-100 border-b-2 border-gray-300">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">참가자 ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">조건</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Advisor</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Congruity</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">패턴</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">진행도</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">나이</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">제품 순서 (그룹/조건/타입/일치성)</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">시작 시간</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">종료 시간</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">소요 시간</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -369,32 +512,40 @@ export default function AdminExportPage() {
                         <td className="px-4 py-3 text-sm font-mono text-gray-900">
                           {session.participantId.substring(0, 8)}...
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
-                          {session.conditionNumber}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            session.advisorType === 'AI' 
-                              ? 'bg-purple-100 text-purple-800' 
-                              : 'bg-blue-100 text-blue-800'
-                          }`}>
-                            {session.advisorType}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                            session.congruity === 'Congruent' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-orange-100 text-orange-800'
-                          }`}>
-                            {session.congruity}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm font-mono text-gray-700">
-                          {session.patternKey}
-                        </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
-                          {session.currentStimulusIndex + 1} / 3
+                          {session.age || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          <div className="space-y-1">
+                            {session.productOrder.map((product, pIdx) => {
+                              // Find the exposure data for this product order
+                              const exposure = session.exposures?.find(e => e.exposureOrder === pIdx);
+                              const groupId = exposure?.groupId || '?';
+                              const conditionId = exposure?.conditionId || '?';
+                              const advisorType = exposure?.advisorType || '?';
+                              const congruity = exposure?.congruity || '?';
+                              
+                              return (
+                                <div key={pIdx} className="flex items-center space-x-2 flex-wrap">
+                                  <span className="font-medium">{pIdx + 1}.</span>
+                                  <span className="capitalize font-medium">{product}</span>
+                                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-semibold">
+                                    G{groupId}/C{conditionId}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                    advisorType === 'AI' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'
+                                  }`}>
+                                    {advisorType}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                    congruity === 'Congruent' ? 'bg-teal-100 text-teal-800' : 'bg-orange-100 text-orange-800'
+                                  }`}>
+                                    {congruity}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {session.completed ? (
@@ -410,6 +561,12 @@ export default function AdminExportPage() {
                         <td className="px-4 py-3 text-sm text-gray-600">
                           {formatTimestamp(session.startTime)}
                         </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {session.completed ? formatTimestamp(session.endTime) : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                          {session.completed ? calculateDuration(session.startTime, session.endTime) : '-'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -422,8 +579,9 @@ export default function AdminExportPage() {
             <h3 className="font-semibold text-blue-900 mb-2">💡 사용 방법</h3>
             <ul className="text-sm text-blue-800 space-y-1">
               <li>• 이 페이지는 10초마다 자동으로 새로고침됩니다.</li>
-              <li>• CSV 다운로드 버튼을 클릭하면 모든 데이터를 한 번에 내려받을 수 있습니다.</li>
-              <li>• 참가자 데이터는 실시간으로 Firebase에서 가져옵니다.</li>
+              <li>• CSV 다운로드: 각 참가자는 제품별로 3행으로 나뉘어 저장됩니다.</li>
+              <li>• 테이블: 각 참가자가 본 3개 제품과 각 제품별 적용 조건(C1-C8)이 표시됩니다.</li>
+              <li>• 참가자 기본정보(ID, 나이, 인구통계)는 3행에 동일하게 표시됩니다.</li>
             </ul>
           </div>
           </>

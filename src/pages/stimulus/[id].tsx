@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import { Star, Search, ShoppingCart, Bot, User } from 'lucide-react';
 import { getStimulusData, StimulusData, PublicReview } from '@/lib/stimuliData';
-import { saveStimulusExposure } from '@/lib/firebase';
+import { saveStimulusExposure, getKSTTimestamp } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 import type { Condition } from '@/lib/stimuliData';
 
@@ -15,6 +15,7 @@ export default function StimulusPage() {
   const [condition, setCondition] = useState<Condition | null>(null);
   const [participantId, setParticipantId] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [showMoreReviews, setShowMoreReviews] = useState<boolean>(false);
   
   // Dwell time tracking - start immediately on mount
   const dwellStartTime = useRef<number>(Date.now());
@@ -38,36 +39,21 @@ export default function StimulusPage() {
       setParticipantId(storedParticipantId);
       const experimentCondition = JSON.parse(storedCondition);
       
-      // Get the product for this stimulus
-      const productKey = experimentCondition.condition.productOrder[stimulusIndex];
-      
-      // Extract valence from pattern key
-      // Pattern format: AAA, AAB, ABA, etc. where A=positive, B=negative
-      const patternKey = experimentCondition.condition.patternKey;
-      const patternChar = patternKey[stimulusIndex]; // Get the character for this stimulus (0, 1, or 2)
-      
-      // In the pattern:
-      // - First char = advisor valence for product 0
-      // - Second char = advisor valence for product 1  
-      // - Third char = advisor valence for product 2
-      // A = positive, B = negative
-      const advisorValence = patternChar === 'A' ? 'positive' : 'negative';
-      
-      // For congruent: advisor and public match
-      // For incongruent: advisor and public are opposite
-      const publicValence = experimentCondition.condition.congruity === 'Congruent' 
-        ? advisorValence
-        : (advisorValence === 'positive' ? 'negative' : 'positive');
+      // Get the stimulus for this index
+      const currentStimulus = experimentCondition.selectedStimuli[stimulusIndex];
       
       const conditionData: Condition = {
-        product: productKey,
-        advisorType: experimentCondition.condition.advisorType,
-        advisorValence,
-        publicValence,
-        congruity: experimentCondition.condition.congruity
+        product: currentStimulus.product,
+        advisorType: currentStimulus.condition.advisorType,
+        advisorValence: currentStimulus.condition.advisorValence,
+        publicValence: currentStimulus.condition.publicValence,
+        congruity: currentStimulus.condition.congruity
       };
       
       setCondition(conditionData);
+      
+      // Store full condition info for later use
+      sessionStorage.setItem(`condition_${stimulusIndex}`, JSON.stringify(currentStimulus.condition));
       
       // Get stimulus data
       const data = getStimulusData(conditionData);
@@ -86,22 +72,30 @@ export default function StimulusPage() {
       // Calculate dwell time in seconds
       const dwellTime = (Date.now() - dwellStartTime.current) / 1000;
       
+      // Get full condition info
+      const storedFullCondition = sessionStorage.getItem(`condition_${currentIndex}`);
+      const fullCondition = storedFullCondition ? JSON.parse(storedFullCondition) : null;
+      
       // Save stimulus exposure to Firebase
       await saveStimulusExposure({
         exposureId: `${participantId}_${condition.product}_${currentIndex}`,
         participantId,
         stimulusId: `${condition.product}_${condition.advisorType}_${condition.congruity}`,
         productId: stimulusData.product.id,
+        productName: stimulusData.product.name,
+        groupId: fullCondition?.groupId || 0,
+        conditionId: fullCondition?.conditionId || 0,
         advisorType: condition.advisorType,
         congruity: condition.congruity,
-        productName: stimulusData.product.name,
+        advisorValence: condition.advisorValence,
+        publicValence: condition.publicValence,
         advisorName: condition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review',
         recommendation: condition.advisorValence,
         reasoning: stimulusData.advisorReview,
-        exposureOrder: currentIndex + 1,
+        exposureOrder: currentIndex,
         dwellTime,
         exposureStartTime: Timestamp.fromMillis(dwellStartTime.current),
-        exposureEndTime: Timestamp.now(),
+        exposureEndTime: getKSTTimestamp(),
       });
       
       // Store dwell time in sessionStorage for reference
@@ -189,7 +183,7 @@ export default function StimulusPage() {
             
             {/* Rating (MANIPULATED) */}
             <div className="flex items-center space-x-2 flex-wrap">
-              <div className="flex">
+              <div className="flex blur-[10px] select-none">
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
@@ -198,10 +192,10 @@ export default function StimulusPage() {
                   />
                 ))}
               </div>
-              <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer">
+              <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer blur-[10px] select-none">
                 {displayRating} out of 5
               </span>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 blur-[10px] select-none">
                 ({ratingCount.toLocaleString()} ratings)
               </span>
             </div>
@@ -213,7 +207,7 @@ export default function StimulusPage() {
             </div>
             
             {/* Price */}
-            <div className="flex items-baseline space-x-2">
+            <div className="flex items-baseline space-x-2 blur-[10px] select-none">
               <span className="text-sm text-gray-600">$</span>
               <span className="text-3xl text-gray-900">{product.price}</span>
             </div>
@@ -236,16 +230,23 @@ export default function StimulusPage() {
                 )}
               </div>
               
-              <div className="flex items-center space-x-2 mb-3">
+              <div className="flex items-center space-x-2 mb-3 flex-wrap">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
-                      size={16} 
-                      className={condition.advisorValence === 'positive' ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
+                      size={18} 
+                      className={
+                        condition.advisorValence === 'positive' 
+                          ? 'fill-[#FFA41C] text-[#FFA41C]' 
+                          : (i === 0 ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300')
+                      }
                     />
                   ))}
                 </div>
+                <span className="text-sm font-semibold text-gray-700">
+                  {condition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
+                </span>
                 <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-semibold rounded">
                   {condition.advisorType === 'AI' ? 'Algorithm Pick' : "Editor's Choice"}
                 </span>
@@ -268,45 +269,46 @@ export default function StimulusPage() {
             
             {/* CUSTOMER REVIEWS SECTION */}
             <div>
-              <h2 className="text-xl font-bold mb-4">Customer Reviews</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold">Top reviews from customers</h2>
+                <button className="text-sm text-blue-600 hover:text-orange-600 hover:underline">
+                  See all {ratingCount.toLocaleString()} reviews
+                </button>
+              </div>
               
-              {/* Rating Summary */}
-              <div className="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0 mb-6">
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-gray-900">{displayRating}</div>
-                  <div className="flex justify-center my-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
+              {/* Rating Summary - Heavily Blurred */}
+              <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
+                <div className="flex items-center space-x-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-gray-900">{displayRating}</div>
+                    <div className="flex justify-center my-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={12} className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Rating Distribution (MANIPULATED) */}
+                  <div className="flex-1 space-y-1">
+                    {ratingDistribution.slice(0, 3).map((percent: number, index: number) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <span className="text-xs w-10">{5-index} star</span>
+                        <div className="flex-1 bg-gray-300 rounded-full h-2">
+                          <div className="bg-[#FFA41C] h-2 rounded-full" style={{width: `${percent}%`}} />
+                        </div>
+                        <span className="text-xs w-8 text-right">{percent}%</span>
+                      </div>
                     ))}
                   </div>
-                  <div className="text-sm text-gray-600">{ratingCount.toLocaleString()} ratings</div>
-                </div>
-                
-                {/* Rating Distribution (MANIPULATED) */}
-                <div className="flex-1 w-full space-y-1">
-                  {ratingDistribution.map((percent: number, index: number) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer w-12">
-                        {5-index} star
-                      </span>
-                      <div className="flex-1 bg-gray-300 rounded-full h-4">
-                        <div 
-                          className="bg-[#FFA41C] h-4 rounded-full transition-all" 
-                          style={{width: `${percent}%`}}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-600 w-12 text-right">{percent}%</span>
-                    </div>
-                  ))}
                 </div>
               </div>
               
               <hr className="my-4" />
               
-              {/* Individual Reviews (6-7 reviews, MANIPULATED) */}
+              {/* Individual Reviews (Show only first 5, then all 10 on click) */}
               <div className="space-y-6">
-                {publicReviews.map((review: PublicReview, index: number) => (
-                  <div key={index} className="border-b pb-4 last:border-b-0">
+                {publicReviews.slice(0, showMoreReviews ? publicReviews.length : 5).map((review: PublicReview, index: number) => (
+                  <div key={index} className="border-b pb-4">
                     <div className="flex items-center space-x-2 mb-2">
                       <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                         <User size={20} className="text-gray-600" />
@@ -317,12 +319,11 @@ export default function StimulusPage() {
                     <div className="flex items-center space-x-2 mb-2 flex-wrap">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={14} className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
+                          <Star key={i} size={16} className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
                         ))}
                       </div>
-                      {review.verified && (
-                        <span className="text-xs text-orange-700 font-semibold">Verified Purchase</span>
-                      )}
+                      <span className="text-sm font-medium text-gray-700">{review.rating}.0 out of 5 stars</span>
+                      <span className="text-xs text-orange-700 font-semibold">✓ Verified Purchase</span>
                     </div>
                     
                     <p className="text-gray-800 text-sm leading-relaxed">
@@ -330,6 +331,16 @@ export default function StimulusPage() {
                     </p>
                   </div>
                 ))}
+              </div>
+              
+              {/* See All Reviews Button */}
+              <div className="mt-6 pt-4 border-t">
+                <button 
+                  onClick={() => setShowMoreReviews(!showMoreReviews)}
+                  className="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                >
+                  {showMoreReviews ? 'Show less' : `See ${publicReviews.length - 5} more reviews`}
+                </button>
               </div>
             </div>
           </div>

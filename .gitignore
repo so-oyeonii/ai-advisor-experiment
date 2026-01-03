@@ -137,3 +137,9 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+# Archive directory (test and dev files)
+.archive/
+
+# Test and validation files
+test-*.ts
+validate-*.ts

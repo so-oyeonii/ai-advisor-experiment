@@ -1,224 +1,262 @@
-// Randomization logic for experimental conditions with counterbalancing
+// Randomization logic for experimental conditions
+// 4 groups x 2 conditions = 8 conditions, select 3 groups per participant
+// 240 participants -> 720 stimuli -> 180 per group, 90 per condition
 
-import { stimuli, Stimulus } from './stimuliData';
+import { ProductKey } from './stimuliData';
 
-// Type definitions matching the specification
-export type PatternKey = 'AAA' | 'AAB' | 'ABA' | 'ABB' | 'BAA' | 'BAB' | 'BBA' | 'BBB';
-export type ProductKey = 'protein' | 'tissue' | 'soap'; // Match stimuliData.ts
 export type AdvisorType = 'AI' | 'Human';
 export type Congruity = 'Congruent' | 'Incongruent';
+export type AdvisorValence = 'positive' | 'negative';
+export type PublicValence = 'positive' | 'negative';
 
-export interface Condition {
-  conditionNumber: number;
+/**
+ * Group 1 (AI + Congruent): condition 1, 2
+ * Group 2 (AI + Incongruent): condition 3, 4
+ * Group 3 (Human + Congruent): condition 5, 6
+ * Group 4 (Human + Incongruent): condition 7, 8
+ */
+export interface StimulusCondition {
+  conditionId: number;
+  groupId: number;
   advisorType: AdvisorType;
   congruity: Congruity;
-  patternKey: PatternKey;
-  productOrder: ProductKey[];
-  stimulusOrder: string[];
+  advisorValence: AdvisorValence;
+  publicValence: PublicValence;
+}
+
+export interface SelectedStimulus {
+  product: ProductKey;
+  condition: StimulusCondition;
 }
 
 export interface ExperimentCondition {
   participantId: string;
-  condition: Condition;
-  stimulusOrder: string[];
-  conditionAssignment: {
-    advisorType: AdvisorType;
-    congruenceType: Congruity;
-  };
+  selectedStimuli: SelectedStimulus[];
 }
 
-// Product rotation patterns (24 unique orderings)
-// Note: This constant is defined but used indirectly through CONDITIONS array
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const PRODUCT_PATTERNS: Record<PatternKey, ProductKey[][]> = {
-  'AAA': [
-    ['protein', 'tissue', 'soap'],
-    ['tissue', 'soap', 'protein'],
-    ['soap', 'protein', 'tissue']
-  ],
-  'AAB': [
-    ['protein', 'soap', 'tissue'],
-    ['tissue', 'protein', 'soap'],
-    ['soap', 'tissue', 'protein']
-  ],
-  'ABA': [
-    ['tissue', 'protein', 'soap'],
-    ['soap', 'tissue', 'protein'],
-    ['protein', 'soap', 'tissue']
-  ],
-  'ABB': [
-    ['tissue', 'soap', 'protein'],
-    ['soap', 'protein', 'tissue'],
-    ['protein', 'tissue', 'soap']
-  ],
-  'BAA': [
-    ['soap', 'protein', 'tissue'],
-    ['protein', 'tissue', 'soap'],
-    ['tissue', 'soap', 'protein']
-  ],
-  'BAB': [
-    ['soap', 'tissue', 'protein'],
-    ['protein', 'soap', 'tissue'],
-    ['tissue', 'protein', 'soap']
-  ],
-  'BBA': [
-    ['protein', 'tissue', 'soap'],
-    ['tissue', 'soap', 'protein'],
-    ['soap', 'protein', 'tissue']
-  ],
-  'BBB': [
-    ['protein', 'soap', 'tissue'],
-    ['tissue', 'protein', 'soap'],
-    ['soap', 'tissue', 'protein']
-  ]
-};
-
-// All 24 condition configurations
-const CONDITIONS: Condition[] = [
-  // AI Congruent (Conditions 1-12)
-  { conditionNumber: 1, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 2, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 3, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 4, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 5, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 6, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 7, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 8, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 9, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 10, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 11, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 12, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
+// 8 conditions in 4 groups
+const EIGHT_CONDITIONS: StimulusCondition[] = [
+  // Group 1: AI + Congruent
+  { conditionId: 1, groupId: 1, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'negative' },
+  { conditionId: 2, groupId: 1, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'positive' },
   
-  // AI Incongruent (Conditions 13-24)
-  { conditionNumber: 13, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 14, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 15, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 16, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 17, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 18, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 19, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 20, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 21, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 22, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 23, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 24, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
+  // Group 2: AI + Incongruent
+  { conditionId: 3, groupId: 2, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'positive' },
+  { conditionId: 4, groupId: 2, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'negative' },
+  
+  // Group 3: Human + Congruent
+  { conditionId: 5, groupId: 3, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'negative' },
+  { conditionId: 6, groupId: 3, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'positive' },
+  
+  // Group 4: Human + Incongruent
+  { conditionId: 7, groupId: 4, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'positive' },
+  { conditionId: 8, groupId: 4, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'negative' },
 ];
 
-// Human conditions (mirror of AI conditions with Human advisor type)
-const HUMAN_CONDITIONS: Condition[] = CONDITIONS.map((cond) => ({
-  ...cond,
-  conditionNumber: cond.conditionNumber + 24,
-  advisorType: 'Human' as AdvisorType
-}));
+// 3 products
+const ALL_PRODUCTS: ProductKey[] = ['protein', 'tissue', 'soap'];
 
-// Combine all 48 conditions
-const ALL_CONDITIONS: Condition[] = [...CONDITIONS, ...HUMAN_CONDITIONS];
+type GroupSelection = [number, number, number];
+type ConditionSelection = [number, number, number];
 
-/**
- * Map product key to actual product ID
- * Now using consistent keys: 'protein', 'tissue', 'soap'
- */
-function mapProductKeyToId(productKey: ProductKey): string {
-  // Keys are already the same as product IDs
-  return productKey;
+// 4C3 = 4 group combinations
+const BASE_GROUP_COMBINATIONS: GroupSelection[] = [
+  [1, 2, 3], // AI-Congruent, AI-Incongruent, Human-Congruent
+  [1, 2, 4], // AI-Congruent, AI-Incongruent, Human-Incongruent
+  [1, 3, 4], // AI-Congruent, Human-Congruent, Human-Incongruent
+  [2, 3, 4], // AI-Incongruent, Human-Congruent, Human-Incongruent
+];
+
+// For 240 participants with perfect balance:
+// Each of 4 combinations appears 60 times
+// Each group appears in 3 combinations: 3 * 60 = 180 per group ✓
+// Each condition: 180 / 2 = 90 per condition ✓
+
+// 2^3 = 8 condition selection patterns (unused in current implementation)
+// const ALL_CONDITION_PATTERNS: ConditionSelection[] = [
+//   [0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1],
+//   [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1],
+// ];
+
+// 3! = 6 product orders
+const ALL_PRODUCT_ORDERS: ProductKey[][] = [
+  ['protein', 'tissue', 'soap'],
+  ['protein', 'soap', 'tissue'],
+  ['tissue', 'protein', 'soap'],
+  ['tissue', 'soap', 'protein'],
+  ['soap', 'protein', 'tissue'],
+  ['soap', 'tissue', 'protein'],
+];
+
+interface AssignmentPattern {
+  groupSelection: GroupSelection;
+  conditionPattern: ConditionSelection;
+  productOrder: ProductKey[];
+}
+
+// Generate exactly 240 patterns for perfect counterbalancing
+// Strategy: Ensure each condition appears exactly 90 times
+// Each condition must appear in 90 / 3 groups = 30 times per group combination it's in
+const ALL_ASSIGNMENT_PATTERNS: AssignmentPattern[] = [];
+
+// Build patterns systematically to ensure perfect balance
+// Each group appears in exactly 3 of 4 combinations
+// For each combination, we need 60 patterns
+// In those 60 patterns, each of the 3 groups must select each of its 2 conditions 30 times
+
+for (let combIdx = 0; combIdx < BASE_GROUP_COMBINATIONS.length; combIdx++) {
+  const groupSelection = BASE_GROUP_COMBINATIONS[combIdx];
+  
+  // Generate 60 patterns for this combination
+  // Pattern: cycle through all 8 condition patterns, but adjust to get 30:30 split for each group
+  for (let i = 0; i < 60; i++) {
+    // Ensure each position gets 30:30 split across the 60 patterns
+    const conditionPattern: ConditionSelection = [
+      i < 30 ? 0 : 1,  // Position 0: first 30 use cond 0, next 30 use cond 1
+      Math.floor(i / 15) % 2,  // Position 1: alternates every 15
+      Math.floor(i / 10) % 2   // Position 2: alternates every 10
+    ];
+    
+    const productOrder = ALL_PRODUCT_ORDERS[i % 6];
+    
+    ALL_ASSIGNMENT_PATTERNS.push({
+      groupSelection,
+      conditionPattern,
+      productOrder
+    });
+  }
 }
 
 /**
- * Get stimulus ID for a product, advisor type, and congruity
- */
-function getStimulusId(productId: string, advisorType: AdvisorType, congruity: Congruity): string {
-  const stimulus = stimuli.find(
-    s => s.productId === productId && 
-         s.advisorType === advisorType && 
-         s.congruenceType === congruity
-  );
-  return stimulus?.id || '';
-}
-
-/**
- * Assign participant to a condition using sequential assignment with cycling
+ * Assign participant to condition with perfect counterbalancing
+ * Selects 3 groups from 4 groups, and 1 condition from each group
+ * For 240 participants: exactly 180 per group, 90 per condition
  */
 export function assignParticipantCondition(participantId: string): ExperimentCondition {
-  // Extract numeric portion from participant ID or use timestamp
   const numericMatch = participantId.match(/\d+/);
   const participantNumber = numericMatch ? parseInt(numericMatch[0]) : Date.now();
   
-  // Cycle through all 48 conditions
-  const conditionIndex = participantNumber % 48;
-  const condition = ALL_CONDITIONS[conditionIndex];
+  // Use 240 patterns for perfect counterbalancing
+  const patternIndex = participantNumber % 240;
+  const pattern = ALL_ASSIGNMENT_PATTERNS[patternIndex];
   
-  // Build stimulus order based on product order
-  const stimulusOrder = condition.productOrder.map(productKey => {
-    const productId = mapProductKeyToId(productKey);
-    return getStimulusId(productId, condition.advisorType, condition.congruity);
-  }).filter(id => id !== '');
+  // Select conditions from chosen groups
+  const selectedConditions: StimulusCondition[] = [];
   
-  // Update condition with stimulus order
-  const finalCondition: Condition = {
-    ...condition,
-    stimulusOrder
-  };
+  for (let i = 0; i < 3; i++) {
+    const groupId = pattern.groupSelection[i];
+    const conditionIndex = pattern.conditionPattern[i]; // 0 or 1
+    
+    const groupConditions = EIGHT_CONDITIONS.filter(c => c.groupId === groupId);
+    const selectedCondition = groupConditions[conditionIndex];
+    
+    selectedConditions.push(selectedCondition);
+  }
+  
+  // Map products to conditions
+  const selectedStimuli: SelectedStimulus[] = pattern.productOrder.map((product, index) => ({
+    product,
+    condition: selectedConditions[index]
+  }));
   
   return {
     participantId,
-    condition: finalCondition,
-    stimulusOrder,
-    conditionAssignment: {
-      advisorType: condition.advisorType,
-      congruenceType: condition.congruity
-    }
+    selectedStimuli
   };
 }
 
 /**
- * Validate that condition assignments follow the rules
+ * Get all 8 conditions
+ */
+export function getAllConditions(): StimulusCondition[] {
+  return [...EIGHT_CONDITIONS];
+}
+
+/**
+ * Get condition by ID
+ */
+export function getConditionById(conditionId: number): StimulusCondition | undefined {
+  return EIGHT_CONDITIONS.find(c => c.conditionId === conditionId);
+}
+
+/**
+ * Get conditions by group ID
+ */
+export function getConditionsByGroup(groupId: number): StimulusCondition[] {
+  return EIGHT_CONDITIONS.filter(c => c.groupId === groupId);
+}
+
+/**
+ * Get condition label for display
+ */
+export function getConditionLabel(conditionId: number, product?: ProductKey): string {
+  const condition = getConditionById(conditionId);
+  if (!condition) return `Unknown Condition ${conditionId}`;
+  
+  const productLabel = product ? ` - ${product}` : '';
+  return `C${conditionId} (G${condition.groupId}: ${condition.advisorType}/${condition.congruity}/${condition.advisorValence})${productLabel}`;
+}
+
+/**
+ * Validate condition setup
  */
 export function validateConditions(): boolean {
   try {
-    // Check that we have exactly 48 conditions
-    if (ALL_CONDITIONS.length !== 48) {
-      console.error(`Expected 48 conditions, found ${ALL_CONDITIONS.length}`);
+    if (EIGHT_CONDITIONS.length !== 8) {
+      console.error(`Expected 8 conditions, found ${EIGHT_CONDITIONS.length}`);
       return false;
     }
     
-    // Check that we have 24 AI and 24 Human conditions
-    const aiConditions = ALL_CONDITIONS.filter(c => c.advisorType === 'AI');
-    const humanConditions = ALL_CONDITIONS.filter(c => c.advisorType === 'Human');
-    
-    if (aiConditions.length !== 24 || humanConditions.length !== 24) {
-      console.error(`Expected 24 AI and 24 Human conditions, found ${aiConditions.length} AI and ${humanConditions.length} Human`);
-      return false;
-    }
-    
-    // Check that we have 24 Congruent and 24 Incongruent conditions
-    const congruentConditions = ALL_CONDITIONS.filter(c => c.congruity === 'Congruent');
-    const incongruentConditions = ALL_CONDITIONS.filter(c => c.congruity === 'Incongruent');
-    
-    if (congruentConditions.length !== 24 || incongruentConditions.length !== 24) {
-      console.error(`Expected 24 Congruent and 24 Incongruent conditions, found ${congruentConditions.length} Congruent and ${incongruentConditions.length} Incongruent`);
-      return false;
-    }
-    
-    // Check that each product order is unique
-    const productOrders = ALL_CONDITIONS.map(c => c.productOrder.join('-'));
-    const uniqueOrders = new Set(productOrders);
-    
-    // We should have 24 unique product orders (each used twice: once for AI, once for Human)
-    if (uniqueOrders.size !== 24) {
-      console.error(`Expected 24 unique product orders, found ${uniqueOrders.size}`);
-      return false;
-    }
-    
-    // Check that condition numbers are sequential and unique
-    const conditionNumbers = ALL_CONDITIONS.map(c => c.conditionNumber).sort((a, b) => a - b);
-    for (let i = 0; i < 48; i++) {
-      if (conditionNumbers[i] !== i + 1) {
-        console.error(`Condition number ${i + 1} is missing or duplicated`);
+    // Check each group has 2 conditions
+    for (let groupId = 1; groupId <= 4; groupId++) {
+      const groupConditions = EIGHT_CONDITIONS.filter(c => c.groupId === groupId);
+      if (groupConditions.length !== 2) {
+        console.error(`Group ${groupId} should have 2 conditions, found ${groupConditions.length}`);
         return false;
       }
     }
     
+    const aiConditions = EIGHT_CONDITIONS.filter(c => c.advisorType === 'AI');
+    const humanConditions = EIGHT_CONDITIONS.filter(c => c.advisorType === 'Human');
+    
+    if (aiConditions.length !== 4 || humanConditions.length !== 4) {
+      console.error(`Expected 4 AI and 4 Human conditions`);
+      return false;
+    }
+    
+    const congruentConditions = EIGHT_CONDITIONS.filter(c => c.congruity === 'Congruent');
+    const incongruentConditions = EIGHT_CONDITIONS.filter(c => c.congruity === 'Incongruent');
+    
+    if (congruentConditions.length !== 4 || incongruentConditions.length !== 4) {
+      console.error(`Expected 4 Congruent and 4 Incongruent conditions`);
+      return false;
+    }
+    
+    if (ALL_PRODUCTS.length !== 3) {
+      console.error(`Expected 3 products`);
+      return false;
+    }
+    
+    if (BASE_GROUP_COMBINATIONS.length !== 4) {
+      console.error(`Expected 4 base group combinations`);
+      return false;
+    }
+    
+    if (ALL_ASSIGNMENT_PATTERNS.length !== 240) {
+      console.error(`Expected 240 assignment patterns, found ${ALL_ASSIGNMENT_PATTERNS.length}`);
+      return false;
+    }
+    
     console.log('✓ All condition validation checks passed');
+    console.log(`  - 8 conditions defined in 4 groups (2 per group)`);
+    console.log(`  - 4 AI conditions, 4 Human conditions`);
+    console.log(`  - 4 Congruent conditions, 4 Incongruent conditions`);
+    console.log(`  - 3 products available`);
+    console.log(`  - 4 group combinations (4C3)`);
+    console.log(`  - 240 assignment patterns (4 x 60) for perfect counterbalancing`);
+    console.log(`  - For 240 participants: 180 per group (25%), 90 per condition (12.5%)`);
+    console.log(`  - Each participant selects 3 groups from 4 groups`);
+    console.log(`  - Each group provides 1 condition (from 2 available)`);
     return true;
   } catch (error) {
     console.error('Validation error:', error);
@@ -227,78 +265,111 @@ export function validateConditions(): boolean {
 }
 
 /**
- * Test randomization distribution across multiple assignments
+ * Test randomization distribution
  */
-export function testRandomization(numParticipants: number = 480): {
-  distribution: Record<string, number>;
+export function testRandomization(numParticipants: number = 240): {
+  conditionCounts: Record<number, number>;
+  groupCounts: Record<number, number>;
   summary: {
     byAdvisorType: Record<AdvisorType, number>;
     byCongruity: Record<Congruity, number>;
-    byConditionNumber: Record<number, number>;
+    byConditionId: Record<number, number>;
+    byGroupId: Record<number, number>;
   };
 } {
-  const distribution: Record<string, number> = {};
   const byAdvisorType: Record<AdvisorType, number> = { AI: 0, Human: 0 };
   const byCongruity: Record<Congruity, number> = { Congruent: 0, Incongruent: 0 };
-  const byConditionNumber: Record<number, number> = {};
+  const byConditionId: Record<number, number> = {};
+  const byGroupId: Record<number, number> = {};
+  const conditionCounts: Record<number, number> = {};
+  const groupCounts: Record<number, number> = {};
   
-  // Initialize condition number counters
-  for (let i = 1; i <= 48; i++) {
-    byConditionNumber[i] = 0;
+  // Initialize counters
+  for (let i = 1; i <= 8; i++) {
+    byConditionId[i] = 0;
+    conditionCounts[i] = 0;
+  }
+  for (let i = 1; i <= 4; i++) {
+    byGroupId[i] = 0;
+    groupCounts[i] = 0;
   }
   
-  // Simulate participant assignments
+  // Simulate participants
   for (let i = 0; i < numParticipants; i++) {
     const participantId = `participant_${i}`;
     const assignment = assignParticipantCondition(participantId);
     
-    const key = `${assignment.condition.advisorType}-${assignment.condition.congruity}-${assignment.condition.conditionNumber}`;
-    distribution[key] = (distribution[key] || 0) + 1;
-    
-    byAdvisorType[assignment.condition.advisorType]++;
-    byCongruity[assignment.condition.congruity]++;
-    byConditionNumber[assignment.condition.conditionNumber]++;
+    assignment.selectedStimuli.forEach(stimulus => {
+      byAdvisorType[stimulus.condition.advisorType]++;
+      byCongruity[stimulus.condition.congruity]++;
+      byConditionId[stimulus.condition.conditionId]++;
+      conditionCounts[stimulus.condition.conditionId]++;
+      byGroupId[stimulus.condition.groupId]++;
+      groupCounts[stimulus.condition.groupId]++;
+    });
   }
   
-  // Log results
+  // Print results
   console.log('\n=== Randomization Test Results ===');
   console.log(`Total participants: ${numParticipants}`);
-  console.log(`\nBy Advisor Type:`);
-  console.log(`  AI: ${byAdvisorType.AI} (${(byAdvisorType.AI / numParticipants * 100).toFixed(1)}%)`);
-  console.log(`  Human: ${byAdvisorType.Human} (${(byAdvisorType.Human / numParticipants * 100).toFixed(1)}%)`);
-  console.log(`\nBy Congruity:`);
-  console.log(`  Congruent: ${byCongruity.Congruent} (${(byCongruity.Congruent / numParticipants * 100).toFixed(1)}%)`);
-  console.log(`  Incongruent: ${byCongruity.Incongruent} (${(byCongruity.Incongruent / numParticipants * 100).toFixed(1)}%)`);
+  console.log(`Total stimuli: ${numParticipants * 3} (3 per participant)`);
   
-  console.log(`\nCondition Number Distribution (should be equal):`);
-  const counts = Object.values(byConditionNumber);
-  const expectedCount = numParticipants / 48;
-  const minCount = Math.min(...counts);
-  const maxCount = Math.max(...counts);
-  console.log(`  Expected per condition: ${expectedCount}`);
-  console.log(`  Min: ${minCount}, Max: ${maxCount}, Range: ${maxCount - minCount}`);
+  const totalStimuli = numParticipants * 3;
+  
+  console.log(`\nGroup distribution:`);
+  for (let i = 1; i <= 4; i++) {
+    const count = groupCounts[i];
+    const percentage = (count / totalStimuli * 100).toFixed(1);
+    const groupConditions = EIGHT_CONDITIONS.filter(c => c.groupId === i);
+    const groupName = `${groupConditions[0].advisorType} + ${groupConditions[0].congruity}`;
+    console.log(`  Group ${i} (${groupName}): ${count} (${percentage}%)`);
+  }
+  console.log(`  Target: ${totalStimuli / 4} per group (25%)`);
+  
+  console.log(`\nCondition distribution:`);
+  for (let i = 1; i <= 8; i++) {
+    const count = conditionCounts[i];
+    const percentage = (count / totalStimuli * 100).toFixed(1);
+    const condition = EIGHT_CONDITIONS[i - 1];
+    console.log(`  Condition ${i} (Group ${condition.groupId}, ${condition.advisorType} + ${condition.congruity}): ${count} (${percentage}%)`);
+  }
+  console.log(`  Target: ${totalStimuli / 8} per condition (12.5%)`);
+  
+  console.log(`\nAdvisor type distribution:`);
+  console.log(`  AI: ${byAdvisorType.AI} (${(byAdvisorType.AI / totalStimuli * 100).toFixed(1)}%)`);
+  console.log(`  Human: ${byAdvisorType.Human} (${(byAdvisorType.Human / totalStimuli * 100).toFixed(1)}%)`);
+  
+  console.log(`\nCongruity distribution:`);
+  console.log(`  Congruent: ${byCongruity.Congruent} (${(byCongruity.Congruent / totalStimuli * 100).toFixed(1)}%)`);
+  console.log(`  Incongruent: ${byCongruity.Incongruent} (${(byCongruity.Incongruent / totalStimuli * 100).toFixed(1)}%)`);
+  
+  const groupCountsArray = Object.values(groupCounts);
+  const minGroupCount = Math.min(...groupCountsArray);
+  const maxGroupCount = Math.max(...groupCountsArray);
+  
+  const conditionCountsArray = Object.values(conditionCounts);
+  const minConditionCount = Math.min(...conditionCountsArray);
+  const maxConditionCount = Math.max(...conditionCountsArray);
+  
+  console.log(`\nBalance analysis:`);
+  console.log(`  Groups: min ${minGroupCount}, max ${maxGroupCount}, range ${maxGroupCount - minGroupCount}`);
+  console.log(`  Conditions: min ${minConditionCount}, max ${maxConditionCount}, range ${maxConditionCount - minConditionCount}`);
   
   return {
-    distribution,
+    conditionCounts,
+    groupCounts,
     summary: {
       byAdvisorType,
       byCongruity,
-      byConditionNumber
+      byConditionId,
+      byGroupId
     }
   };
 }
 
-// Legacy function for backward compatibility
+/**
+ * Legacy compatibility
+ */
 export function generateRandomCondition(participantId: string): ExperimentCondition {
   return assignParticipantCondition(participantId);
-}
-
-// Get stimuli for a specific condition (legacy compatibility)
-export function getStimuliForCondition(
-  advisorType: 'AI' | 'Human',
-  congruenceType: 'Congruent' | 'Incongruent'
-): Stimulus[] {
-  return stimuli.filter(
-    (s) => s.advisorType === advisorType && s.congruenceType === congruenceType
-  );
 }
