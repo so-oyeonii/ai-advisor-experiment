@@ -1,224 +1,156 @@
-// Randomization logic for experimental conditions with counterbalancing
+// Randomization logic for experimental conditions
+// 8 experimental conditions with random selection of 3 stimuli per participant
 
-import { stimuli, Stimulus } from './stimuliData';
+import { ProductKey } from './stimuliData';
 
-// Type definitions matching the specification
-export type PatternKey = 'AAA' | 'AAB' | 'ABA' | 'ABB' | 'BAA' | 'BAB' | 'BBA' | 'BBB';
-export type ProductKey = 'protein' | 'tissue' | 'soap'; // Match stimuliData.ts
 export type AdvisorType = 'AI' | 'Human';
 export type Congruity = 'Congruent' | 'Incongruent';
+export type AdvisorValence = 'positive' | 'negative';
+export type PublicValence = 'positive' | 'negative';
 
-export interface Condition {
-  conditionNumber: number;
+/**
+ * 8가지 실험 조건:
+ * 1. AI + Congruent + advisor pro + comments con
+ * 2. AI + Congruent + advisor con + comments pro
+ * 3. AI + Incongruent + advisor pro + comments pro
+ * 4. AI + Incongruent + advisor con + comments con
+ * 5. Human + Congruent + advisor pro + comments con
+ * 6. Human + Congruent + advisor con + comments pro
+ * 7. Human + Incongruent + advisor pro + comments pro
+ * 8. Human + Incongruent + advisor con + comments con
+ */
+export interface StimulusCondition {
+  conditionId: number;
   advisorType: AdvisorType;
   congruity: Congruity;
-  patternKey: PatternKey;
-  productOrder: ProductKey[];
-  stimulusOrder: string[];
+  advisorValence: AdvisorValence;
+  publicValence: PublicValence;
+}
+
+export interface SelectedStimulus {
+  product: ProductKey;
+  condition: StimulusCondition;
 }
 
 export interface ExperimentCondition {
   participantId: string;
-  condition: Condition;
-  stimulusOrder: string[];
-  conditionAssignment: {
-    advisorType: AdvisorType;
-    congruenceType: Congruity;
-  };
+  selectedStimuli: SelectedStimulus[];
 }
 
-// Product rotation patterns (24 unique orderings)
-// Note: This constant is defined but used indirectly through CONDITIONS array
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const PRODUCT_PATTERNS: Record<PatternKey, ProductKey[][]> = {
-  'AAA': [
-    ['protein', 'tissue', 'soap'],
-    ['tissue', 'soap', 'protein'],
-    ['soap', 'protein', 'tissue']
-  ],
-  'AAB': [
-    ['protein', 'soap', 'tissue'],
-    ['tissue', 'protein', 'soap'],
-    ['soap', 'tissue', 'protein']
-  ],
-  'ABA': [
-    ['tissue', 'protein', 'soap'],
-    ['soap', 'tissue', 'protein'],
-    ['protein', 'soap', 'tissue']
-  ],
-  'ABB': [
-    ['tissue', 'soap', 'protein'],
-    ['soap', 'protein', 'tissue'],
-    ['protein', 'tissue', 'soap']
-  ],
-  'BAA': [
-    ['soap', 'protein', 'tissue'],
-    ['protein', 'tissue', 'soap'],
-    ['tissue', 'soap', 'protein']
-  ],
-  'BAB': [
-    ['soap', 'tissue', 'protein'],
-    ['protein', 'soap', 'tissue'],
-    ['tissue', 'protein', 'soap']
-  ],
-  'BBA': [
-    ['protein', 'tissue', 'soap'],
-    ['tissue', 'soap', 'protein'],
-    ['soap', 'protein', 'tissue']
-  ],
-  'BBB': [
-    ['protein', 'soap', 'tissue'],
-    ['tissue', 'protein', 'soap'],
-    ['soap', 'tissue', 'protein']
-  ]
-};
-
-// All 24 condition configurations
-const CONDITIONS: Condition[] = [
-  // AI Congruent (Conditions 1-12)
-  { conditionNumber: 1, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 2, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 3, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 4, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 5, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 6, advisorType: 'AI', congruity: 'Congruent', patternKey: 'AAB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 7, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 8, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 9, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABA', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 10, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 11, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 12, advisorType: 'AI', congruity: 'Congruent', patternKey: 'ABB', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
+// 8가지 실험 조건 정의
+const EIGHT_CONDITIONS: StimulusCondition[] = [
+  // AI + Congruent (advisor와 comments 불일치)
+  { conditionId: 1, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'negative' },
+  { conditionId: 2, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'positive' },
   
-  // AI Incongruent (Conditions 13-24)
-  { conditionNumber: 13, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 14, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 15, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 16, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 17, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 18, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BAB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 19, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['protein', 'tissue', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 20, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['tissue', 'soap', 'protein'], stimulusOrder: [] },
-  { conditionNumber: 21, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBA', productOrder: ['soap', 'protein', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 22, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['protein', 'soap', 'tissue'], stimulusOrder: [] },
-  { conditionNumber: 23, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['tissue', 'protein', 'soap'], stimulusOrder: [] },
-  { conditionNumber: 24, advisorType: 'AI', congruity: 'Incongruent', patternKey: 'BBB', productOrder: ['soap', 'tissue', 'protein'], stimulusOrder: [] },
+  // AI + Incongruent (advisor와 comments 일치)
+  { conditionId: 3, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'positive' },
+  { conditionId: 4, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'negative' },
+  
+  // Human + Congruent (advisor와 comments 불일치)
+  { conditionId: 5, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'negative' },
+  { conditionId: 6, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'positive' },
+  
+  // Human + Incongruent (advisor와 comments 일치)
+  { conditionId: 7, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'positive' },
+  { conditionId: 8, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'negative' },
 ];
 
-// Human conditions (mirror of AI conditions with Human advisor type)
-const HUMAN_CONDITIONS: Condition[] = CONDITIONS.map((cond) => ({
-  ...cond,
-  conditionNumber: cond.conditionNumber + 24,
-  advisorType: 'Human' as AdvisorType
-}));
-
-// Combine all 48 conditions
-const ALL_CONDITIONS: Condition[] = [...CONDITIONS, ...HUMAN_CONDITIONS];
+// 3개의 제품
+const ALL_PRODUCTS: ProductKey[] = ['protein', 'tissue', 'soap'];
 
 /**
- * Map product key to actual product ID
- * Now using consistent keys: 'protein', 'tissue', 'soap'
+ * Fisher-Yates shuffle algorithm for randomizing arrays
  */
-function mapProductKeyToId(productKey: ProductKey): string {
-  // Keys are already the same as product IDs
-  return productKey;
+function shuffleArray<T>(array: T[], seed?: number): T[] {
+  const arr = [...array];
+  
+  // Simple seeded random if seed is provided
+  let random = seed !== undefined 
+    ? () => {
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+      }
+    : Math.random;
+  
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 /**
- * Get stimulus ID for a product, advisor type, and congruity
- */
-function getStimulusId(productId: string, advisorType: AdvisorType, congruity: Congruity): string {
-  const stimulus = stimuli.find(
-    s => s.productId === productId && 
-         s.advisorType === advisorType && 
-         s.congruenceType === congruity
-  );
-  return stimulus?.id || '';
-}
-
-/**
- * Assign participant to a condition using sequential assignment with cycling
+ * 참가자에게 8가지 조건 중 3개를 랜덤하게 배정
+ * 각 조건은 3개의 제품 중 하나와 매칭됨
  */
 export function assignParticipantCondition(participantId: string): ExperimentCondition {
-  // Extract numeric portion from participant ID or use timestamp
+  // 참가자 ID에서 숫자 추출 또는 타임스탬프 사용
   const numericMatch = participantId.match(/\d+/);
-  const participantNumber = numericMatch ? parseInt(numericMatch[0]) : Date.now();
+  const seed = numericMatch ? parseInt(numericMatch[0]) : Date.now();
   
-  // Cycle through all 48 conditions
-  const conditionIndex = participantNumber % 48;
-  const condition = ALL_CONDITIONS[conditionIndex];
+  // 8가지 조건을 랜덤하게 섞기
+  const shuffledConditions = shuffleArray(EIGHT_CONDITIONS, seed);
   
-  // Build stimulus order based on product order
-  const stimulusOrder = condition.productOrder.map(productKey => {
-    const productId = mapProductKeyToId(productKey);
-    return getStimulusId(productId, condition.advisorType, condition.congruity);
-  }).filter(id => id !== '');
+  // 처음 3개의 조건 선택
+  const selectedConditions = shuffledConditions.slice(0, 3);
   
-  // Update condition with stimulus order
-  const finalCondition: Condition = {
-    ...condition,
-    stimulusOrder
-  };
+  // 3개의 제품도 랜덤하게 섞기
+  const shuffledProducts = shuffleArray(ALL_PRODUCTS, seed + 1);
+  
+  // 각 제품에 선택된 조건 배정
+  const selectedStimuli: SelectedStimulus[] = shuffledProducts.map((product, index) => ({
+    product,
+    condition: selectedConditions[index]
+  }));
   
   return {
     participantId,
-    condition: finalCondition,
-    stimulusOrder,
-    conditionAssignment: {
-      advisorType: condition.advisorType,
-      congruenceType: condition.congruity
-    }
+    selectedStimuli
   };
 }
 
 /**
- * Validate that condition assignments follow the rules
+ * 조건 배정 검증
  */
 export function validateConditions(): boolean {
   try {
-    // Check that we have exactly 48 conditions
-    if (ALL_CONDITIONS.length !== 48) {
-      console.error(`Expected 48 conditions, found ${ALL_CONDITIONS.length}`);
+    // 8가지 조건이 모두 있는지 확인
+    if (EIGHT_CONDITIONS.length !== 8) {
+      console.error(`Expected 8 conditions, found ${EIGHT_CONDITIONS.length}`);
       return false;
     }
     
-    // Check that we have 24 AI and 24 Human conditions
-    const aiConditions = ALL_CONDITIONS.filter(c => c.advisorType === 'AI');
-    const humanConditions = ALL_CONDITIONS.filter(c => c.advisorType === 'Human');
+    // AI와 Human 각각 4개씩 있는지 확인
+    const aiConditions = EIGHT_CONDITIONS.filter(c => c.advisorType === 'AI');
+    const humanConditions = EIGHT_CONDITIONS.filter(c => c.advisorType === 'Human');
     
-    if (aiConditions.length !== 24 || humanConditions.length !== 24) {
-      console.error(`Expected 24 AI and 24 Human conditions, found ${aiConditions.length} AI and ${humanConditions.length} Human`);
+    if (aiConditions.length !== 4 || humanConditions.length !== 4) {
+      console.error(`Expected 4 AI and 4 Human conditions, found ${aiConditions.length} AI and ${humanConditions.length} Human`);
       return false;
     }
     
-    // Check that we have 24 Congruent and 24 Incongruent conditions
-    const congruentConditions = ALL_CONDITIONS.filter(c => c.congruity === 'Congruent');
-    const incongruentConditions = ALL_CONDITIONS.filter(c => c.congruity === 'Incongruent');
+    // Congruent와 Incongruent 각각 4개씩 있는지 확인
+    const congruentConditions = EIGHT_CONDITIONS.filter(c => c.congruity === 'Congruent');
+    const incongruentConditions = EIGHT_CONDITIONS.filter(c => c.congruity === 'Incongruent');
     
-    if (congruentConditions.length !== 24 || incongruentConditions.length !== 24) {
-      console.error(`Expected 24 Congruent and 24 Incongruent conditions, found ${congruentConditions.length} Congruent and ${incongruentConditions.length} Incongruent`);
+    if (congruentConditions.length !== 4 || incongruentConditions.length !== 4) {
+      console.error(`Expected 4 Congruent and 4 Incongruent conditions, found ${congruentConditions.length} Congruent and ${incongruentConditions.length} Incongruent`);
       return false;
     }
     
-    // Check that each product order is unique
-    const productOrders = ALL_CONDITIONS.map(c => c.productOrder.join('-'));
-    const uniqueOrders = new Set(productOrders);
-    
-    // We should have 24 unique product orders (each used twice: once for AI, once for Human)
-    if (uniqueOrders.size !== 24) {
-      console.error(`Expected 24 unique product orders, found ${uniqueOrders.size}`);
+    // 3개의 제품이 있는지 확인
+    if (ALL_PRODUCTS.length !== 3) {
+      console.error(`Expected 3 products, found ${ALL_PRODUCTS.length}`);
       return false;
-    }
-    
-    // Check that condition numbers are sequential and unique
-    const conditionNumbers = ALL_CONDITIONS.map(c => c.conditionNumber).sort((a, b) => a - b);
-    for (let i = 0; i < 48; i++) {
-      if (conditionNumbers[i] !== i + 1) {
-        console.error(`Condition number ${i + 1} is missing or duplicated`);
-        return false;
-      }
     }
     
     console.log('✓ All condition validation checks passed');
+    console.log(`  - 8 conditions defined`);
+    console.log(`  - 4 AI conditions, 4 Human conditions`);
+    console.log(`  - 4 Congruent conditions, 4 Incongruent conditions`);
+    console.log(`  - 3 products available`);
+    console.log(`  - Each participant will see 3 randomly selected conditions`);
     return true;
   } catch (error) {
     console.error('Validation error:', error);
@@ -227,78 +159,96 @@ export function validateConditions(): boolean {
 }
 
 /**
- * Test randomization distribution across multiple assignments
+ * 랜덤 배정 테스트
  */
-export function testRandomization(numParticipants: number = 480): {
-  distribution: Record<string, number>;
+export function testRandomization(numParticipants: number = 100): {
+  conditionCounts: Record<number, number>;
   summary: {
     byAdvisorType: Record<AdvisorType, number>;
     byCongruity: Record<Congruity, number>;
-    byConditionNumber: Record<number, number>;
+    byConditionId: Record<number, number>;
   };
 } {
-  const distribution: Record<string, number> = {};
   const byAdvisorType: Record<AdvisorType, number> = { AI: 0, Human: 0 };
   const byCongruity: Record<Congruity, number> = { Congruent: 0, Incongruent: 0 };
-  const byConditionNumber: Record<number, number> = {};
+  const byConditionId: Record<number, number> = {};
+  const conditionCounts: Record<number, number> = {};
   
-  // Initialize condition number counters
-  for (let i = 1; i <= 48; i++) {
-    byConditionNumber[i] = 0;
+  // 1-8번 조건 카운터 초기화
+  for (let i = 1; i <= 8; i++) {
+    byConditionId[i] = 0;
+    conditionCounts[i] = 0;
   }
   
-  // Simulate participant assignments
+  // 참가자 시뮬레이션
   for (let i = 0; i < numParticipants; i++) {
     const participantId = `participant_${i}`;
     const assignment = assignParticipantCondition(participantId);
     
-    const key = `${assignment.condition.advisorType}-${assignment.condition.congruity}-${assignment.condition.conditionNumber}`;
-    distribution[key] = (distribution[key] || 0) + 1;
-    
-    byAdvisorType[assignment.condition.advisorType]++;
-    byCongruity[assignment.condition.congruity]++;
-    byConditionNumber[assignment.condition.conditionNumber]++;
+    // 각 참가자가 받은 3개의 조건 카운트
+    assignment.selectedStimuli.forEach(stimulus => {
+      byAdvisorType[stimulus.condition.advisorType]++;
+      byCongruity[stimulus.condition.congruity]++;
+      byConditionId[stimulus.condition.conditionId]++;
+      conditionCounts[stimulus.condition.conditionId]++;
+    });
   }
   
-  // Log results
-  console.log('\n=== Randomization Test Results ===');
-  console.log(`Total participants: ${numParticipants}`);
-  console.log(`\nBy Advisor Type:`);
-  console.log(`  AI: ${byAdvisorType.AI} (${(byAdvisorType.AI / numParticipants * 100).toFixed(1)}%)`);
-  console.log(`  Human: ${byAdvisorType.Human} (${(byAdvisorType.Human / numParticipants * 100).toFixed(1)}%)`);
-  console.log(`\nBy Congruity:`);
-  console.log(`  Congruent: ${byCongruity.Congruent} (${(byCongruity.Congruent / numParticipants * 100).toFixed(1)}%)`);
-  console.log(`  Incongruent: ${byCongruity.Incongruent} (${(byCongruity.Incongruent / numParticipants * 100).toFixed(1)}%)`);
+  // 결과 출력
+  console.log('\n=== 랜덤 배정 테스트 결과 ===');
+  console.log(`총 참가자 수: ${numParticipants}명`);
+  console.log(`총 자극물 수: ${numParticipants * 3}개 (참가자당 3개)`);
   
-  console.log(`\nCondition Number Distribution (should be equal):`);
-  const counts = Object.values(byConditionNumber);
-  const expectedCount = numParticipants / 48;
+  console.log(`\n조언자 타입별 분포:`);
+  const totalStimuli = numParticipants * 3;
+  console.log(`  AI: ${byAdvisorType.AI} (${(byAdvisorType.AI / totalStimuli * 100).toFixed(1)}%)`);
+  console.log(`  Human: ${byAdvisorType.Human} (${(byAdvisorType.Human / totalStimuli * 100).toFixed(1)}%)`);
+  
+  console.log(`\n일치성별 분포:`);
+  console.log(`  Congruent: ${byCongruity.Congruent} (${(byCongruity.Congruent / totalStimuli * 100).toFixed(1)}%)`);
+  console.log(`  Incongruent: ${byCongruity.Incongruent} (${(byCongruity.Incongruent / totalStimuli * 100).toFixed(1)}%)`);
+  
+  console.log(`\n8가지 조건별 배정 횟수:`);
+  for (let i = 1; i <= 8; i++) {
+    const count = conditionCounts[i];
+    const percentage = (count / totalStimuli * 100).toFixed(1);
+    const condition = EIGHT_CONDITIONS[i - 1];
+    console.log(`  조건 ${i} (${condition.advisorType} + ${condition.congruity}): ${count}회 (${percentage}%)`);
+  }
+  
+  const counts = Object.values(conditionCounts);
   const minCount = Math.min(...counts);
   const maxCount = Math.max(...counts);
-  console.log(`  Expected per condition: ${expectedCount}`);
-  console.log(`  Min: ${minCount}, Max: ${maxCount}, Range: ${maxCount - minCount}`);
+  console.log(`\n  최소: ${minCount}회, 최대: ${maxCount}회, 범위: ${maxCount - minCount}회`);
+  console.log(`  이론적 기댓값: ${(totalStimuli / 8).toFixed(1)}회 (완전 균등 분포 시)`);
   
   return {
-    distribution,
+    conditionCounts,
     summary: {
       byAdvisorType,
       byCongruity,
-      byConditionNumber
+      byConditionId
     }
   };
 }
 
-// Legacy function for backward compatibility
-export function generateRandomCondition(participantId: string): ExperimentCondition {
-  return assignParticipantCondition(participantId);
+/**
+ * 8가지 조건 목록 가져오기
+ */
+export function getAllConditions(): StimulusCondition[] {
+  return EIGHT_CONDITIONS;
 }
 
-// Get stimuli for a specific condition (legacy compatibility)
-export function getStimuliForCondition(
-  advisorType: 'AI' | 'Human',
-  congruenceType: 'Congruent' | 'Incongruent'
-): Stimulus[] {
-  return stimuli.filter(
-    (s) => s.advisorType === advisorType && s.congruenceType === congruenceType
-  );
+/**
+ * 조건 ID로 조건 정보 가져오기
+ */
+export function getConditionById(conditionId: number): StimulusCondition | undefined {
+  return EIGHT_CONDITIONS.find(c => c.conditionId === conditionId);
+}
+
+/**
+ * Legacy compatibility
+ */
+export function generateRandomCondition(participantId: string): ExperimentCondition {
+  return assignParticipantCondition(participantId);
 }
