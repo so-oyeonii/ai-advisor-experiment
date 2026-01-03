@@ -50,8 +50,21 @@ export default function AdminExportPage() {
   const fetchStats = async () => {
     setIsLoading(true);
     try {
-      const sessionsData = await getAllSessions();
-      setSessions(sessionsData);
+      const [sessionsData, demographicsData] = await Promise.all([
+        getAllSessions(),
+        getAllDemographics()
+      ]);
+      
+      // Merge demographics age into sessions
+      const sessionsWithAge: SessionWithDemographics[] = sessionsData.map(session => {
+        const demo = demographicsData.find(d => d.participantId === session.participantId);
+        return {
+          ...session,
+          age: demo?.age
+        };
+      });
+      
+      setSessions(sessionsWithAge);
       
       const total = sessionsData.length;
       const completed = sessionsData.filter(s => s.completed).length;
@@ -248,6 +261,31 @@ export default function AdminExportPage() {
     return new Date(timestamp as string | number | Date).toLocaleString();
   };
 
+  const calculateDuration = (startTime: unknown, endTime: unknown) => {
+    if (!startTime || !endTime) return 'N/A';
+    
+    let start: Date;
+    let end: Date;
+    
+    if (typeof startTime === 'object' && startTime !== null && 'toDate' in startTime) {
+      start = (startTime as { toDate: () => Date }).toDate();
+    } else {
+      start = new Date(startTime as string | number | Date);
+    }
+    
+    if (typeof endTime === 'object' && endTime !== null && 'toDate' in endTime) {
+      end = (endTime as { toDate: () => Date }).toDate();
+    } else {
+      end = new Date(endTime as string | number | Date);
+    }
+    
+    const diffMs = end.getTime() - start.getTime();
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffSeconds = Math.floor((diffMs % 60000) / 1000);
+    
+    return `${diffMinutes}분 ${diffSeconds}초`;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
@@ -375,14 +413,16 @@ export default function AdminExportPage() {
                   <thead className="bg-gray-100 border-b-2 border-gray-300">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">참가자 ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">나이</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">조건 (G/C)</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Advisor</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Congruity</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Valence</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">제품 순서</th>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">진행도</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">시작 시간</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">종료 시간</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">소요 시간</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -390,6 +430,9 @@ export default function AdminExportPage() {
                       <tr key={session.participantId} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                         <td className="px-4 py-3 text-sm font-mono text-gray-900">
                           {session.participantId.substring(0, 8)}...
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900">
+                          {session.age || 'N/A'}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           <div className="flex items-center space-x-1">
@@ -429,9 +472,6 @@ export default function AdminExportPage() {
                         <td className="px-4 py-3 text-sm text-gray-700">
                           {Array.isArray(session.productOrder) ? session.productOrder.join(', ') : session.productOrder}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">
-                          {session.currentStimulusIndex + 1} / 3
-                        </td>
                         <td className="px-4 py-3 text-sm">
                           {session.completed ? (
                             <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-semibold">
@@ -445,6 +485,12 @@ export default function AdminExportPage() {
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-600">
                           {formatTimestamp(session.startTime)}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {session.completed ? formatTimestamp(session.endTime) : '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                          {session.completed ? calculateDuration(session.startTime, session.endTime) : '-'}
                         </td>
                       </tr>
                     ))}
