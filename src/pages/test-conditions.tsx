@@ -182,7 +182,7 @@ export default function TestConditionsPage() {
               
               {/* Rating (MANIPULATED) */}
               <div className="flex items-center space-x-2 flex-wrap">
-                <div className="flex">
+                <div className="flex blur-[10px] select-none">
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
@@ -191,16 +191,16 @@ export default function TestConditionsPage() {
                     />
                   ))}
                 </div>
-                <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer">
+                <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer blur-[10px] select-none">
                   {displayRating.toFixed(1)} out of 5
                 </span>
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 blur-[10px] select-none">
                   {ratingCount.toLocaleString()} ratings
                 </span>
               </div>
               
               {/* Price */}
-              <div className="flex items-baseline space-x-2">
+              <div className="flex items-baseline space-x-2 blur-[10px] select-none">
                 <span className="text-3xl text-red-700">{product.price}</span>
               </div>
               
@@ -223,9 +223,30 @@ export default function TestConditionsPage() {
                       <User size={24} className="text-blue-600 flex-shrink-0" />
                     )}
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-1">
+                      <h3 className="font-semibold text-gray-900 mb-2">
                         {currentCondition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review'}
                       </h3>
+                      <div className="flex items-center space-x-2 mb-3 flex-wrap">
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              size={18} 
+                              className={
+                                currentCondition.advisorValence === 'positive' 
+                                  ? 'fill-[#FFA41C] text-[#FFA41C]' 
+                                  : (i === 0 ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300')
+                              }
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm font-semibold text-gray-700">
+                          {currentCondition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
+                        </span>
+                        <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-semibold rounded">
+                          {currentCondition.advisorType === 'AI' ? 'Algorithm Pick' : "Editor's Choice"}
+                        </span>
+                      </div>
                       <p className="text-gray-700 leading-relaxed text-sm">
                         {advisorReview}
                       </p>
@@ -236,24 +257,24 @@ export default function TestConditionsPage() {
               
               {/* Customer Reviews */}
               <div className="border-t border-gray-300 pt-4">
-                <h2 className="text-xl font-semibold mb-4">Customer Reviews</h2>
+                <h2 className="text-xl font-semibold mb-4">Other Customer Reviews</h2>
                 
-                {/* Rating Distribution */}
-                <div className="mb-6 space-y-2">
-                  {Object.entries(ratingDistribution).reverse().map(([stars, percentage]) => (
-                    <div key={stars} className="flex items-center space-x-2 text-sm">
-                      <span className="w-16 text-blue-600 hover:text-orange-600 cursor-pointer">
-                        {stars} star
-                      </span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-5 overflow-hidden">
-                        <div 
-                          className="bg-[#FFA41C] h-full transition-all duration-500"
-                          style={{ width: `${percentage}%` }}
-                        />
+                {/* Rating Distribution - Heavily Blurred */}
+                <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
+                  <div className="space-y-1">
+                    {Object.entries(ratingDistribution).reverse().slice(0, 3).map(([stars, percentage]) => (
+                      <div key={stars} className="flex items-center space-x-2 text-xs">
+                        <span className="w-10">{stars} star</span>
+                        <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                          <div 
+                            className="bg-[#FFA41C] h-full"
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right">{percentage}%</span>
                       </div>
-                      <span className="w-12 text-gray-600">{percentage}%</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
                 
                 {/* Public Reviews */}
@@ -261,22 +282,25 @@ export default function TestConditionsPage() {
                   {publicReviews.map((review, index) => (
                     <div key={index} className="border-b border-gray-200 pb-4">
                       <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User size={16} className="text-gray-600" />
+                        </div>
+                        <span className="font-semibold text-sm text-gray-900">{review.username}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 mb-2 flex-wrap">
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <Star 
                               key={i} 
-                              size={14} 
+                              size={16} 
                               className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
                             />
                           ))}
                         </div>
-                        <span className="font-semibold text-sm text-gray-900">{review.username}</span>
+                        <span className="text-sm font-medium text-gray-700">{review.rating}.0 out of 5 stars</span>
+                        <span className="text-xs text-orange-700 font-semibold">✓ Verified Purchase</span>
                       </div>
-                      <p className="text-sm text-gray-700 mb-2">{review.text}</p>
-                      <div className="flex items-center space-x-4 text-xs text-gray-600">
-                        <span>{review.username}</span>
-                        <span>{review.verified ? 'Verified Purchase' : 'Purchase'}</span>
-                      </div>
+                      <p className="text-sm text-gray-700">{review.text}</p>
                     </div>
                   ))}
                 </div>

@@ -182,7 +182,7 @@ export default function StimulusPage() {
             
             {/* Rating (MANIPULATED) */}
             <div className="flex items-center space-x-2 flex-wrap">
-              <div className="flex">
+              <div className="flex blur-[10px] select-none">
                 {[...Array(5)].map((_, i) => (
                   <Star 
                     key={i} 
@@ -191,10 +191,10 @@ export default function StimulusPage() {
                   />
                 ))}
               </div>
-              <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer">
+              <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer blur-[10px] select-none">
                 {displayRating} out of 5
               </span>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 blur-[10px] select-none">
                 ({ratingCount.toLocaleString()} ratings)
               </span>
             </div>
@@ -206,7 +206,7 @@ export default function StimulusPage() {
             </div>
             
             {/* Price */}
-            <div className="flex items-baseline space-x-2">
+            <div className="flex items-baseline space-x-2 blur-[10px] select-none">
               <span className="text-sm text-gray-600">$</span>
               <span className="text-3xl text-gray-900">{product.price}</span>
             </div>
@@ -229,16 +229,23 @@ export default function StimulusPage() {
                 )}
               </div>
               
-              <div className="flex items-center space-x-2 mb-3">
+              <div className="flex items-center space-x-2 mb-3 flex-wrap">
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
-                      size={16} 
-                      className={condition.advisorValence === 'positive' ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
+                      size={18} 
+                      className={
+                        condition.advisorValence === 'positive' 
+                          ? 'fill-[#FFA41C] text-[#FFA41C]' 
+                          : (i === 0 ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300')
+                      }
                     />
                   ))}
                 </div>
+                <span className="text-sm font-semibold text-gray-700">
+                  {condition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
+                </span>
                 <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-semibold rounded">
                   {condition.advisorType === 'AI' ? 'Algorithm Pick' : "Editor's Choice"}
                 </span>
@@ -261,36 +268,32 @@ export default function StimulusPage() {
             
             {/* CUSTOMER REVIEWS SECTION */}
             <div>
-              <h2 className="text-xl font-bold mb-4">Customer Reviews</h2>
+              <h2 className="text-xl font-bold mb-4">Other Customer Reviews</h2>
               
-              {/* Rating Summary */}
-              <div className="flex flex-col sm:flex-row items-start sm:space-x-8 space-y-4 sm:space-y-0 mb-6">
-                <div className="text-center">
-                  <div className="text-5xl font-bold text-gray-900">{displayRating}</div>
-                  <div className="flex justify-center my-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
+              {/* Rating Summary - Heavily Blurred */}
+              <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
+                <div className="flex items-center space-x-4">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-gray-900">{displayRating}</div>
+                    <div className="flex justify-center my-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={12} className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Rating Distribution (MANIPULATED) */}
+                  <div className="flex-1 space-y-1">
+                    {ratingDistribution.slice(0, 3).map((percent: number, index: number) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <span className="text-xs w-10">{5-index} star</span>
+                        <div className="flex-1 bg-gray-300 rounded-full h-2">
+                          <div className="bg-[#FFA41C] h-2 rounded-full" style={{width: `${percent}%`}} />
+                        </div>
+                        <span className="text-xs w-8 text-right">{percent}%</span>
+                      </div>
                     ))}
                   </div>
-                  <div className="text-sm text-gray-600">{ratingCount.toLocaleString()} ratings</div>
-                </div>
-                
-                {/* Rating Distribution (MANIPULATED) */}
-                <div className="flex-1 w-full space-y-1">
-                  {ratingDistribution.map((percent: number, index: number) => (
-                    <div key={index} className="flex items-center space-x-2">
-                      <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer w-12">
-                        {5-index} star
-                      </span>
-                      <div className="flex-1 bg-gray-300 rounded-full h-4">
-                        <div 
-                          className="bg-[#FFA41C] h-4 rounded-full transition-all" 
-                          style={{width: `${percent}%`}}
-                        />
-                      </div>
-                      <span className="text-sm text-gray-600 w-12 text-right">{percent}%</span>
-                    </div>
-                  ))}
                 </div>
               </div>
               
@@ -310,12 +313,11 @@ export default function StimulusPage() {
                     <div className="flex items-center space-x-2 mb-2 flex-wrap">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={14} className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
+                          <Star key={i} size={16} className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
                         ))}
                       </div>
-                      {review.verified && (
-                        <span className="text-xs text-orange-700 font-semibold">Verified Purchase</span>
-                      )}
+                      <span className="text-sm font-medium text-gray-700">{review.rating}.0 out of 5 stars</span>
+                      <span className="text-xs text-orange-700 font-semibold">✓ Verified Purchase</span>
                     </div>
                     
                     <p className="text-gray-800 text-sm leading-relaxed">
