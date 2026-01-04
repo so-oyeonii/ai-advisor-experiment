@@ -373,3 +373,13 @@ export function testRandomization(numParticipants: number = 240): {
 export function generateRandomCondition(participantId: string): ExperimentCondition {
   return assignParticipantCondition(participantId);
 }
+
+/**
+ * Assign condition group (c1-c8) for survey context
+ * Maps to the 8 condition groups from DATABASE_SCHEMA.md
+ */
+export function assignCondition(): 'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6' | 'c7' | 'c8' {
+  // Random assignment to one of 8 condition groups
+  const randomIndex = Math.floor(Math.random() * 8);
+  return `c${randomIndex + 1}` as 'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6' | 'c7' | 'c8';
+}

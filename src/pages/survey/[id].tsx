@@ -1,30 +1,91 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import LikertScale from '@/components/LikertScale';
-import SemanticDifferential from '@/components/SemanticDifferential';
-import { saveSurveyResponse, updateSession } from '@/lib/firebase';
+import { useSurvey } from '@/contexts/SurveyContext';
+import { usePageDwellTime } from '@/hooks/usePageDwellTime';
+
+// Import all Block A survey components
+import Q0_ProductInvolvement from '@/components/survey/Q0_ProductInvolvement';
+import Q1_ManipulationCheck from '@/components/survey/Q1_ManipulationCheck';
+import Q2_AttentionCheck from '@/components/survey/Q2_AttentionCheck';
+import Q3_RecallTask from '@/components/survey/Q3_RecallTask';
+import M1_ArgumentQuality from '@/components/survey/M1_ArgumentQuality';
+import M2a_SourceCredibilityExpertise from '@/components/survey/M2a_SourceCredibilityExpertise';
+import M2b_SourceCredibilityTrust from '@/components/survey/M2b_SourceCredibilityTrust';
+import M3_PersuasiveIntent from '@/components/survey/M3_PersuasiveIntent';
+import MV5_MindPerception from '@/components/survey/MV5_MindPerception';
+import DV1_Persuasiveness from '@/components/survey/DV1_Persuasiveness';
+import DV2_PurchaseIntention from '@/components/survey/DV2_PurchaseIntention';
+import DV3_DecisionConfidence from '@/components/survey/DV3_DecisionConfidence';
+
+import type {
+  ProductInvolvementResponse,
+  ManipulationCheckResponse,
+  AttentionCheckResponse,
+  RecallTaskResponse,
+  ArgumentQualityResponse,
+  CredibilityExpertiseResponse,
+  CredibilityTrustworthinessResponse,
+  PersuasiveIntentResponse,
+  MindPerceptionResponse,
+  PersuasivenessResponse,
+  PurchaseIntentionResponse,
+  DecisionConfidenceResponse,
+  BlockAResponse
+} from '@/types/survey';
+
+type QuestionStep = 
+  | 'Q0' | 'Q1' | 'Q2' | 'Q3' 
+  | 'M1' | 'M2a' | 'M2b' | 'M3' 
+  | 'MV5' | 'DV1' | 'DV2' | 'DV3';
+
+const QUESTION_STEPS: QuestionStep[] = [
+  'Q0', 'Q1', 'Q2', 'Q3', 
+  'M1', 'M2a', 'M2b', 'M3', 
+  'MV5', 'DV1', 'DV2', 'DV3'
+];
 
 export default function SurveyPage() {
   const router = useRouter();
   const { id } = router.query;
-  const stimulusId = Number(id);
+  const stimulusOrder = Number(id);
+  
+  const { saveBlockAResponse, goToNextStimulus, currentStimulus } = useSurvey();
+  const { getCurrentDwellTime } = usePageDwellTime();
+  
+  const [currentStep, setCurrentStep] = useState<QuestionStep>('Q0');
+  const [blockAData, setBlockAData] = useState<Partial<BlockAResponse>>({});
+  const [product, setProduct] = useState<string>('');
 
-  const [formData, setFormData] = useState<Record<string, string | number>>({});
+  // Load product info from session storage
+  useEffect(() => {
+    if (stimulusOrder >= 0 && stimulusOrder <= 2) {
+      const storedCondition = sessionStorage.getItem('experimentCondition');
+      if (storedCondition) {
+        const condition = JSON.parse(storedCondition);
+        const currentProduct = condition.selectedStimuli[stimulusOrder]?.product || 'product';
+        setProduct(currentProduct);
+      }
+    }
+  }, [stimulusOrder]);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: isNaN(Number(value)) ? value : Number(value)
-    }));
+  const handleComplete = (step: QuestionStep, data: any) => {
+    // Merge the response data
+    setBlockAData(prev => ({ ...prev, ...data }));
+    
+    // Move to next step
+    const currentIndex = QUESTION_STEPS.indexOf(step);
+    if (currentIndex < QUESTION_STEPS.length - 1) {
+      setCurrentStep(QUESTION_STEPS[currentIndex + 1]);
+    } else {
+      // All Block A questions completed
+      handleFinalSubmit(data);
+    }
   };
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    
-    const participantId = sessionStorage.getItem('participantId')!;
+  const handleFinalSubmit = async (finalData: any) => {
+    // Get experiment condition details
     const storedCondition = sessionStorage.getItem('experimentCondition');
-    const storedFullCondition = sessionStorage.getItem(`condition_${stimulusId}`);
+    const storedFullCondition = sessionStorage.getItem(`condition_${stimulusOrder}`);
     
     if (!storedCondition) {
       console.error('No experiment condition found');
@@ -32,212 +93,138 @@ export default function SurveyPage() {
     }
     
     const experimentCondition = JSON.parse(storedCondition);
-    const currentStimulus = experimentCondition.selectedStimuli[stimulusId];
+    const currentStimulus = experimentCondition.selectedStimuli[stimulusOrder];
     const fullCondition = storedFullCondition ? JSON.parse(storedFullCondition) : currentStimulus.condition;
     
-    // Save survey response
-    await saveSurveyResponse({
-      participantId,
-      stimulusId: String(stimulusId),
-      productId: currentStimulus.product,
-      productName: currentStimulus.product,
-      groupId: fullCondition.groupId,
-      conditionId: fullCondition.conditionId,
-      advisorType: currentStimulus.condition.advisorType,
-      congruity: currentStimulus.condition.congruity,
-      advisorValence: currentStimulus.condition.advisorValence,
-      publicValence: currentStimulus.condition.publicValence,
-      responseData: formData,
-      responseId: `${participantId}_${stimulusId}`
-    });
+    // Get page dwell time
+    const dwellTime = getCurrentDwellTime();
+    
+    // Prepare complete Block A response with experimental conditions
+    const completeBlockAResponse = {
+      ...blockAData,
+      ...finalData,
+      // Experimental conditions
+      product: currentStimulus.product,
+      advisor_type: currentStimulus.condition.advisorType.toLowerCase() === 'ai' ? 'ai' : 'expert',
+      congruity: currentStimulus.condition.congruity.toLowerCase() === 'congruent' ? 'match' : 'nonmatch',
+      review_valence: currentStimulus.condition.advisorValence,
+      page_dwell_time: dwellTime
+    };
+    
+    // Save to context
+    saveBlockAResponse(stimulusOrder + 1, completeBlockAResponse as any);
     
     // Navigate
-    if (stimulusId < 2) {
+    if (stimulusOrder < 2) {
       // More stimuli remaining
-      const nextStimulus = stimulusId + 1;
-      sessionStorage.setItem('currentStimulus', String(nextStimulus));
-      
-      // Update session progress in Firebase
-      await updateSession(participantId, {
-        currentStimulusIndex: nextStimulus
-      });
-      
-      router.push(`/stimulus/${nextStimulus}`);
+      goToNextStimulus();
+      router.push(`/stimulus/${stimulusOrder + 1}`);
     } else {
-      // All 3 completed
-      router.push('/demographics');
+      // All 3 stimuli completed, go to general questions
+      router.push('/general-questions');
     }
   };
 
+  // Progress indicator
+  const progress = ((QUESTION_STEPS.indexOf(currentStep) + 1) / QUESTION_STEPS.length) * 100;
+
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        
-        <h1 className="text-2xl font-bold mb-6">Product Evaluation Survey</h1>
-        
-        <form onSubmit={handleSubmit} className="space-y-8">
-          
-          {/* SECTION 1: Manipulation Checks */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">About the Information</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Who provided the information you just read?
-                </label>
-                <div className="space-y-2">
-                  {['An Artificial Intelligence (AI) System', 'A Human Expert', 'I am not sure'].map(option => (
-                    <label key={option} className="flex items-center space-x-3 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="mc_advisorType"
-                        value={option}
-                        onChange={handleChange}
-                        className="h-4 w-4 text-blue-600"
-                        required
-                      />
-                      <span className="text-gray-800">{option}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  How did the information compare to your expectations?
-                </label>
-                <div className="space-y-2">
-                  {['It matched my thoughts', 'It did not match my thoughts'].map(option => (
-                    <label key={option} className="flex items-center space-x-3 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        name="mc_congruity"
-                        value={option}
-                        onChange={handleChange}
-                        className="h-4 w-4 text-blue-600"
-                        required
-                      />
-                      <span className="text-gray-800">{option}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-          
-          {/* SECTION 2: Argument Quality */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">Information Quality</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Rate your agreement with the following statements (1 = Strongly Disagree, 7 = Strongly Agree)
-            </p>
-            
-            {[
-              'The information shared is accurate',
-              'The information shared ensures appropriateness',
-              'The information shared is highly detailed and comprehensive',
-              'The information shared is always updated in a timely manner'
-            ].map((item, index) => (
-              <LikertScale 
-                key={index}
-                name={`argQuality_${index + 1}`}
-                question={item}
-                onChange={handleChange}
-              />
-            ))}
-          </section>
-          
-          {/* SECTION 3: Source Credibility */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">Source Evaluation</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              How would you describe the source that provided the information?
-            </p>
-            
-            {[
-              ['Undependable', 'Dependable'],
-              ['Dishonest', 'Honest'],
-              ['Unreliable', 'Reliable'],
-              ['Insincere', 'Sincere'],
-              ['Untrustworthy', 'Trustworthy']
-            ].map((pair, index) => (
-              <SemanticDifferential
-                key={index}
-                name={`credibility_${index + 1}`}
-                leftLabel={pair[0]}
-                rightLabel={pair[1]}
-                onChange={handleChange}
-              />
-            ))}
-          </section>
-          
-          {/* SECTION 4: Perceived Persuasive Intent */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">Reviewer Intentions</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Rate your agreement (1 = Strongly Disagree, 7 = Strongly Agree)
-            </p>
-            
-            {[
-              'The online reviewers cared mostly about getting me to buy the brand',
-              'Most of the online reviews were intended to mislead',
-              'The people writing the online reviews were up to something',
-              'The reviewer has an ulterior motive',
-              "The reviewer's statements are suspicious",
-              'The reviewer is motivated to exaggerate the performance of this product'
-            ].map((item, index) => (
-              <LikertScale 
-                key={index}
-                name={`ppi_${index + 1}`}
-                question={item}
-                onChange={handleChange}
-              />
-            ))}
-          </section>
-          
-          {/* SECTION 5: Perceived Persuasiveness */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">Overall Impression</h2>
-            <p className="text-sm text-gray-600 mb-4">
-              Rate your agreement (1 = Strongly Disagree, 7 = Strongly Agree)
-            </p>
-            
-            {[
-              'These reviews are convincing for me to trust the product',
-              'These reviews are important when I purchase the product',
-              'This message will cause changes in my behavior',
-              'After viewing this message, I will make changes in my attitude'
-            ].map((item, index) => (
-              <LikertScale 
-                key={index}
-                name={`persuasiveness_${index + 1}`}
-                question={item}
-                onChange={handleChange}
-              />
-            ))}
-          </section>
-          
-          {/* SECTION 6: Decision Confidence */}
-          <section>
-            <h2 className="text-lg font-semibold mb-4">Purchase Confidence</h2>
-            <LikertScale 
-              name="confidence"
-              question="Indicate your level of confidence in buying the product after reading the online reviews"
-              leftLabel="Not at all confident"
-              rightLabel="Very confident"
-              onChange={handleChange}
+    <div className="min-h-screen bg-gray-50">
+      {/* Progress Bar */}
+      <div className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto py-4 px-6">
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-lg font-semibold text-gray-900">
+              Survey - Stimulus {stimulusOrder + 1} of 3
+            </h1>
+            <span className="text-sm text-gray-600">
+              Question {QUESTION_STEPS.indexOf(currentStep) + 1} of {QUESTION_STEPS.length}
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
             />
-          </section>
-          
-          {/* Submit Button */}
-          <button 
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition"
-          >
-            {stimulusId < 2 ? 'Continue to Next Product' : 'Continue to Final Questions'}
-          </button>
-        </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Question Components */}
+      <div className="py-8">
+        {currentStep === 'Q0' && (
+          <Q0_ProductInvolvement 
+            product={product}
+            onComplete={(data: ProductInvolvementResponse) => handleComplete('Q0', data)}
+          />
+        )}
+        
+        {currentStep === 'Q1' && (
+          <Q1_ManipulationCheck 
+            onComplete={(data: ManipulationCheckResponse) => handleComplete('Q1', data)}
+          />
+        )}
+        
+        {currentStep === 'Q2' && (
+          <Q2_AttentionCheck 
+            product={product}
+            onComplete={(data: AttentionCheckResponse) => handleComplete('Q2', data)}
+          />
+        )}
+        
+        {currentStep === 'Q3' && (
+          <Q3_RecallTask 
+            onComplete={(data: RecallTaskResponse) => handleComplete('Q3', data)}
+          />
+        )}
+        
+        {currentStep === 'M1' && (
+          <M1_ArgumentQuality 
+            onComplete={(data: ArgumentQualityResponse) => handleComplete('M1', data)}
+          />
+        )}
+        
+        {currentStep === 'M2a' && (
+          <M2a_SourceCredibilityExpertise 
+            onComplete={(data: CredibilityExpertiseResponse) => handleComplete('M2a', data)}
+          />
+        )}
+        
+        {currentStep === 'M2b' && (
+          <M2b_SourceCredibilityTrust 
+            onComplete={(data: CredibilityTrustworthinessResponse) => handleComplete('M2b', data)}
+          />
+        )}
+        
+        {currentStep === 'M3' && (
+          <M3_PersuasiveIntent 
+            onComplete={(data: PersuasiveIntentResponse) => handleComplete('M3', data)}
+          />
+        )}
+        
+        {currentStep === 'MV5' && (
+          <MV5_MindPerception 
+            onComplete={(data: MindPerceptionResponse) => handleComplete('MV5', data)}
+          />
+        )}
+        
+        {currentStep === 'DV1' && (
+          <DV1_Persuasiveness 
+            onComplete={(data: PersuasivenessResponse) => handleComplete('DV1', data)}
+          />
+        )}
+        
+        {currentStep === 'DV2' && (
+          <DV2_PurchaseIntention 
+            onComplete={(data: PurchaseIntentionResponse) => handleComplete('DV2', data)}
+          />
+        )}
+        
+        {currentStep === 'DV3' && (
+          <DV3_DecisionConfidence 
+            onComplete={(data: DecisionConfidenceResponse) => handleComplete('DV3', data)}
+          />
+        )}
       </div>
     </div>
   );

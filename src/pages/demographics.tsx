@@ -1,216 +1,63 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/router';
-import LikertScale from '@/components/LikertScale';
-import { saveDemographics, updateSession, getKSTTimestamp } from '@/lib/firebase';
+import { useSurvey } from '@/contexts/SurveyContext';
+import Demographics_Form from '@/components/survey/Demographics';
+import type { DemographicsResponse } from '@/types/survey';
 
 export default function DemographicsPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<Record<string, string | number>>({});
+  const { saveDemographics, submitAllResponses, isSubmitting, submitError } = useSurvey();
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: e.target.type === 'number' ? Number(value) : value
-    }));
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    
-    const participantId = sessionStorage.getItem('participantId')!;
-    
-    // Save demographics with all survey data
-    await saveDemographics({
-      participantId,
-      age: String(formData.age) || '',
-      gender: formData.gender as string || '',
-      education: formData.education as string || '',
-      nationality: formData.nationality as string || '',
-      income: formData.income as string || '',
-      online_shopping_frequency: formData.online_shopping_frequency as string || '',
-      shopping_frequency: formData.shopping_frequency as string || '',
-      ai_usage_frequency: formData.ai_usage_frequency as string || '',
-      // AI Familiarity
-      ai_familiarity_1: formData.ai_familiarity_1 as number,
-      ai_familiarity_2: formData.ai_familiarity_2 as number,
-      ai_familiarity_3: formData.ai_familiarity_3 as number,
-      // Review Skepticism
-      review_skepticism_1: formData.review_skepticism_1 as number,
-      review_skepticism_2: formData.review_skepticism_2 as number,
-      review_skepticism_3: formData.review_skepticism_3 as number,
-      review_skepticism_4: formData.review_skepticism_4 as number,
-      // Attitude toward AI
-      attitude_ai_1: formData.attitude_ai_1 as number,
-      attitude_ai_2: formData.attitude_ai_2 as number,
-      attitude_ai_3: formData.attitude_ai_3 as number,
-      attitude_ai_4: formData.attitude_ai_4 as number,
-    });
-    
-    // Mark session complete with end time
-    await updateSession(participantId, {
-      completed: true,
-      endTime: getKSTTimestamp()
-    });
-    
-    router.push('/complete');
+  const handleComplete = async (data: DemographicsResponse) => {
+    try {
+      // Save demographics to context
+      saveDemographics(data);
+      
+      // Submit all responses to Firebase (creates 3 rows)
+      await submitAllResponses();
+      
+      // Navigate to completion page
+      router.push('/complete');
+    } catch (error) {
+      console.error('Error submitting survey:', error);
+      alert('Failed to submit survey. Please try again.');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold mb-2">Final Questions</h1>
-        <p className="text-gray-600 mb-8">
-          Please answer a few questions about yourself for statistical purposes.
-        </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-4xl mx-auto py-4 px-6">
+          <h1 className="text-lg font-semibold text-gray-900">
+            Final Step: Demographics
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">
+            Please answer the following questions about yourself
+          </p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="py-8">
+        {submitError && (
+          <div className="max-w-4xl mx-auto px-6 mb-4">
+            <div className="bg-red-50 border-l-4 border-red-400 p-4">
+              <p className="text-red-800 font-medium">Error: {submitError}</p>
+            </div>
+          </div>
+        )}
         
-        <form onSubmit={handleSubmit} className="space-y-8">
-          
-          {/* AI Familiarity */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">AI Experience</h2>
-            {[
-              'I am familiar with how conversational AI systems (e.g., chatbots, voice assistants) work',
-              'I regularly use AI-based conversational agents such as ChatGPT, Siri, or Alexa',
-              'I have a clear understanding of the capabilities and limitations of conversational AI'
-            ].map((item, i) => (
-              <LikertScale key={i} name={`ai_familiarity_${i+1}`} question={item} onChange={handleChange} />
-            ))}
-          </section>
-          
-          {/* Review Skepticism */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">Online Reviews</h2>
-            {[
-              'Online reviews are generally not truthful',
-              'Those writing reviews are not necessarily real customers',
-              'Online reviews are often inaccurate',
-              'The same person often posts reviews under different names'
-            ].map((item, i) => (
-              <LikertScale key={i} name={`review_skepticism_${i+1}`} question={item} onChange={handleChange} />
-            ))}
-          </section>
-          
-          {/* Attitude toward AI */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">AI in Shopping</h2>
-            {[
-              'AI enhances my shopping experience',
-              'I&apos;m comfortable interacting with AI during shopping',
-              'I trust AI-driven product suggestions',
-              'AI accurately provides product recommendations'
-            ].map((item, i) => (
-              <LikertScale key={i} name={`attitude_ai_${i+1}`} question={item} onChange={handleChange} />
-            ))}
-          </section>
-          
-          {/* Behavioral Measures */}
-          <section className="border-b pb-6">
-            <h2 className="text-lg font-semibold mb-4">Shopping Habits</h2>
-            
-            <div className="mb-6">
-              <label className="block text-gray-700 font-medium mb-2">
-                Online shopping frequency:
-              </label>
-              <select name="shopping_frequency" onChange={handleChange} required className="w-full p-2 border rounded-md">
-                <option value="">Select...</option>
-                <option value="less_than_weekly">Less than once a week</option>
-                <option value="1-2_weekly">1-2 times a week</option>
-                <option value="3-4_weekly">3-4 times a week</option>
-                <option value="daily">Daily</option>
-              </select>
+        {isSubmitting ? (
+          <div className="max-w-4xl mx-auto p-6">
+            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-lg text-gray-700">Submitting your responses...</p>
+              <p className="text-sm text-gray-500 mt-2">Please wait, do not close this page.</p>
             </div>
-            
-            <div>
-              <label className="block text-gray-700 font-medium mb-2">
-                Generative AI usage (e.g., ChatGPT):
-              </label>
-              <select name="ai_usage_frequency" onChange={handleChange} required className="w-full p-2 border rounded-md">
-                <option value="">Select...</option>
-                <option value="never">Never</option>
-                <option value="less_than_monthly">Less than once a month</option>
-                <option value="weekly">Once a week</option>
-                <option value="daily">Daily</option>
-              </select>
-            </div>
-          </section>
-          
-          {/* Demographics */}
-          <section>
-            <h2 className="text-lg font-semibold mb-4">About You</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">Gender:</label>
-                <select name="gender" onChange={handleChange} required className="w-full p-2 border rounded-md">
-                  <option value="">Select...</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                  <option value="prefer_not_to_say">Prefer not to say</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">Age:</label>
-                <input 
-                  type="number" 
-                  name="age" 
-                  min="18" 
-                  max="100"
-                  onChange={handleChange}
-                  required 
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">Nationality:</label>
-                <input 
-                  type="text" 
-                  name="nationality" 
-                  onChange={handleChange}
-                  required 
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">Education:</label>
-                <select name="education" onChange={handleChange} required className="w-full p-2 border rounded-md">
-                  <option value="">Select...</option>
-                  <option value="high_school">High school or below</option>
-                  <option value="some_college">Some college</option>
-                  <option value="bachelors">Bachelor&apos;s degree</option>
-                  <option value="masters">Master&apos;s degree</option>
-                  <option value="doctorate">Doctorate</option>
-                </select>
-              </div>
-              
-              <div className="md:col-span-2">
-                <label className="block text-gray-700 font-medium mb-2">Annual Income (USD):</label>
-                <select name="income" onChange={handleChange} required className="w-full p-2 border rounded-md">
-                  <option value="">Select...</option>
-                  <option value="under_10k">Less than $10,000</option>
-                  <option value="10-20k">$10,000 - $19,999</option>
-                  <option value="20-30k">$20,000 - $29,999</option>
-                  <option value="30-50k">$30,000 - $49,999</option>
-                  <option value="50-75k">$50,000 - $74,999</option>
-                  <option value="75-100k">$75,000 - $99,999</option>
-                  <option value="over_100k">$100,000 or more</option>
-                  <option value="prefer_not_to_say">Prefer not to say</option>
-                </select>
-              </div>
-            </div>
-          </section>
-          
-          <button 
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Complete Study
-          </button>
-        </form>
+          </div>
+        ) : (
+          <Demographics_Form onComplete={handleComplete} />
+        )}
       </div>
     </div>
   );

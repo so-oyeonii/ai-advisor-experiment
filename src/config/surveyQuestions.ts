@@ -1,0 +1,645 @@
+/**
+ * Survey Questions Configuration
+ * Based on SURVEY_QUESTIONS.md
+ * 
+ * This file contains all question text, scales, and options used in the survey.
+ * Organized by question blocks for easy reference and maintenance.
+ */
+
+/**
+ * Scale type definitions
+ */
+export type ScaleType = 
+  | 'likert7'           // 1-7 Likert scale
+  | 'semantic7'         // 1-7 Semantic differential scale
+  | 'categorical'       // Multiple choice
+  | 'text'              // Open-ended text
+  | 'numeric';          // Numeric input
+
+export interface LikertScaleLabels {
+  min: string;
+  max: string;
+}
+
+export interface QuestionItem {
+  variable: string;
+  text: string;
+  scaleType: ScaleType;
+  scaleLabels?: LikertScaleLabels;
+  options?: { value: string; label: string }[];
+  note?: string;
+  warning?: string;
+}
+
+export interface QuestionBlock {
+  title: string;
+  description?: string;
+  instruction?: string;
+  items: QuestionItem[];
+  timeLimit?: number; // in seconds
+  warning?: string;
+}
+
+/**
+ * Block A: Stimulus-Specific Questions (Repeated 3 times)
+ */
+
+export const Q0_ProductInvolvement: QuestionBlock = {
+  title: 'Product Involvement',
+  items: [
+    {
+      variable: 'involvement_1',
+      text: 'I have a strong interest in this product.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'involvement_2',
+      text: 'This product is important to me.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'involvement_3',
+      text: 'I pay close attention to information related to this product.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const Q1_ManipulationChecks: QuestionBlock = {
+  title: 'Manipulation Checks',
+  items: [
+    {
+      variable: 'manip_advisor_type',
+      text: 'Who wrote the FEATURED REVIEW shown at the TOP of the product page?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'ai', label: 'An Artificial Intelligence (AI) System' },
+        { value: 'human', label: 'A Human Expert (or Reviewer)' },
+        { value: 'unsure', label: 'I am not sure' }
+      ]
+    },
+    {
+      variable: 'manip_review_valence',
+      text: 'Overall, was the FEATURED REVIEW positive or negative about the product?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'positive', label: 'Mostly positive (recommended the product)' },
+        { value: 'negative', label: 'Mostly negative (did not recommend the product)' },
+        { value: 'neutral', label: "Neutral / I don't remember" }
+      ]
+    }
+  ]
+};
+
+export const Q2_AttentionChecks: QuestionBlock = {
+  title: 'Attention Checks',
+  items: [
+    {
+      variable: 'attention_congruity',
+      text: 'How did the FEATURED REVIEW at the top compare to the CUSTOMER REVIEWS below it?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'similar', label: 'They were mostly similar/consistent with each other' },
+        { value: 'different', label: 'They were mostly different/inconsistent with each other' },
+        { value: 'unsure', label: "I'm not sure / I don't remember" }
+      ]
+    },
+    {
+      variable: 'attention_product',
+      text: 'What type of product was shown on the page you just viewed?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'protein', label: 'Protein powder' },
+        { value: 'toilet', label: 'Toilet paper' },
+        { value: 'soap', label: 'Hand soap' },
+        { value: 'unsure', label: "I don't remember" }
+      ],
+      warning: '⚠️ Participants who fail this attention check will not receive compensation.'
+    }
+  ]
+};
+
+export const Q3_RecallTask: QuestionBlock = {
+  title: 'Recall Task',
+  instruction: 'Please recall the set of reviews you just read and list as many information points as you can remember.\n\nExamples include product features, advantages and disadvantages, usage experiences, specifications or numerical information, comparisons, and cautions.\n\nPlease write one point per box within 90 seconds:',
+  timeLimit: 90,
+  items: [
+    { variable: 'recall_1', text: 'Information point 1:', scaleType: 'text' },
+    { variable: 'recall_2', text: 'Information point 2:', scaleType: 'text' },
+    { variable: 'recall_3', text: 'Information point 3:', scaleType: 'text' },
+    { variable: 'recall_4', text: 'Information point 4:', scaleType: 'text' },
+    { variable: 'recall_5', text: 'Information point 5:', scaleType: 'text' },
+    { variable: 'recall_6', text: 'Information point 6:', scaleType: 'text' },
+    { variable: 'recall_7', text: 'Information point 7:', scaleType: 'text' },
+    { variable: 'recall_8', text: 'Information point 8:', scaleType: 'text' }
+  ]
+};
+
+export const M1_ArgumentQuality: QuestionBlock = {
+  title: 'Perceived Argument Quality',
+  description: 'Please evaluate the argument in the FEATURED REVIEW shown at the top.',
+  items: [
+    {
+      variable: 'arg_quality_1',
+      text: 'The argument in the featured review is logical.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'arg_quality_2',
+      text: 'The argument in the featured review is convincing.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'arg_quality_3',
+      text: 'The argument in the featured review is relevant.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'arg_quality_4',
+      text: 'The argument in the featured review is strong.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const M2a_CredibilityExpertise: QuestionBlock = {
+  title: 'Source Credibility - Expertise',
+  description: 'The following questions are about the SOURCE (reviewer) who created the FEATURED REVIEW at the top. Please rate the source (reviewer) on the following dimensions:',
+  items: [
+    {
+      variable: 'credibility_expertise_1',
+      text: 'Not Expert (1) --- Expert (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Not Expert', max: 'Expert' }
+    },
+    {
+      variable: 'credibility_expertise_2',
+      text: 'Inexperienced (1) --- Experienced (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Inexperienced', max: 'Experienced' }
+    },
+    {
+      variable: 'credibility_expertise_3',
+      text: 'Unknowledgeable (1) --- Knowledgeable (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Unknowledgeable', max: 'Knowledgeable' }
+    },
+    {
+      variable: 'credibility_expertise_4',
+      text: 'Unqualified (1) --- Qualified (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Unqualified', max: 'Qualified' }
+    },
+    {
+      variable: 'credibility_expertise_5',
+      text: 'Unskilled (1) --- Skilled (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Unskilled', max: 'Skilled' }
+    }
+  ]
+};
+
+export const M2b_CredibilityTrustworthiness: QuestionBlock = {
+  title: 'Source Credibility - Trustworthiness',
+  description: 'Thinking about the source (reviewer) of the FEATURED REVIEW at the top, please rate:',
+  items: [
+    {
+      variable: 'credibility_trust_1',
+      text: 'Undependable (1) --- Dependable (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Undependable', max: 'Dependable' }
+    },
+    {
+      variable: 'credibility_trust_2',
+      text: 'Dishonest (1) --- Honest (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Dishonest', max: 'Honest' }
+    },
+    {
+      variable: 'credibility_trust_3',
+      text: 'Unreliable (1) --- Reliable (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Unreliable', max: 'Reliable' }
+    },
+    {
+      variable: 'credibility_trust_4',
+      text: 'Insincere (1) --- Sincere (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Insincere', max: 'Sincere' }
+    },
+    {
+      variable: 'credibility_trust_5',
+      text: 'Untrustworthy (1) --- Trustworthy (7)',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Untrustworthy', max: 'Trustworthy' }
+    }
+  ]
+};
+
+export const M3_PersuasiveIntent: QuestionBlock = {
+  title: 'Perceived Persuasive Intent',
+  description: 'The following questions are about the SOURCE (reviewer) who created the FEATURED REVIEW shown at the top of the product page. Please indicate your agreement with each statement:',
+  items: [
+    {
+      variable: 'ppi_1',
+      text: 'This reviewer was primarily trying to persuade me to buy the product.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ppi_2',
+      text: 'This reviewer had an ulterior motive for the review.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ppi_3',
+      text: "This reviewer's statements seem suspicious.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ppi_4',
+      text: 'This reviewer was trying to manipulate my opinion.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ppi_5',
+      text: "This reviewer may have exaggerated the product's performance.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const MV5_MindPerception: QuestionBlock = {
+  title: 'Mind Perception',
+  description: 'Based on your perception of the reviewer of the FEATURED REVIEW you just saw, please answer the following questions.',
+  items: [
+    {
+      variable: 'mind_1',
+      text: 'The reviewer of the featured review can feel pain.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'mind_2',
+      text: 'The reviewer of the featured review can feel pleasure.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'mind_3',
+      text: 'The reviewer of the featured review can experience emotions.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'mind_4',
+      text: 'The reviewer of the featured review can have subjective experiences.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'mind_5',
+      text: 'The reviewer of the featured review can think.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'mind_6',
+      text: 'The reviewer of the featured review can plan actions.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'mind_7',
+      text: 'The reviewer of the featured review can exercise self-control.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'mind_8',
+      text: 'The reviewer of the featured review can communicate intentions clearly.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const DV1_Persuasiveness: QuestionBlock = {
+  title: 'Perceived Persuasiveness',
+  description: 'Please indicate how persuasive you found the FEATURED REVIEW shown at the top.',
+  items: [
+    {
+      variable: 'persuasiveness_1',
+      text: 'The featured review changed my opinion.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'persuasiveness_2',
+      text: 'I was convinced by the featured review.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'persuasiveness_3',
+      text: 'The featured review influenced me.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'persuasiveness_4',
+      text: 'I will reconsider my position after reading the featured review.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const DV2_PurchaseIntention: QuestionBlock = {
+  title: 'Purchase Intention',
+  description: 'The following questions ask about your intention to purchase THIS SPECIFIC PRODUCT shown on the page.',
+  warning: '⚠️ Important Note: These questions ask about your intention to buy the product itself, NOT how persuasive the review was. Your answer should reflect your actual purchase interest in the product based on all information shown.',
+  items: [
+    {
+      variable: 'purchase_1',
+      text: 'After reading the featured review, it makes me desire to buy this product.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'purchase_2',
+      text: 'I will consider buying this product after I read the featured review.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'purchase_3',
+      text: 'I intend to try this product discussed in the featured review.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'purchase_4',
+      text: 'In the future, I intend to buy this product discussed in the featured review.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const DV3_DecisionConfidence: QuestionBlock = {
+  title: 'Decision Confidence',
+  description: 'How confident are you in the judgment you made based on the FEATURED REVIEW?\n\nPlease indicate your level of confidence in your evaluation of the product after reading the featured review.',
+  items: [
+    {
+      variable: 'confidence',
+      text: 'Confidence level',
+      scaleType: 'semantic7',
+      scaleLabels: { min: 'Not at all confident', max: 'Very confident' }
+    }
+  ]
+};
+
+/**
+ * General Questions (Asked once, values replicated across all 3 rows)
+ */
+
+export const Q7_AIFamiliarity: QuestionBlock = {
+  title: 'AI Familiarity',
+  description: 'Thinking about your general experience with AI technology, please indicate your level of agreement:',
+  items: [
+    {
+      variable: 'ai_familiarity_1',
+      text: 'I am familiar with how conversational AI systems (e.g., chatbots, voice assistants) work.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ai_familiarity_2',
+      text: 'I regularly use AI-based conversational agents such as ChatGPT, Siri, or Alexa.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ai_familiarity_3',
+      text: 'I have a clear understanding of the capabilities and limitations of conversational AI.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const Q7_ReviewSkepticism: QuestionBlock = {
+  title: 'Review Skepticism',
+  description: 'In general, when you read online product reviews, how much do you agree with the following statements?',
+  items: [
+    {
+      variable: 'review_skepticism_1',
+      text: 'Online product reviews are generally not truthful.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'review_skepticism_2',
+      text: 'Those writing product reviews are not necessarily the real customers.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'review_skepticism_3',
+      text: 'Online product reviews are often inaccurate.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'review_skepticism_4',
+      text: 'The same person often posts reviews under different names.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const Q7_AIAttitude: QuestionBlock = {
+  title: 'Attitude Toward AI',
+  description: 'Overall, how do you feel about AI in shopping contexts? Please indicate your level of agreement:',
+  items: [
+    {
+      variable: 'ai_attitude_1',
+      text: 'AI enhances my shopping experience.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ai_attitude_2',
+      text: "I'm comfortable interacting with AI during shopping.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ai_attitude_3',
+      text: 'I trust AI-driven product suggestions.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ai_attitude_4',
+      text: 'AI accurately provides product recommendations.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const Q8_UsageHabits: QuestionBlock = {
+  title: 'Shopping and Technology Usage Habits',
+  items: [
+    {
+      variable: 'shopping_frequency',
+      text: 'What is your frequency of online shopping?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'less_than_weekly', label: 'Less than once a week' },
+        { value: '1_2_weekly', label: '1-2 times a week' },
+        { value: '3_4_weekly', label: '3-4 times a week' },
+        { value: 'daily', label: 'Daily' }
+      ]
+    },
+    {
+      variable: 'ai_usage_frequency',
+      text: 'What is your frequency of using generative AI (e.g., ChatGPT)?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'never', label: 'Never' },
+        { value: 'less_than_monthly', label: 'Less than once a month' },
+        { value: 'weekly', label: 'Once a week' },
+        { value: 'daily', label: 'Daily' }
+      ]
+    }
+  ]
+};
+
+/**
+ * Demographics (Asked once, values replicated across all 3 rows)
+ */
+
+export const Demographics: QuestionBlock = {
+  title: 'Demographics',
+  items: [
+    {
+      variable: 'gender',
+      text: 'What is your gender?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'male', label: 'Male' },
+        { value: 'female', label: 'Female' },
+        { value: 'other', label: 'Other (please specify)' },
+        { value: 'prefer_not', label: 'Prefer not to answer' }
+      ]
+    },
+    {
+      variable: 'gender_other',
+      text: 'If you selected "Other", please specify:',
+      scaleType: 'text',
+      note: 'Only required if "Other" was selected for gender'
+    },
+    {
+      variable: 'age',
+      text: 'What is your age? (in full years)',
+      scaleType: 'numeric'
+    },
+    {
+      variable: 'education',
+      text: 'What is your highest level of education completed?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'high_school', label: 'High school or below' },
+        { value: 'undergrad_current', label: 'Currently enrolled in an undergraduate program' },
+        { value: 'bachelors', label: "Bachelor's degree completed" },
+        { value: 'grad_current', label: 'Currently enrolled in a graduate program' },
+        { value: 'graduate', label: 'Graduate degree or higher' }
+      ]
+    },
+    {
+      variable: 'income',
+      text: 'What is your individual annual income?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'under_10k', label: 'Less than $10,000' },
+        { value: '10k_20k', label: '$10,000 – $19,999' },
+        { value: '20k_30k', label: '$20,000 – $29,999' },
+        { value: '30k_50k', label: '$30,000 – $49,999' },
+        { value: '50k_75k', label: '$50,000 – $74,999' },
+        { value: '75k_100k', label: '$75,000 – $99,999' },
+        { value: 'over_100k', label: '$100,000 or more' },
+        { value: 'prefer_not', label: 'Prefer not to say' }
+      ]
+    },
+    {
+      variable: 'occupation',
+      text: 'What is your current occupation?',
+      scaleType: 'categorical',
+      options: [
+        { value: 'office_worker', label: 'Office worker' },
+        { value: 'self_employed', label: 'Self-employed' },
+        { value: 'government', label: 'Government employee' },
+        { value: 'professional', label: 'Professional (e.g., doctor, lawyer)' },
+        { value: 'student', label: 'Student' },
+        { value: 'unemployed', label: 'Unemployed' },
+        { value: 'freelancer', label: 'Freelancer' },
+        { value: 'other', label: 'Other (please specify)' }
+      ]
+    },
+    {
+      variable: 'occupation_other',
+      text: 'If you selected "Other", please specify:',
+      scaleType: 'text',
+      note: 'Only required if "Other" was selected for occupation'
+    }
+  ]
+};
+
+/**
+ * Organized export of all question blocks
+ */
+export const SURVEY_QUESTIONS = {
+  // Block A: Stimulus-Specific (Repeated 3 times)
+  blockA: {
+    Q0_ProductInvolvement,
+    Q1_ManipulationChecks,
+    Q2_AttentionChecks,
+    Q3_RecallTask,
+    M1_ArgumentQuality,
+    M2a_CredibilityExpertise,
+    M2b_CredibilityTrustworthiness,
+    M3_PersuasiveIntent,
+    MV5_MindPerception,
+    DV1_Persuasiveness,
+    DV2_PurchaseIntention,
+    DV3_DecisionConfidence
+  },
+  
+  // General Questions (Asked once)
+  general: {
+    Q7_AIFamiliarity,
+    Q7_ReviewSkepticism,
+    Q7_AIAttitude,
+    Q8_UsageHabits
+  },
+  
+  // Demographics (Asked once)
+  demographics: Demographics
+};
+
+export default SURVEY_QUESTIONS;
