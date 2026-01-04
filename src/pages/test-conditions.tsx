@@ -7,7 +7,6 @@ import { getStimulusData } from '@/lib/stimuliData';
 export default function TestConditionsPage() {
   const [selectedCondition, setSelectedCondition] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<'protein' | 'tissue' | 'soap'>('protein');
-  const [showMoreReviews, setShowMoreReviews] = useState<boolean>(false);
   
   const conditions = getAllConditions();
   const currentCondition = conditions.find(c => c.conditionId === selectedCondition)!;
@@ -181,27 +180,8 @@ export default function TestConditionsPage() {
                 </span>
               </div>
               
-              {/* Rating (MANIPULATED) */}
-              <div className="flex items-center space-x-2 flex-wrap">
-                <div className="flex blur-[10px] select-none">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      size={20} 
-                      className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer blur-[10px] select-none">
-                  {displayRating.toFixed(1)} out of 5
-                </span>
-                <span className="text-sm text-gray-600 blur-[10px] select-none">
-                  {ratingCount.toLocaleString()} ratings
-                </span>
-              </div>
-              
               {/* Price */}
-              <div className="flex items-baseline space-x-2 blur-[10px] select-none">
+              <div className="flex items-baseline space-x-2 blur-[20px] select-none">
                 <span className="text-3xl text-red-700">{product.price}</span>
               </div>
               
@@ -261,32 +241,19 @@ export default function TestConditionsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">Top reviews from customers</h2>
                   <button className="text-sm text-blue-600 hover:text-orange-600 hover:underline">
-                    See all {ratingCount.toLocaleString()} reviews
+                    See all 999+ reviews
                   </button>
                 </div>
                 
-                {/* Rating Distribution - Heavily Blurred */}
-                <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
-                  <div className="space-y-1">
-                    {Object.entries(ratingDistribution).reverse().slice(0, 3).map(([stars, percentage]) => (
-                      <div key={stars} className="flex items-center space-x-2 text-xs">
-                        <span className="w-10">{stars} star</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
-                          <div 
-                            className="bg-[#FFA41C] h-full"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <span className="w-8 text-right">{percentage}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Public Reviews - Show only first 5, then all 10 on click */}
-                <div className="space-y-4">
-                  {publicReviews.slice(0, showMoreReviews ? publicReviews.length : 5).map((review, index) => (
-                    <div key={index} className="border-b border-gray-200 pb-4">
+                {/* Public Reviews - Show all 10 with fade-out effect */}
+                <div className="space-y-4 relative">
+                  {publicReviews.map((review, index) => (
+                    <div 
+                      key={index} 
+                      className={`border-b border-gray-200 pb-4 ${
+                        index >= 8 ? 'opacity-60' : index >= 7 ? 'opacity-80' : ''
+                      }`}
+                    >
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                           <User size={16} className="text-gray-600" />
@@ -309,16 +276,13 @@ export default function TestConditionsPage() {
                       <p className="text-sm text-gray-700">{review.text}</p>
                     </div>
                   ))}
+                  {/* Gradient overlay to suggest more content below */}
+                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
                 </div>
                 
-                {/* See All Reviews Button */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <button 
-                    onClick={() => setShowMoreReviews(!showMoreReviews)}
-                    className="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
-                  >
-                    {showMoreReviews ? 'Show less' : `See ${publicReviews.length - 5} more reviews`}
-                  </button>
+                {/* Scroll hint */}
+                <div className="mt-2 text-center text-xs text-gray-500">
+                  ↓ Scroll to see more reviews
                 </div>
               </div>
               
