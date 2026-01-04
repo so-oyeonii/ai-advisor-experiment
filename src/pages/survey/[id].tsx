@@ -103,11 +103,14 @@ export default function SurveyPage() {
     const completeBlockAResponse = {
       ...blockAData,
       ...finalData,
-      // Experimental conditions
+      // Experimental conditions - 각 자극물마다 다른 조건 번호
+      condition_group: currentStimulus.condition.conditionId, // C1~C8
       product: currentStimulus.product,
       advisor_type: currentStimulus.condition.advisorType.toLowerCase() === 'ai' ? 'ai' : 'expert',
       congruity: currentStimulus.condition.congruity.toLowerCase() === 'congruent' ? 'match' : 'nonmatch',
       review_valence: currentStimulus.condition.advisorValence,
+      advisor_valence: currentStimulus.condition.advisorValence,
+      public_valence: currentStimulus.condition.publicValence,
       page_dwell_time: dwellTime
     };
     

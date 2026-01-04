@@ -85,7 +85,7 @@ export async function createThreeRows(
       console.log('  - advisor_type:', blockA.advisor_type);
       
       const response: SurveyResponse = {
-        // Block A responses first (all survey questions)
+        // Block A responses first (includes condition_group specific to this stimulus)
         ...blockA,
         
         // General questions (same for all 3 rows)
@@ -97,12 +97,13 @@ export async function createThreeRows(
         // Primary identifiers - OVERRIDE to ensure they're set correctly
         participant_id: participantId,
         stimulus_order: stimulusOrder,
-        timestamp: new Date(),
-        condition_group: conditionGroup as any
+        timestamp: new Date()
+        // NOTE: condition_group은 blockA에서 이미 설정되어 있음 (각 자극물마다 다름)
       };
       
       console.log('  - Final response sample fields:');
       console.log('    * participant_id:', response.participant_id);
+      console.log('    * condition_group:', response.condition_group);
       console.log('    * product:', response.product);
       console.log('    * gender:', response.gender);
       console.log('    * ai_familiarity_1:', response.ai_familiarity_1);

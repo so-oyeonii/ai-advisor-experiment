@@ -59,7 +59,7 @@ export default function AdminPage() {
         return (a.stimulus_order || 0) - (b.stimulus_order || 0);
       });
       
-      setResponses(sorted);
+      setResponses(sorted as any);
       setLastUpdate(new Date());
       
       // 통계 계산
@@ -384,51 +384,64 @@ export default function AdminPage() {
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">순서</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">제품</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">어드바이저</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">일치성</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">조건</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">리뷰 방향</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">관여도1</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">논증품질1</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">신뢰도1</th>
-                              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">구매의도1</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">순서</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">제품</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cong</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">A-Val</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">P-Val</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">조건번호</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">관여도</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">논증품질</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">구매의도</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {participantResponses.map((resp, idx) => (
-                              <tr key={idx} className="hover:bg-gray-50">
-                                <td className="px-4 py-2 text-sm font-semibold text-gray-900">{resp.stimulus_order}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900">{resp.product}</td>
-                                <td className="px-4 py-2 text-sm">
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                    resp.advisor_type === 'ai' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                                  }`}>
-                                    {resp.advisor_type}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-2 text-sm">
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                    resp.congruity === 'match' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    {resp.congruity}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-2 text-sm text-gray-900">C{resp.condition_group}</td>
-                                <td className="px-4 py-2 text-sm">
-                                  <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                    resp.review_valence === 'positive' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
-                                  }`}>
-                                    {resp.review_valence}
-                                  </span>
-                                </td>
-                                <td className="px-4 py-2 text-sm text-gray-900">{resp.involvement_1 || '-'}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900">{resp.arg_quality_1 || '-'}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900">{resp.credibility_trust_1 || '-'}</td>
-                                <td className="px-4 py-2 text-sm text-gray-900">{resp.purchase_1 || '-'}</td>
-                              </tr>
-                            ))}
+                            {participantResponses.map((resp, idx) => {
+                              // 조건에 따른 valence 추출
+                              const advisorValence = resp.advisor_valence || resp.advisorValence || '-';
+                              const publicValence = resp.public_valence || resp.publicValence || '-';
+                              const congruity = resp.congruity;
+                              
+                              return (
+                                <tr key={idx} className="hover:bg-gray-50">
+                                  <td className="px-3 py-2 text-sm font-bold text-gray-900">{resp.stimulus_order}</td>
+                                  <td className="px-3 py-2 text-sm text-gray-900">{resp.product}</td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                      resp.advisor_type?.toLowerCase() === 'ai' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                                    }`}>
+                                      {resp.advisor_type}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                      congruity === 'match' || congruity === 'Congruent' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
+                                    }`}>
+                                      {congruity === 'match' || congruity === 'Congruent' ? 'Cong' : 'Inco'}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                      advisorValence === 'positive' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                      {advisorValence === 'positive' ? 'pos' : advisorValence === 'negative' ? 'neg' : '-'}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                      publicValence === 'positive' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                      {publicValence === 'positive' ? 'pos' : publicValence === 'negative' ? 'neg' : '-'}
+                                    </span>
+                                  </td>
+                                  <td className="px-3 py-2 text-sm font-semibold text-gray-900">C{resp.condition_group}</td>
+                                  <td className="px-3 py-2 text-sm text-gray-900">{resp.involvement_1 || '-'}</td>
+                                  <td className="px-3 py-2 text-sm text-gray-900">{resp.arg_quality_1 || '-'}</td>
+                                  <td className="px-3 py-2 text-sm text-gray-900">{resp.purchase_1 || '-'}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
