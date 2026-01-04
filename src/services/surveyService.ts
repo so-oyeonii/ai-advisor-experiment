@@ -23,15 +23,27 @@ export async function saveSurveyResponse(response: SurveyResponse): Promise<void
     const docId = `${response.participant_id}_${response.stimulus_order}`;
     const docRef = doc(db, SURVEY_COLLECTION, docId);
     
-    await setDoc(docRef, {
-      ...response,
-      timestamp: Timestamp.now()
+    console.log(`💾 Saving to Firestore: ${docId}`);
+    console.log('  - Fields to save:', Object.keys(response).length);
+    console.log('  - Sample data:', {
+      participant_id: response.participant_id,
+      product: response.product,
+      gender: response.gender,
+      involvement_1: response.involvement_1
     });
     
-    console.log(`✓ Saved response for ${docId}`);
+    const dataToSave = {
+      ...response,
+      timestamp: Timestamp.now()
+    };
+    
+    console.log('  - Starting setDoc...');
+    await setDoc(docRef, dataToSave);
+    
+    console.log(`✅ Saved response for ${docId}`);
   } catch (error) {
-    console.error('Error saving survey response:', error);
-    throw new Error('Failed to save survey response');
+    console.error(`❌ Error saving survey response for ${response.participant_id}_${response.stimulus_order}:`, error);
+    throw error;
   }
 }
 
@@ -50,6 +62,13 @@ export async function createThreeRows(
   demographics: DemographicsResponse
 ): Promise<void> {
   try {
+    console.log('📝 createThreeRows called with:');
+    console.log('  - participantId:', participantId);
+    console.log('  - conditionGroup:', conditionGroup);
+    console.log('  - blockAResponses count:', blockAResponses.length);
+    console.log('  - generalQuestions:', generalQuestions);
+    console.log('  - demographics:', demographics);
+    
     // Validate we have exactly 3 Block A responses
     if (blockAResponses.length !== 3) {
       throw new Error(`Expected 3 Block A responses, got ${blockAResponses.length}`);
@@ -60,32 +79,42 @@ export async function createThreeRows(
       const stimulusOrder = index + 1;
       const docId = `${participantId}_${stimulusOrder}`;
       
+      console.log(`\n🔨 Creating row ${stimulusOrder}:`);
+      console.log('  - blockA keys:', Object.keys(blockA));
+      console.log('  - product:', blockA.product);
+      console.log('  - advisor_type:', blockA.advisor_type);
+      
       const response: SurveyResponse = {
-        // Primary identifiers
-        participant_id: participantId,
-        stimulus_order: stimulusOrder,
-        timestamp: new Date(),
-        
-        // Block A responses (includes all experimental conditions)
+        // Block A responses first (all survey questions)
         ...blockA,
-        
-        // Override condition_group at participant level
-        condition_group: conditionGroup as any,
         
         // General questions (same for all 3 rows)
         ...generalQuestions,
         
         // Demographics (same for all 3 rows)
-        ...demographics
+        ...demographics,
+        
+        // Primary identifiers - OVERRIDE to ensure they're set correctly
+        participant_id: participantId,
+        stimulus_order: stimulusOrder,
+        timestamp: new Date(),
+        condition_group: conditionGroup as any
       };
+      
+      console.log('  - Final response sample fields:');
+      console.log('    * participant_id:', response.participant_id);
+      console.log('    * product:', response.product);
+      console.log('    * gender:', response.gender);
+      console.log('    * ai_familiarity_1:', response.ai_familiarity_1);
+      console.log('  - Total fields:', Object.keys(response).length);
       
       return saveSurveyResponse(response);
     });
 
     await Promise.all(promises);
-    console.log(`✓ Successfully created 3 rows for participant ${participantId}`);
+    console.log(`✅ Successfully created 3 rows for participant ${participantId}`);
   } catch (error) {
-    console.error('Error creating three rows:', error);
+    console.error('❌ Error creating three rows:', error);
     throw new Error('Failed to create survey responses');
   }
 }

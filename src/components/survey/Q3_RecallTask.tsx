@@ -73,11 +73,9 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     const filteredWords = recallWords.filter(word => word.trim().length > 0);
     
     const data: RecallTaskResponse = {
-      Q3_recallTask: {
-        recalled_words: filteredWords,
-        word_count: filteredWords.length,
-        combined_text: filteredWords.join(', ')
-      },
+      recalled_words: filteredWords,
+      word_count: filteredWords.length,
+      recall_combined_text: filteredWords.join(', '),
       recall_time_seconds: elapsedTime
     };
     onComplete(data);
@@ -88,11 +86,9 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     const filteredWords = recallWords.filter(word => word.trim().length > 0);
     
     const data: RecallTaskResponse = {
-      Q3_recallTask: {
-        recalled_words: filteredWords,
-        word_count: filteredWords.length,
-        combined_text: filteredWords.join(', ')
-      },
+      recalled_words: filteredWords,
+      word_count: filteredWords.length,
+      recall_combined_text: filteredWords.join(', '),
       recall_time_seconds: 90 // Full time elapsed
     };
     onComplete(data);

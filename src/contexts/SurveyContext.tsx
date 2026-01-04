@@ -39,7 +39,7 @@ interface SurveyContextType {
   saveBlockAResponse: (stimulus_order: number, response: BlockAWithMeta) => void;
   saveGeneralQuestions: (responses: GeneralQuestionsResponse) => void;
   saveDemographics: (responses: DemographicsResponse) => void;
-  submitAllResponses: () => Promise<void>;
+  submitAllResponses: (finalDemographics?: DemographicsResponse) => Promise<void>;
   goToNextStimulus: () => void;
   
   // Status
@@ -69,26 +69,44 @@ export function SurveyProvider({ children }: SurveyProviderProps) {
 
   // Load state from localStorage on mount
   useEffect(() => {
-    const savedState = localStorage.getItem(STORAGE_KEY);
-    if (savedState) {
-      try {
-        const parsed = JSON.parse(savedState);
-        setParticipantId(parsed.participantId || '');
-        setConditionGroup(parsed.conditionGroup || 'c1');
-        setCurrentStimulus(parsed.currentStimulus || 1);
-        setBlockAResponses(parsed.blockAResponses || []);
-        setGeneralQuestions(parsed.generalQuestions || null);
-        setDemographics(parsed.demographics || null);
-        setIsInitialized(!!parsed.participantId);
-      } catch (error) {
-        console.error('Error loading saved state:', error);
+    // ALWAYS get participantId from sessionStorage (source of truth set by consent page)
+    const sessionParticipantId = sessionStorage.getItem('participantId');
+    
+    if (sessionParticipantId) {
+      // We have a valid participant ID from consent
+      setParticipantId(sessionParticipantId);
+      setIsInitialized(true);
+      
+      // Try to restore other state from localStorage if available
+      const savedState = localStorage.getItem(STORAGE_KEY);
+      if (savedState) {
+        try {
+          const parsed = JSON.parse(savedState);
+          // Only restore if it matches the same participant
+          if (parsed.participantId === sessionParticipantId) {
+            setConditionGroup(parsed.conditionGroup || 'c1');
+            setCurrentStimulus(parsed.currentStimulus || 1);
+            setBlockAResponses(parsed.blockAResponses || []);
+            setGeneralQuestions(parsed.generalQuestions || null);
+            setDemographics(parsed.demographics || null);
+            console.log('✓ Restored survey state for participant:', sessionParticipantId);
+          } else {
+            console.log('⚠ localStorage mismatch, starting fresh');
+          }
+        } catch (error) {
+          console.error('Error loading saved state:', error);
+        }
       }
+      
+      console.log('✓ Initialized with participantId:', sessionParticipantId);
+    } else {
+      console.log('⚠ No participantId in sessionStorage - waiting for consent');
     }
   }, []);
 
   // Save state to localStorage whenever it changes
   useEffect(() => {
-    if (isInitialized) {
+    if (isInitialized && participantId) {  // Only save if we have a valid participantId
       const stateToSave = {
         participantId,
         conditionGroup,
@@ -98,32 +116,51 @@ export function SurveyProvider({ children }: SurveyProviderProps) {
         demographics
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+      console.log('✓ Saved to localStorage, participantId:', participantId);
     }
   }, [participantId, conditionGroup, currentStimulus, blockAResponses, generalQuestions, demographics, isInitialized]);
 
   const initializeSurvey = () => {
-    if (!isInitialized) {
-      const newParticipantId = uuidv4();
-      const assignedCondition = assignCondition();
+    // This is called by consent page AFTER setting sessionStorage
+    // Just trigger a re-read from sessionStorage
+    const storedParticipantId = sessionStorage.getItem('participantId');
+    const storedCondition = sessionStorage.getItem('experimentCondition');
+    
+    if (storedParticipantId && storedCondition) {
+      const experimentCondition = JSON.parse(storedCondition);
+      const conditionId = experimentCondition.selectedStimuli[0]?.condition.conditionId || 'c1';
       
-      setParticipantId(newParticipantId);
-      setConditionGroup(assignedCondition);
+      setParticipantId(storedParticipantId);
+      setConditionGroup(conditionId);
       setCurrentStimulus(1);
       setBlockAResponses([]);
       setGeneralQuestions(null);
       setDemographics(null);
       setIsInitialized(true);
       
-      console.log(`✓ Survey initialized: Participant ${newParticipantId}, Condition ${assignedCondition}`);
+      console.log(`✓ Survey initialized: ${storedParticipantId}, Condition: ${conditionId}`);
+    } else {
+      console.error('❌ initializeSurvey called but no sessionStorage data found');
     }
   };
 
   const saveBlockAResponse = (stimulus_order: number, response: BlockAWithMeta) => {
+    console.log(`📝 saveBlockAResponse called for stimulus ${stimulus_order}`);
+    console.log('  - Response keys:', Object.keys(response));
+    console.log('  - Sample fields:', {
+      product: response.product,
+      involvement_1: response.involvement_1,
+      arg_quality_1: response.arg_quality_1,
+      confidence: response.confidence
+    });
+    
     setBlockAResponses(prev => {
       const filtered = prev.filter(r => 
         !(r.product === response.product && r.advisor_type === response.advisor_type)
       );
-      return [...filtered, response];
+      const newArray = [...filtered, response];
+      console.log(`  - BlockAResponses array now has ${newArray.length} items`);
+      return newArray;
     });
     
     console.log(`✓ Saved Block A response for stimulus ${stimulus_order}`);
@@ -145,7 +182,10 @@ export function SurveyProvider({ children }: SurveyProviderProps) {
     }
   };
 
-  const submitAllResponses = async () => {
+  const submitAllResponses = async (finalDemographics?: DemographicsResponse) => {
+    // Use provided demographics or state demographics
+    const demographicsToSubmit = finalDemographics || demographics;
+    
     // Validate all data is present
     if (blockAResponses.length !== 3) {
       throw new Error(`Expected 3 Block A responses, got ${blockAResponses.length}`);
@@ -155,7 +195,7 @@ export function SurveyProvider({ children }: SurveyProviderProps) {
       throw new Error('General questions not completed');
     }
     
-    if (!demographics) {
+    if (!demographicsToSubmit) {
       throw new Error('Demographics not completed');
     }
 
@@ -163,17 +203,33 @@ export function SurveyProvider({ children }: SurveyProviderProps) {
     setSubmitError(null);
 
     try {
+      console.log('🚀 Submitting survey data...');
+      console.log('- Participant ID:', participantId);
+      console.log('- Condition Group:', conditionGroup);
+      console.log('- Block A Responses:', blockAResponses.length);
+      console.log('- General Questions:', !!generalQuestions);
+      console.log('- Demographics:', !!demographicsToSubmit);
+      
       await saveWithRetry(async () => {
         await createThreeRows(
           participantId,
           conditionGroup,
           blockAResponses,
           generalQuestions,
-          demographics
+          demographicsToSubmit
         );
       });
 
       console.log('✓ All responses submitted successfully');
+      
+      // Mark session as completed
+      console.log('📝 Updating session as completed...');
+      const { updateSession, getKSTTimestamp } = await import('@/lib/firebase');
+      await updateSession(participantId, {
+        completed: true,
+        endTime: getKSTTimestamp()
+      });
+      console.log('✅ Session marked as completed');
       
       // Clear localStorage after successful submission
       localStorage.removeItem(STORAGE_KEY);

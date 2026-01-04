@@ -119,11 +119,9 @@ export interface AttentionCheckResponse {
  * Q3: Recall Task (dynamic word/phrase entry)
  */
 export interface RecallTaskResponse {
-  Q3_recallTask: {
-    recalled_words: string[];
-    word_count: number;
-    combined_text: string;
-  };
+  recalled_words: string[];
+  word_count: number;
+  recall_combined_text: string;
   recall_time_seconds: number;
 }
 

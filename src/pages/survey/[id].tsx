@@ -111,6 +111,14 @@ export default function SurveyPage() {
       page_dwell_time: dwellTime
     };
     
+    console.log('📊 Complete Block A Response:', {
+      totalKeys: Object.keys(completeBlockAResponse).length,
+      product: completeBlockAResponse.product,
+      involvement_1: completeBlockAResponse.involvement_1,
+      arg_quality_1: completeBlockAResponse.arg_quality_1,
+      recalled_words: completeBlockAResponse.recalled_words
+    });
+    
     // Save to context
     saveBlockAResponse(stimulusOrder + 1, completeBlockAResponse as any);
     

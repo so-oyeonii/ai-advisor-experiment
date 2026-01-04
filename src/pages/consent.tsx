@@ -4,9 +4,11 @@ import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 import { assignParticipantCondition } from '@/lib/randomization';
 import { saveSession, getKSTTimestamp } from '@/lib/firebase';
+import { useSurvey } from '@/contexts/SurveyContext';
 
 export default function ConsentPage() {
   const router = useRouter();
+  const { initializeSurvey } = useSurvey();
   const [agreed, setAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +66,11 @@ export default function ConsentPage() {
       sessionStorage.setItem('currentStimulusIndex', '0');
       console.log('✅ Saved to sessionStorage');
       
-      // 5. Navigate to first stimulus
+      // 5. Initialize SurveyContext
+      initializeSurvey();
+      console.log('✅ Initialized SurveyContext');
+      
+      // 6. Navigate to first stimulus
       console.log('🔄 Navigating to /stimulus/0...');
       await router.push('/stimulus/0');
       console.log('✅ Navigation complete');

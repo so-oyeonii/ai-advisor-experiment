@@ -9,11 +9,13 @@ export default function DemographicsPage() {
 
   const handleComplete = async (data: DemographicsResponse) => {
     try {
-      // Save demographics to context
+      console.log('Demographics data received:', data);
+      
+      // Save demographics to context for persistence
       saveDemographics(data);
       
-      // Submit all responses to Firebase (creates 3 rows)
-      await submitAllResponses();
+      // Submit all responses to Firebase with demographics data directly
+      await submitAllResponses(data);
       
       // Navigate to completion page
       router.push('/complete');
