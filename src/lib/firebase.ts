@@ -17,18 +17,24 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
 
-// Utility function to get current time in Korea Standard Time (KST, UTC+9)
+// Utility function to get current timestamp (stores as UTC, which is correct)
 export const getKSTTimestamp = (): Timestamp => {
-  const now = new Date();
-  // Convert to KST by adding 9 hours to UTC
-  const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
-  return Timestamp.fromDate(kstTime);
+  return Timestamp.now(); // Stores as UTC, will convert to KST when displaying
 };
 
 export const getKSTString = (): string => {
   const now = new Date();
-  const kstTime = new Date(now.getTime() + (9 * 60 * 60 * 1000));
-  return kstTime.toISOString().replace('Z', '+09:00');
+  // Format as KST for display
+  return now.toLocaleString('ko-KR', { 
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
 };
 
 // Collection names (matching COMPLETE_PROJECT_SPEC.md)

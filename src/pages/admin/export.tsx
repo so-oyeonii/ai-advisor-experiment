@@ -31,15 +31,20 @@ const toKSTString = (timestamp: Timestamp | string | Date | undefined | null): s
       return '';
     }
     
-    // Format: YYYY-MM-DD HH:mm:ss (KST already stored)
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const seconds = String(date.getSeconds()).padStart(2, '0');
+    // Format as KST (Asia/Seoul timezone)
+    const kstString = date.toLocaleString('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
     
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    // Convert to YYYY-MM-DD HH:mm:ss format
+    return kstString.replace(/\. /g, '-').replace(/\.$/, '').replace(/-/g, '-').replace(/\s/g, ' ');
   } catch (error) {
     console.error('Error converting timestamp:', error);
     return '';
@@ -147,6 +152,13 @@ export default function AdminExportPage() {
           age: demo?.age,
           exposures: exposuresData.filter(e => e.participantId === session.participantId)
         };
+      });
+      
+      // Sort by endTime (most recent first)
+      sessionsWithAge.sort((a, b) => {
+        const aTime = a.endTime instanceof Timestamp ? a.endTime.toMillis() : (a.endTime ? new Date(a.endTime).getTime() : 0);
+        const bTime = b.endTime instanceof Timestamp ? b.endTime.toMillis() : (b.endTime ? new Date(b.endTime).getTime() : 0);
+        return bTime - aTime; // Descending order (most recent first)
       });
       
       setSessions(sessionsWithAge);
@@ -271,6 +283,13 @@ export default function AdminExportPage() {
       }
     });
 
+    // Sort by endTime (most recent first)
+    merged.sort((a, b) => {
+      const aTime = a.endTime ? new Date(a.endTime).getTime() : 0;
+      const bTime = b.endTime ? new Date(b.endTime).getTime() : 0;
+      return bTime - aTime; // Descending order (most recent first)
+    });
+
     return merged;
   };
 
@@ -349,10 +368,28 @@ export default function AdminExportPage() {
 
   const formatTimestamp = (timestamp: unknown) => {
     if (!timestamp) return 'N/A';
+    
+    let date: Date;
+    
     if (typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp) {
-      return (timestamp as { toDate: () => Date }).toDate().toLocaleString();
+      date = (timestamp as { toDate: () => Date }).toDate();
+    } else {
+      date = new Date(timestamp as string | number | Date);
     }
-    return new Date(timestamp as string | number | Date).toLocaleString();
+    
+    // Format as KST (Korea Standard Time, UTC+9)
+    const kstOptions: Intl.DateTimeFormatOptions = {
+      timeZone: 'Asia/Seoul',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    };
+    
+    return date.toLocaleString('ko-KR', kstOptions).replace(/\. /g, '-').replace('.', '');
   };
 
   const calculateDuration = (startTime: unknown, endTime: unknown) => {
@@ -438,7 +475,7 @@ export default function AdminExportPage() {
           {/* Last Update */}
           {lastUpdate && (
             <p className="text-sm text-gray-600 mb-6">
-              마지막 업데이트: {lastUpdate.toLocaleString()} (10초마다 자동 새로고침)
+              마지막 업데이트: {lastUpdate.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })} KST (10초마다 자동 새로고침)
             </p>
           )}
           
