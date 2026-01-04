@@ -100,8 +100,8 @@ export default function StimulusPage() {
       // Store dwell time in sessionStorage for reference
       sessionStorage.setItem(`dwellTime_${currentIndex}`, dwellTime.toString());
       
-      // Navigate to recall task
-      router.push(`/recall/${id}`);
+      // Navigate to survey (not recall anymore)
+      router.push(`/survey/${id}`);
     } catch (error) {
       console.error('Error saving stimulus exposure:', error);
       alert('Failed to save data. Please try again.');

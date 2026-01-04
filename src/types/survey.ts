@@ -116,17 +116,15 @@ export interface AttentionCheckResponse {
 }
 
 /**
- * Q3: Recall Task (8 items, open-ended text)
+ * Q3: Recall Task (dynamic word/phrase entry)
  */
 export interface RecallTaskResponse {
-  recall_1: string;
-  recall_2: string;
-  recall_3: string;
-  recall_4: string;
-  recall_5: string;
-  recall_6: string;
-  recall_7: string;
-  recall_8: string;
+  Q3_recallTask: {
+    recalled_words: string[];
+    word_count: number;
+    combined_text: string;
+  };
+  recall_time_seconds: number;
 }
 
 /**

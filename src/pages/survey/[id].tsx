@@ -34,12 +34,12 @@ import type {
 } from '@/types/survey';
 
 type QuestionStep = 
-  | 'Q0' | 'Q1' | 'Q2' | 'Q3' 
+  | 'Q0' | 'Q1' | 'Q2' | 'Q3'
   | 'M1' | 'M2a' | 'M2b' | 'M3' 
   | 'MV5' | 'DV1' | 'DV2' | 'DV3';
 
 const QUESTION_STEPS: QuestionStep[] = [
-  'Q0', 'Q1', 'Q2', 'Q3', 
+  'Q0', 'Q1', 'Q2', 'Q3',
   'M1', 'M2a', 'M2b', 'M3', 
   'MV5', 'DV1', 'DV2', 'DV3'
 ];
