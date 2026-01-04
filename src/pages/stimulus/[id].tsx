@@ -224,9 +224,6 @@ export default function StimulusPage() {
                       <span className="text-sm font-semibold text-gray-700">
                         {condition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
                       </span>
-                      <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-semibold rounded">
-                        {condition.advisorType === 'AI' ? 'Algorithm Pick' : "Editor's Choice"}
-                      </span>
                     </div>
                     <p className="text-gray-700 leading-relaxed text-sm">
                       {advisorReview}
@@ -293,9 +290,9 @@ export default function StimulusPage() {
           <div className="border-t pt-6">
             <button 
               onClick={handleContinue}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-base font-semibold transition shadow-sm"
+              className="w-full bg-[#FFD814] hover:bg-[#F7CA00] text-gray-900 py-3 rounded-lg text-base font-medium transition border border-[#FCD200] shadow-sm"
             >
-              Continue to Next Task
+              Continue
             </button>
           </div>
         </div>

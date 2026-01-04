@@ -224,9 +224,6 @@ export default function TestConditionsPage() {
                         <span className="text-sm font-semibold text-gray-700">
                           {currentCondition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
                         </span>
-                        <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-semibold rounded">
-                          {currentCondition.advisorType === 'AI' ? 'Algorithm Pick' : "Editor's Choice"}
-                        </span>
                       </div>
                       <p className="text-gray-700 leading-relaxed text-sm">
                         {advisorReview}
