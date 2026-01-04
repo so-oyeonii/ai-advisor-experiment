@@ -7,7 +7,7 @@ import { getStimulusData } from '@/lib/stimuliData';
 export default function TestConditionsPage() {
   const [selectedCondition, setSelectedCondition] = useState(1);
   const [selectedProduct, setSelectedProduct] = useState<'protein' | 'tissue' | 'soap'>('protein');
-  const [showMoreReviews, setShowMoreReviews] = useState<boolean>(false);
+  const [showComparisonTable, setShowComparisonTable] = useState(false);
   
   const conditions = getAllConditions();
   const currentCondition = conditions.find(c => c.conditionId === selectedCondition)!;
@@ -23,69 +23,145 @@ export default function TestConditionsPage() {
   const { product, advisorReview, publicReviews, displayRating, ratingDistribution, ratingCount } = stimulusData;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Control Panel */}
-      <div className="bg-white border-b-4 border-blue-600 shadow-lg sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto p-6">
-          <h1 className="text-3xl font-bold mb-4 text-gray-900">🧪 8가지 조건 테스트 뷰어</h1>
+    <div className="h-screen bg-gray-100 flex overflow-hidden">
+      {/* Left Panel: Control Panel - Fixed */}
+      <div className="w-96 bg-white border-r-4 border-blue-600 shadow-lg h-full overflow-y-auto flex-shrink-0">
+        <div className="p-4">
+          <h1 className="text-2xl font-bold mb-4 text-gray-900">🧪 조건 테스트</h1>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Condition Selector */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                조건 선택 (Condition)
-              </label>
-              <div className="grid grid-cols-4 gap-2">
-                {conditions.map(condition => (
-                  <button
-                    key={condition.conditionId}
-                    onClick={() => setSelectedCondition(condition.conditionId)}
-                    className={`p-3 rounded-lg border-2 transition ${
-                      selectedCondition === condition.conditionId
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
-                    }`}
-                  >
-                    <div className="font-bold text-lg">C{condition.conditionId}</div>
-                    <div className="text-xs">G{condition.groupId}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+          {/* Conditions Comparison Table - Collapsible */}
+          <div className="mb-4">
+            <button
+              onClick={() => setShowComparisonTable(!showComparisonTable)}
+              className="flex items-center gap-2 text-sm font-semibold mb-2 text-gray-800 hover:text-blue-600 transition"
+            >
+              <span>{showComparisonTable ? '▼' : '▶'}</span>
+              <span>📊 조건 비교표</span>
+            </button>
             
-            {/* Product Selector */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                제품 선택 (Product)
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {(['protein', 'tissue', 'soap'] as const).map(prod => (
-                  <button
-                    key={prod}
-                    onClick={() => setSelectedProduct(prod)}
-                    className={`p-3 rounded-lg border-2 transition ${
-                      selectedProduct === prod
-                        ? 'bg-green-600 text-white border-green-600 shadow-lg'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
-                    }`}
-                  >
-                    <div className="font-bold capitalize">{prod}</div>
-                  </button>
-                ))}
+            {showComparisonTable && (
+              <div className="overflow-x-auto mb-4">
+                <table className="min-w-full bg-white border border-gray-300 text-xs">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="border border-gray-300 px-2 py-1 text-left font-semibold">C</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left font-semibold">G</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left font-semibold">Type</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left font-semibold">Cong</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left font-semibold">A-Val</th>
+                      <th className="border border-gray-300 px-2 py-1 text-left font-semibold">P-Val</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {conditions.map(condition => (
+                      <tr 
+                        key={condition.conditionId}
+                        className={`hover:bg-blue-50 cursor-pointer transition ${
+                          selectedCondition === condition.conditionId ? 'bg-blue-100' : ''
+                        }`}
+                        onClick={() => setSelectedCondition(condition.conditionId)}
+                      >
+                        <td className="border border-gray-300 px-2 py-1 font-bold text-blue-600">
+                          {condition.conditionId}
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          {condition.groupId}
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          <span className={`inline-block px-1 py-0.5 rounded text-xs font-semibold ${
+                            condition.advisorType === 'AI' 
+                              ? 'bg-purple-100 text-purple-800' 
+                              : 'bg-blue-100 text-blue-800'
+                          }`}>
+                            {condition.advisorType}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          <span className={`inline-block px-1 py-0.5 rounded text-xs font-semibold ${
+                            condition.congruity === 'Congruent' 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-orange-100 text-orange-800'
+                          }`}>
+                            {condition.congruity.substring(0, 4)}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          <span className={`font-semibold text-xs ${
+                            condition.advisorValence === 'positive' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {condition.advisorValence.substring(0, 3)}
+                          </span>
+                        </td>
+                        <td className="border border-gray-300 px-2 py-1">
+                          <span className={`font-semibold text-xs ${
+                            condition.publicValence === 'positive' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {condition.publicValence.substring(0, 3)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            )}
+          </div>
+          
+          {/* Condition Selector */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              조건 선택 (Condition)
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {conditions.map(condition => (
+                <button
+                  key={condition.conditionId}
+                  onClick={() => setSelectedCondition(condition.conditionId)}
+                  className={`p-2 rounded-lg border-2 transition ${
+                    selectedCondition === condition.conditionId
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400'
+                  }`}
+                >
+                  <div className="font-bold text-base">C{condition.conditionId}</div>
+                  <div className="text-xs">G{condition.groupId}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          {/* Product Selector */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              제품 선택 (Product)
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['protein', 'tissue', 'soap'] as const).map(prod => (
+                <button
+                  key={prod}
+                  onClick={() => setSelectedProduct(prod)}
+                  className={`p-2 rounded-lg border-2 transition ${
+                    selectedProduct === prod
+                      ? 'bg-green-600 text-white border-green-600 shadow-lg'
+                      : 'bg-white text-gray-700 border-gray-300 hover:border-green-400'
+                  }`}
+                >
+                  <div className="font-bold text-sm capitalize">{prod}</div>
+                </button>
+              ))}
             </div>
           </div>
           
           {/* Condition Info */}
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
                 <span className="font-semibold text-gray-700">Condition:</span>
-                <div className="text-lg font-bold text-blue-600">C{currentCondition.conditionId}</div>
+                <div className="text-base font-bold text-blue-600">C{currentCondition.conditionId}</div>
               </div>
               <div>
                 <span className="font-semibold text-gray-700">Group:</span>
-                <div className="text-lg font-bold text-blue-600">G{currentCondition.groupId}</div>
+                <div className="text-base font-bold text-blue-600">G{currentCondition.groupId}</div>
               </div>
               <div>
                 <span className="font-semibold text-gray-700">Advisor:</span>
@@ -107,15 +183,15 @@ export default function TestConditionsPage() {
                   {currentCondition.congruity}
                 </div>
               </div>
-              <div>
+              <div className="col-span-2">
                 <span className="font-semibold text-gray-700">Valence:</span>
-                <div className="text-xs">
-                  <div className={currentCondition.advisorValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
+                <div className="flex gap-2 mt-1">
+                  <span className={`font-semibold ${currentCondition.advisorValence === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
                     A:{currentCondition.advisorValence}
-                  </div>
-                  <div className={currentCondition.publicValence === 'positive' ? 'text-green-600' : 'text-red-600'}>
+                  </span>
+                  <span className={`font-semibold ${currentCondition.publicValence === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
                     P:{currentCondition.publicValence}
-                  </div>
+                  </span>
                 </div>
               </div>
             </div>
@@ -123,8 +199,8 @@ export default function TestConditionsPage() {
         </div>
       </div>
 
-      {/* Stimulus Preview */}
-      <div className="bg-white max-w-7xl mx-auto my-6 shadow-2xl rounded-lg overflow-hidden">
+      {/* Right Panel: Stimulus Preview - Scrollable */}
+      <div className="flex-1 h-full overflow-y-auto bg-white">
         {/* Amazon Header */}
         <header className="bg-[#232F3E] text-white px-4 py-3">
           <div className="flex items-center justify-between">
@@ -181,27 +257,8 @@ export default function TestConditionsPage() {
                 </span>
               </div>
               
-              {/* Rating (MANIPULATED) */}
-              <div className="flex items-center space-x-2 flex-wrap">
-                <div className="flex blur-[10px] select-none">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      size={20} 
-                      className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer blur-[10px] select-none">
-                  {displayRating.toFixed(1)} out of 5
-                </span>
-                <span className="text-sm text-gray-600 blur-[10px] select-none">
-                  {ratingCount.toLocaleString()} ratings
-                </span>
-              </div>
-              
               {/* Price */}
-              <div className="flex items-baseline space-x-2 blur-[10px] select-none">
+              <div className="flex items-baseline space-x-2 blur-[20px] select-none">
                 <span className="text-3xl text-red-700">{product.price}</span>
               </div>
               
@@ -244,9 +301,6 @@ export default function TestConditionsPage() {
                         <span className="text-sm font-semibold text-gray-700">
                           {currentCondition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
                         </span>
-                        <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-semibold rounded">
-                          {currentCondition.advisorType === 'AI' ? 'Algorithm Pick' : "Editor's Choice"}
-                        </span>
                       </div>
                       <p className="text-gray-700 leading-relaxed text-sm">
                         {advisorReview}
@@ -261,32 +315,19 @@ export default function TestConditionsPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-semibold">Top reviews from customers</h2>
                   <button className="text-sm text-blue-600 hover:text-orange-600 hover:underline">
-                    See all {ratingCount.toLocaleString()} reviews
+                    See all 999+ reviews
                   </button>
                 </div>
                 
-                {/* Rating Distribution - Heavily Blurred */}
-                <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
-                  <div className="space-y-1">
-                    {Object.entries(ratingDistribution).reverse().slice(0, 3).map(([stars, percentage]) => (
-                      <div key={stars} className="flex items-center space-x-2 text-xs">
-                        <span className="w-10">{stars} star</span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
-                          <div 
-                            className="bg-[#FFA41C] h-full"
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <span className="w-8 text-right">{percentage}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Public Reviews - Show only first 5, then all 10 on click */}
-                <div className="space-y-4">
-                  {publicReviews.slice(0, showMoreReviews ? publicReviews.length : 5).map((review, index) => (
-                    <div key={index} className="border-b border-gray-200 pb-4">
+                {/* Public Reviews - Show all 10 with fade-out effect */}
+                <div className="space-y-4 relative">
+                  {publicReviews.map((review, index) => (
+                    <div 
+                      key={index} 
+                      className={`border-b border-gray-200 pb-4 ${
+                        index >= 8 ? 'opacity-60' : index >= 7 ? 'opacity-80' : ''
+                      }`}
+                    >
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                           <User size={16} className="text-gray-600" />
@@ -309,16 +350,13 @@ export default function TestConditionsPage() {
                       <p className="text-sm text-gray-700">{review.text}</p>
                     </div>
                   ))}
+                  {/* Gradient overlay to suggest more content below */}
+                  <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
                 </div>
                 
-                {/* See All Reviews Button */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                  <button 
-                    onClick={() => setShowMoreReviews(!showMoreReviews)}
-                    className="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
-                  >
-                    {showMoreReviews ? 'Show less' : `See ${publicReviews.length - 5} more reviews`}
-                  </button>
+                {/* Scroll hint */}
+                <div className="mt-2 text-center text-xs text-gray-500">
+                  ↓ Scroll to see more reviews
                 </div>
               </div>
               

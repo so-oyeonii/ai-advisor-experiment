@@ -15,7 +15,6 @@ export default function StimulusPage() {
   const [condition, setCondition] = useState<Condition | null>(null);
   const [participantId, setParticipantId] = useState<string>('');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [showMoreReviews, setShowMoreReviews] = useState<boolean>(false);
   
   // Dwell time tracking - start immediately on mount
   const dwellStartTime = useRef<number>(Date.now());
@@ -125,7 +124,7 @@ export default function StimulusPage() {
     <div className="min-h-screen bg-white">
       {/* Amazon Header */}
       <header className="bg-[#232F3E] text-white px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="text-2xl font-bold">amazon</div>
             <div className="hidden md:flex items-center bg-white rounded-md overflow-hidden">
@@ -145,7 +144,7 @@ export default function StimulusPage() {
       </header>
       
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="px-4 py-6">
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           
@@ -181,172 +180,112 @@ export default function StimulusPage() {
               </span>
             </div>
             
-            {/* Rating (MANIPULATED) */}
-            <div className="flex items-center space-x-2 flex-wrap">
-              <div className="flex blur-[10px] select-none">
-                {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    size={20} 
-                    className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-blue-600 hover:text-orange-600 cursor-pointer blur-[10px] select-none">
-                {displayRating} out of 5
-              </span>
-              <span className="text-sm text-gray-600 blur-[10px] select-none">
-                ({ratingCount.toLocaleString()} ratings)
-              </span>
-            </div>
-            
-            {/* Prime Badge */}
-            <div className="flex items-center space-x-2">
-              <span className="bg-[#00A8E1] text-white px-2 py-1 text-xs font-bold">prime</span>
-              <span className="text-sm text-gray-700">FREE delivery</span>
-            </div>
-            
             {/* Price */}
-            <div className="flex items-baseline space-x-2 blur-[10px] select-none">
-              <span className="text-sm text-gray-600">$</span>
-              <span className="text-3xl text-gray-900">{product.price}</span>
+            <div className="flex items-baseline space-x-2 blur-[20px] select-none">
+              <span className="text-3xl text-red-700">{product.price}</span>
             </div>
             
-            <hr className="my-4" />
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2">
+              {product.tags.map((tag, index) => (
+                <span key={index} className="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
             
-            {/* ADVISOR REVIEW CARD */}
-            <div className="border-2 border-gray-300 rounded-lg p-5 bg-gray-50">
-              <div className="flex items-center space-x-2 mb-3">
-                {condition.advisorType === 'AI' ? (
-                  <>
-                    <Bot size={24} className="text-blue-600" />
-                    <span className="font-semibold text-gray-900">AI-Generated Review</span>
-                  </>
-                ) : (
-                  <>
-                    <User size={24} className="text-orange-600" />
-                    <span className="font-semibold text-gray-900">Expert Review</span>
-                  </>
-                )}
-              </div>
-              
-              <div className="flex items-center space-x-2 mb-3 flex-wrap">
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      size={18} 
-                      className={
-                        condition.advisorValence === 'positive' 
-                          ? 'fill-[#FFA41C] text-[#FFA41C]' 
-                          : (i === 0 ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300')
-                      }
-                    />
-                  ))}
+            {/* Advisor Review */}
+            <div className="border-t border-gray-300 pt-4">
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <div className="flex items-start space-x-3">
+                  {condition.advisorType === 'AI' ? (
+                    <Bot size={24} className="text-blue-600 flex-shrink-0" />
+                  ) : (
+                    <User size={24} className="text-blue-600 flex-shrink-0" />
+                  )}
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {condition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review'}
+                    </h3>
+                    <div className="flex items-center space-x-2 mb-3 flex-wrap">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            size={18} 
+                            className={
+                              condition.advisorValence === 'positive' 
+                                ? 'fill-[#FFA41C] text-[#FFA41C]' 
+                                : (i === 0 ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300')
+                            }
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm font-semibold text-gray-700">
+                        {condition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 leading-relaxed text-sm">
+                      {advisorReview}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-sm font-semibold text-gray-700">
-                  {condition.advisorValence === 'positive' ? '5.0 out of 5 stars' : '1.0 out of 5 stars'}
-                </span>
-                <span className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-semibold rounded">
-                  {condition.advisorType === 'AI' ? 'Algorithm Pick' : "Editor's Choice"}
-                </span>
-              </div>
-              
-              <p className="text-gray-800 leading-relaxed text-sm">
-                {advisorReview}
-              </p>
-              
-              <div className="mt-3 flex flex-wrap gap-2">
-                {product.tags.map((tag: string) => (
-                  <span key={tag} className="bg-blue-100 text-blue-800 px-2 py-1 text-xs rounded">
-                    {tag}
-                  </span>
-                ))}
               </div>
             </div>
             
-            <hr className="my-6" />
-            
-            {/* CUSTOMER REVIEWS SECTION */}
-            <div>
+            {/* Customer Reviews */}
+            <div className="border-t border-gray-300 pt-4">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Top reviews from customers</h2>
+                <h2 className="text-xl font-semibold">Top reviews from customers</h2>
                 <button className="text-sm text-blue-600 hover:text-orange-600 hover:underline">
-                  See all {ratingCount.toLocaleString()} reviews
+                  See all 999+ reviews
                 </button>
               </div>
               
-              {/* Rating Summary - Heavily Blurred */}
-              <div className="blur-[12px] select-none mb-4 h-20 overflow-hidden">
-                <div className="flex items-center space-x-4">
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-gray-900">{displayRating}</div>
-                    <div className="flex justify-center my-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={12} className={i < Math.floor(displayRating) ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {/* Rating Distribution (MANIPULATED) */}
-                  <div className="flex-1 space-y-1">
-                    {ratingDistribution.slice(0, 3).map((percent: number, index: number) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <span className="text-xs w-10">{5-index} star</span>
-                        <div className="flex-1 bg-gray-300 rounded-full h-2">
-                          <div className="bg-[#FFA41C] h-2 rounded-full" style={{width: `${percent}%`}} />
-                        </div>
-                        <span className="text-xs w-8 text-right">{percent}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              <hr className="my-4" />
-              
-              {/* Individual Reviews (Show only first 5, then all 10 on click) */}
-              <div className="space-y-6">
-                {publicReviews.slice(0, showMoreReviews ? publicReviews.length : 5).map((review: PublicReview, index: number) => (
-                  <div key={index} className="border-b pb-4">
+              {/* Public Reviews - Show all 10 with fade-out effect */}
+              <div className="space-y-4 relative">
+                {publicReviews.map((review, index) => (
+                  <div 
+                    key={index} 
+                    className={`border-b border-gray-200 pb-4 ${
+                      index >= 8 ? 'opacity-60' : index >= 7 ? 'opacity-80' : ''
+                    }`}
+                  >
                     <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User size={20} className="text-gray-600" />
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User size={16} className="text-gray-600" />
                       </div>
-                      <span className="font-semibold text-gray-900">{review.username}</span>
+                      <span className="font-semibold text-sm text-gray-900">{review.username}</span>
                     </div>
-                    
                     <div className="flex items-center space-x-2 mb-2 flex-wrap">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={16} className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'} />
+                          <Star 
+                            key={i} 
+                            size={16} 
+                            className={i < review.rating ? 'fill-[#FFA41C] text-[#FFA41C]' : 'text-gray-300'}
+                          />
                         ))}
                       </div>
                       <span className="text-sm font-medium text-gray-700">{review.rating}.0 out of 5 stars</span>
                       <span className="text-xs text-orange-700 font-semibold">✓ Verified Purchase</span>
                     </div>
-                    
-                    <p className="text-gray-800 text-sm leading-relaxed">
-                      {review.text}
-                    </p>
+                    <p className="text-sm text-gray-700">{review.text}</p>
                   </div>
                 ))}
+                {/* Gradient overlay to suggest more content below */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
               </div>
               
-              {/* See All Reviews Button */}
-              <div className="mt-6 pt-4 border-t">
-                <button 
-                  onClick={() => setShowMoreReviews(!showMoreReviews)}
-                  className="w-full py-3 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
-                >
-                  {showMoreReviews ? 'Show less' : `See ${publicReviews.length - 5} more reviews`}
-                </button>
+              {/* Scroll hint */}
+              <div className="mt-2 text-center text-xs text-gray-500">
+                ↓ Scroll to see more reviews
               </div>
             </div>
           </div>
         </div>
         
-        {/* Continue Button - styled like Amazon */}
+        {/* Continue Button */}
         <div className="max-w-4xl mx-auto mt-12 mb-8 px-4">
           <div className="border-t pt-6">
             <button 
