@@ -87,6 +87,7 @@ interface MergedData {
   completed: boolean;
   // Product-level info
   stimulusIndex: number;
+  stimulusCode: string; // e.g., "C1_P", "C3_T", "C8_S"
   productName: string;
   groupId: string | number;
   conditionId: string | number;
@@ -229,6 +230,15 @@ export default function AdminExportPage() {
           
           // Product-level info (different for each row)
           stimulusIndex: stimulusIdx,
+          stimulusCode: (() => {
+            if (!exposure?.conditionId) return '';
+            const productId = exposure.productId || exposure.productName || '';
+            let productCode = '';
+            if (productId.toLowerCase().includes('protein')) productCode = 'P';
+            else if (productId.toLowerCase().includes('tissue')) productCode = 'T';
+            else if (productId.toLowerCase().includes('soap')) productCode = 'S';
+            return `C${exposure.conditionId}_${productCode}`;
+          })(),
           productName: exposure?.productName || exposure?.productId || '',
           groupId: exposure?.groupId || '',
           conditionId: exposure?.conditionId || '',
