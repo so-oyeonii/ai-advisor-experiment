@@ -65,12 +65,21 @@ export default function CompletePage() {
           </a>
         </div>
         
-        <button 
-          onClick={handleClose}
-          className="bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold"
-        >
-          Close Window
-        </button>
+        <div className="space-y-4">
+          <button 
+            onClick={() => window.location.href = 'https://www.google.com'}
+            className="w-full bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition font-semibold"
+          >
+            Continue to Survey Platform
+          </button>
+          
+          <button 
+            onClick={handleClose}
+            className="w-full bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 transition font-semibold"
+          >
+            Close Window
+          </button>
+        </div>
         
         {!canClose && (
           <p className="mt-4 text-sm text-gray-500">
