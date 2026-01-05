@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Download, RefreshCw, Users, FileText, Eye, EyeOff } from 'lucide-react';
-import { getAllSurveyResponses, SurveyResponseData } from '@/lib/firebase';
+import { getAllSurveyResponses, getAllSessions, SurveyResponseData, SessionData } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 
 /**
@@ -33,6 +33,8 @@ type ExtendedSurveyResponse = Partial<SurveyResponseData> & {
   involvement_1?: number;
   arg_quality_1?: number;
   purchase_1?: number;
+  survey_start_time?: string | Timestamp;
+  survey_end_time?: string | Timestamp;
   [key: string]: string | number | boolean | undefined | Timestamp | object;
 };
 
@@ -59,13 +61,31 @@ export default function AdminPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const data = await getAllSurveyResponses();
+      const [data, sessions] = await Promise.all([
+        getAllSurveyResponses(),
+        getAllSessions()
+      ]);
       
       console.log('📊 어드민: Firebase에서 데이터 가져옴');
       console.log('  - 전체 응답 수:', data.length);
+      console.log('  - 세션 수:', sessions.length);
+      
+      // sessions 데이터와 병합
+      const enrichedData = (data as ExtendedSurveyResponse[]).map(response => {
+        const pid = response.participant_id || response.participantId || '';
+        const session = sessions.find(s => s.participantId === pid);
+        if (session) {
+          return {
+            ...response,
+            survey_start_time: session.startTime,
+            survey_end_time: session.endTime
+          };
+        }
+        return response;
+      });
       
       // 최신순으로 정렬 (createdAt 기준 내림차순), 그 다음 participant_id와 stimulus_order로 정렬
-      const sorted = ([...data] as ExtendedSurveyResponse[]).sort((a, b) => {
+      const sorted = enrichedData.sort((a, b) => {
         // 먼저 타임스탬프로 정렬 (최신이 먼저)
         const timeA = a.createdAt as Timestamp;
         const timeB = b.createdAt as Timestamp;
@@ -582,6 +602,15 @@ export default function AdminPage() {
                             {participantResponses.length}/3 자극물
                           </span>
                         </div>
+                        {/* 전체 설문 시작/끝 시간 표시 */}
+                        {participantResponses[0]?.survey_start_time && (
+                          <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
+                            <span>시작: {participantResponses[0].survey_start_time instanceof Timestamp ? participantResponses[0].survey_start_time.toDate().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }) : '-'}</span>
+                            {participantResponses[0].survey_end_time && (
+                              <span>완료: {participantResponses[0].survey_end_time instanceof Timestamp ? participantResponses[0].survey_end_time.toDate().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }) : '-'}</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="text-sm text-gray-500 ml-4">
                         {expandedParticipant === participantId ? '▼ 접기' : '▶ 펼치기'}
@@ -602,8 +631,6 @@ export default function AdminPage() {
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">A-Val</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">P-Val</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">조건</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">시작 시간</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">완료 시간</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">소요 시간</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
                             </tr>
@@ -617,25 +644,8 @@ export default function AdminPage() {
                               const congruityLower = congruity.toLowerCase();
                               const isCongruent = congruity === 'Congruent' || congruityLower === 'congruent' || congruityLower === 'match';
                               
-                              // 시간 정보
+                              // 소요 시간 정보
                               const dwellTime = resp.page_dwell_time || (resp as any).responseTime || 0;
-                              const createdAt = (resp as any).createdAt || (resp as any).timestamp;
-                              const startTime = createdAt instanceof Timestamp 
-                                ? new Date(createdAt.toMillis() - dwellTime * 1000) 
-                                : null;
-                              const endTime = createdAt instanceof Timestamp 
-                                ? createdAt.toDate() 
-                                : null;
-                              
-                              const formatTime = (date: Date | null) => {
-                                if (!date) return '-';
-                                const year = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric' });
-                                const month = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit' });
-                                const day = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', day: '2-digit' });
-                                const hour = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false });
-                                const minute = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', minute: '2-digit' });
-                                return `${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
-                              };
                               
                               const formatDuration = (seconds: number) => {
                                 const mins = Math.floor(seconds / 60);
@@ -676,8 +686,6 @@ export default function AdminPage() {
                                     </span>
                                   </td>
                                   <td className="px-3 py-2 text-sm font-semibold text-indigo-600">C{resp.condition_group}</td>
-                                  <td className="px-3 py-2 text-xs text-gray-600">{formatTime(startTime)}</td>
-                                  <td className="px-3 py-2 text-xs text-gray-600">{formatTime(endTime)}</td>
                                   <td className="px-3 py-2 text-sm font-semibold text-gray-900">{formatDuration(dwellTime)}</td>
                                   <td className="px-3 py-2 text-sm">
                                     <span className="px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-700">
