@@ -64,13 +64,23 @@ export default function AdminPage() {
       console.log('📊 어드민: Firebase에서 데이터 가져옴');
       console.log('  - 전체 응답 수:', data.length);
       
-      // participant_id와 stimulus_order로 정렬
+      // 최신순으로 정렬 (createdAt 기준 내림차순), 그 다음 participant_id와 stimulus_order로 정렬
       const sorted = ([...data] as ExtendedSurveyResponse[]).sort((a, b) => {
+        // 먼저 타임스탬프로 정렬 (최신이 먼저)
+        const timeA = a.createdAt as Timestamp;
+        const timeB = b.createdAt as Timestamp;
+        if (timeA && timeB) {
+          const timeCompare = timeB.seconds - timeA.seconds; // 내림차순
+          if (timeCompare !== 0) return timeCompare;
+        }
+        
+        // 같은 시간이면 participant_id로 정렬
         const pidA = a.participant_id || a.participantId || '';
         const pidB = b.participant_id || b.participantId || '';
-        const pidCompare = pidA.localeCompare(pidB);
+        const pidCompare = pidB.localeCompare(pidA); // 내림차순
         if (pidCompare !== 0) return pidCompare;
         
+        // 같은 participant면 stimulus_order로 정렬
         const orderA = a.stimulus_order || 0;
         const orderB = b.stimulus_order || 0;
         return orderA - orderB;
@@ -463,8 +473,10 @@ export default function AdminPage() {
                   return sum + Number(dwellTime);
                 }, 0);
                 
-                // 조건 그룹 (첫 번째 응답의 condition_group 사용)
-                const conditionGroup = participantResponses[0]?.condition_group || (participantResponses[0] as any)?.conditionId || '-';
+                // 3개 조건 그룹 모두 추출 (각 자극물마다 다른 조건, 순서대로)
+                const conditionGroups = participantResponses
+                  .sort((a, b) => (a.stimulus_order || 0) - (b.stimulus_order || 0))
+                  .map(r => r.condition_group || (r as any)?.conditionId || '-');
                 
                 // 완료 상태 (3개 자극물 모두 완료 여부)
                 const isCompleted = participantResponses.length === 3;
@@ -493,7 +505,9 @@ export default function AdminPage() {
                             ⏱️ <strong>{Math.floor(totalTime / 60)}분 {Math.floor(totalTime % 60)}초</strong>
                           </span>
                           <span className="flex items-center gap-1">
-                            📋 <strong className="text-indigo-600">C{conditionGroup}</strong> 그룹
+                            📋 {conditionGroups.map((cg, idx) => (
+                              <strong key={idx} className="text-indigo-600 mr-1">C{cg}</strong>
+                            ))} 조건
                           </span>
                           {participantResponses[0]?.gender && (
                             <span>{participantResponses[0].gender}</span>
