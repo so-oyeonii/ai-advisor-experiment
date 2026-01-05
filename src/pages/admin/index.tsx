@@ -70,19 +70,47 @@ export default function AdminPage() {
       console.log('  - 전체 응답 수:', data.length);
       console.log('  - 세션 수:', sessions.length);
       
-      // sessions 데이터와 병합
-      const enrichedData = (data as ExtendedSurveyResponse[]).map(response => {
+      // survey_responses를 참가자별로 그룹화
+      const surveyResponsesByParticipant = new Map<string, ExtendedSurveyResponse[]>();
+      (data as ExtendedSurveyResponse[]).forEach(response => {
         const pid = response.participant_id || response.participantId || '';
-        const session = sessions.find(s => s.participantId === pid);
-        if (session) {
-          return {
-            ...response,
-            survey_start_time: session.startTime,
-            survey_end_time: session.endTime
-          };
+        if (!surveyResponsesByParticipant.has(pid)) {
+          surveyResponsesByParticipant.set(pid, []);
         }
-        return response;
+        surveyResponsesByParticipant.get(pid)!.push(response);
       });
+      
+      // 모든 세션을 기준으로 데이터 구성 (진행중 + 완료)
+      const allData: ExtendedSurveyResponse[] = [];
+      
+      sessions.forEach(session => {
+        const pid = session.participantId;
+        const participantResponses = surveyResponsesByParticipant.get(pid) || [];
+        
+        if (participantResponses.length > 0) {
+          // 설문 응답이 있으면 해당 응답들 사용
+          participantResponses.forEach(response => {
+            allData.push({
+              ...response,
+              survey_start_time: session.startTime,
+              survey_end_time: session.endTime,
+              status: session.completed ? 'completed' : 'in_progress'
+            });
+          });
+        } else {
+          // 설문 응답이 없으면 세션만 표시 (진행중)
+          allData.push({
+            participantId: pid,
+            participant_id: pid,
+            survey_start_time: session.startTime,
+            survey_end_time: session.endTime,
+            status: 'in_progress',
+            createdAt: session.startTime
+          } as ExtendedSurveyResponse);
+        }
+      });
+      
+      const enrichedData = allData;
       
       // 최신순으로 정렬 (참가자의 세션 시작 시간 기준, 그 다음 stimulus_order로 정렬)
       const sorted = enrichedData.sort((a, b) => {
@@ -366,8 +394,6 @@ export default function AdminPage() {
     };
   };
 
-  const stats = calculateStats();
-
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -396,6 +422,7 @@ export default function AdminPage() {
   }
 
   const groupedData = groupByParticipant();
+  const stats = calculateStats();
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -594,19 +621,23 @@ export default function AdminPage() {
                           </span>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span className="flex items-center gap-1">
-                            ⏱️ <strong>{Math.floor(totalTime / 60)}분 {Math.floor(totalTime % 60)}초</strong>
-                          </span>
-                          <span className="flex items-center gap-1">
-                            📋 {conditionGroups.map((cg, idx) => (
-                              <strong key={idx} className="text-indigo-600 mr-1">C{cg}</strong>
-                            ))} 조건
-                          </span>
-                          {participantResponses[0]?.gender && (
-                            <span>{participantResponses[0].gender}</span>
-                          )}
-                          {participantResponses[0]?.age && (
-                            <span>{participantResponses[0].age}세</span>
+                          {participantResponses.length > 0 && (
+                            <>
+                              <span className="flex items-center gap-1">
+                                ⏱️ <strong>{Math.floor(totalTime / 60)}분 {Math.floor(totalTime % 60)}초</strong>
+                              </span>
+                              <span className="flex items-center gap-1">
+                                📋 {conditionGroups.map((cg, idx) => (
+                                  <strong key={idx} className="text-indigo-600 mr-1">C{cg}</strong>
+                                ))} 조건
+                              </span>
+                              {participantResponses[0]?.gender && (
+                                <span>{participantResponses[0].gender}</span>
+                              )}
+                              {participantResponses[0]?.age && (
+                                <span>{participantResponses[0].age}세</span>
+                              )}
+                            </>
                           )}
                           <span className="text-gray-400">
                             {participantResponses.length}/3 자극물
@@ -646,7 +677,14 @@ export default function AdminPage() {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {participantResponses.map((resp, idx) => {
+                            {participantResponses.length === 0 ? (
+                              <tr>
+                                <td colSpan={9} className="px-3 py-4 text-center text-sm text-gray-500">
+                                  아직 설문 응답이 없습니다. (세션 시작만 완료)
+                                </td>
+                              </tr>
+                            ) : (
+                              participantResponses.map((resp, idx) => {
                               // 조건에 따른 valence 추출
                               const advisorValence = resp.advisor_valence || resp.advisorValence || '-';
                               const publicValence = resp.public_valence || resp.publicValence || '-';
@@ -704,7 +742,7 @@ export default function AdminPage() {
                                   </td>
                                 </tr>
                               );
-                            })}
+                            }))}
                           </tbody>
                         </table>
                       </div>
