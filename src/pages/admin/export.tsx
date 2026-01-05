@@ -161,7 +161,7 @@ export default function AdminExportPage() {
       const completedParticipantIds = new Set<string>();
       surveyResponsesData.forEach(response => {
         // Try both field names since interface might be wrong
-        const pid = (response as any).participant_id || response.participantId;
+        const pid = (response as { participant_id?: string; participantId?: string }).participant_id || response.participantId;
         if (pid) {
           completedParticipantIds.add(pid);
         }

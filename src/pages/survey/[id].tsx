@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useSurvey } from '@/contexts/SurveyContext';
 import { usePageDwellTime } from '@/hooks/usePageDwellTime';
@@ -18,19 +18,8 @@ import DV2_PurchaseIntention from '@/components/survey/DV2_PurchaseIntention';
 import DV3_DecisionConfidence from '@/components/survey/DV3_DecisionConfidence';
 
 import type {
-  ProductInvolvementResponse,
-  ManipulationCheckResponse,
-  AttentionCheckResponse,
-  RecallTaskResponse,
-  ArgumentQualityResponse,
-  CredibilityExpertiseResponse,
-  CredibilityTrustworthinessResponse,
-  PersuasiveIntentResponse,
-  MindPerceptionResponse,
-  PersuasivenessResponse,
-  PurchaseIntentionResponse,
-  DecisionConfidenceResponse,
-  BlockAResponse
+  BlockAResponse,
+  ExperimentalCondition
 } from '@/types/survey';
 
 type QuestionStep = 
@@ -49,26 +38,13 @@ export default function SurveyPage() {
   const { id } = router.query;
   const stimulusOrder = Number(id);
   
-  const { saveBlockAResponse, goToNextStimulus, currentStimulus } = useSurvey();
+  const { saveBlockAResponse, goToNextStimulus } = useSurvey();
   const { getCurrentDwellTime } = usePageDwellTime();
   
   const [currentStep, setCurrentStep] = useState<QuestionStep>('Q0');
   const [blockAData, setBlockAData] = useState<Partial<BlockAResponse>>({});
-  const [product, setProduct] = useState<string>('');
 
-  // Load product info from session storage
-  useEffect(() => {
-    if (stimulusOrder >= 0 && stimulusOrder <= 2) {
-      const storedCondition = sessionStorage.getItem('experimentCondition');
-      if (storedCondition) {
-        const condition = JSON.parse(storedCondition);
-        const currentProduct = condition.selectedStimuli[stimulusOrder]?.product || 'product';
-        setProduct(currentProduct);
-      }
-    }
-  }, [stimulusOrder]);
-
-  const handleComplete = (step: QuestionStep, data: any) => {
+  const handleComplete = (step: QuestionStep, data: Record<string, unknown>) => {
     // Merge the response data
     setBlockAData(prev => ({ ...prev, ...data }));
     
@@ -82,10 +58,9 @@ export default function SurveyPage() {
     }
   };
 
-  const handleFinalSubmit = async (finalData: any) => {
+  const handleFinalSubmit = async (finalData: Record<string, unknown>) => {
     // Get experiment condition details
     const storedCondition = sessionStorage.getItem('experimentCondition');
-    const storedFullCondition = sessionStorage.getItem(`condition_${stimulusOrder}`);
     
     if (!storedCondition) {
       console.error('No experiment condition found');
@@ -94,13 +69,12 @@ export default function SurveyPage() {
     
     const experimentCondition = JSON.parse(storedCondition);
     const currentStimulus = experimentCondition.selectedStimuli[stimulusOrder];
-    const fullCondition = storedFullCondition ? JSON.parse(storedFullCondition) : currentStimulus.condition;
     
     // Get page dwell time
     const dwellTime = getCurrentDwellTime();
     
     // Prepare complete Block A response with experimental conditions
-    const completeBlockAResponse = {
+    const completeBlockAResponse: Record<string, unknown> = {
       ...blockAData,
       ...finalData,
       // Experimental conditions - 각 자극물마다 다른 조건 번호
@@ -122,8 +96,11 @@ export default function SurveyPage() {
       recalled_words: completeBlockAResponse.recalled_words
     });
     
-    // Save to context
-    saveBlockAResponse(stimulusOrder + 1, completeBlockAResponse as any);
+    // Save to context (saveBlockAResponse expects page_dwell_time to be included)
+    saveBlockAResponse(
+      stimulusOrder + 1, 
+      completeBlockAResponse as unknown as BlockAResponse & ExperimentalCondition & { page_dwell_time: number }
+    );
     
     // Navigate
     if (stimulusOrder < 2) {
@@ -165,75 +142,73 @@ export default function SurveyPage() {
       <div className="py-8">
         {currentStep === 'Q0' && (
           <Q0_ProductInvolvement 
-            product={product}
-            onComplete={(data: ProductInvolvementResponse) => handleComplete('Q0', data)}
+            onComplete={(data) => handleComplete('Q0', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'Q1' && (
           <Q1_ManipulationCheck 
-            onComplete={(data: ManipulationCheckResponse) => handleComplete('Q1', data)}
+            onComplete={(data) => handleComplete('Q1', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'Q2' && (
           <Q2_AttentionCheck 
-            product={product}
-            onComplete={(data: AttentionCheckResponse) => handleComplete('Q2', data)}
+            onComplete={(data) => handleComplete('Q2', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'Q3' && (
           <Q3_RecallTask 
-            onComplete={(data: RecallTaskResponse) => handleComplete('Q3', data)}
+            onComplete={(data) => handleComplete('Q3', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'M1' && (
           <M1_ArgumentQuality 
-            onComplete={(data: ArgumentQualityResponse) => handleComplete('M1', data)}
+            onComplete={(data) => handleComplete('M1', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'M2a' && (
           <M2a_SourceCredibilityExpertise 
-            onComplete={(data: CredibilityExpertiseResponse) => handleComplete('M2a', data)}
+            onComplete={(data) => handleComplete('M2a', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'M2b' && (
           <M2b_SourceCredibilityTrust 
-            onComplete={(data: CredibilityTrustworthinessResponse) => handleComplete('M2b', data)}
+            onComplete={(data) => handleComplete('M2b', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'M3' && (
           <M3_PersuasiveIntent 
-            onComplete={(data: PersuasiveIntentResponse) => handleComplete('M3', data)}
+            onComplete={(data) => handleComplete('M3', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'MV5' && (
           <MV5_MindPerception 
-            onComplete={(data: MindPerceptionResponse) => handleComplete('MV5', data)}
+            onComplete={(data) => handleComplete('MV5', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'DV1' && (
           <DV1_Persuasiveness 
-            onComplete={(data: PersuasivenessResponse) => handleComplete('DV1', data)}
+            onComplete={(data) => handleComplete('DV1', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'DV2' && (
           <DV2_PurchaseIntention 
-            onComplete={(data: PurchaseIntentionResponse) => handleComplete('DV2', data)}
+            onComplete={(data) => handleComplete('DV2', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'DV3' && (
           <DV3_DecisionConfidence 
-            onComplete={(data: DecisionConfidenceResponse) => handleComplete('DV3', data)}
+            onComplete={(data) => handleComplete('DV3', data as unknown as Record<string, unknown>)}
           />
         )}
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Plus, X } from 'lucide-react';
 import { Q3_RecallTask as config } from '@/config/surveyQuestions';
 import type { RecallTaskResponse } from '@/types/survey';
@@ -16,6 +16,23 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   // Check if user has entered at least one word
   const hasContent = recallWords.some(word => word.trim().length > 0);
   const wordCount = recallWords.filter(word => word.trim().length > 0).length;
+  
+  // Auto-submit function
+  const handleAutoSubmit = useCallback(() => {
+    // Filter out empty words
+    const filteredWords = recallWords.filter(word => word.trim().length > 0);
+    
+    if (filteredWords.length > 0) {
+      const data: RecallTaskResponse = {
+        recalled_words: filteredWords,
+        word_count: filteredWords.length,
+        recall_combined_text: filteredWords.join(', '),
+        recall_time_seconds: elapsedTime
+      };
+      
+      onComplete(data);
+    }
+  }, [recallWords, elapsedTime, onComplete]);
   
   // Timer countdown
   useEffect(() => {
@@ -36,7 +53,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [hasContent]);
+  }, [hasContent, handleAutoSubmit]);
   
   // Enable continue button after 30 seconds IF user has entered content
   useEffect(() => {
@@ -78,19 +95,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
       recall_combined_text: filteredWords.join(', '),
       recall_time_seconds: elapsedTime
     };
-    onComplete(data);
-  };
-
-  const handleAutoSubmit = () => {
-    // Filter out empty words
-    const filteredWords = recallWords.filter(word => word.trim().length > 0);
     
-    const data: RecallTaskResponse = {
-      recalled_words: filteredWords,
-      word_count: filteredWords.length,
-      recall_combined_text: filteredWords.join(', '),
-      recall_time_seconds: 90 // Full time elapsed
-    };
     onComplete(data);
   };
   

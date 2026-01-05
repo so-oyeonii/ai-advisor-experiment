@@ -2,7 +2,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import { Star, Search, ShoppingCart, Bot, User } from 'lucide-react';
-import { getStimulusData, StimulusData, PublicReview } from '@/lib/stimuliData';
+import { getStimulusData, StimulusData } from '@/lib/stimuliData';
 import { saveStimulusExposure, getKSTTimestamp } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 import type { Condition } from '@/lib/stimuliData';
@@ -118,7 +118,7 @@ export default function StimulusPage() {
     );
   }
 
-  const { product, advisorReview, publicReviews, displayRating, ratingDistribution, ratingCount } = stimulusData;
+  const { product, advisorReview, publicReviews } = stimulusData;
 
   return (
     <div className="min-h-screen bg-white">

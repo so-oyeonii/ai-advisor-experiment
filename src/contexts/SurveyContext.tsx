@@ -1,16 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import {
-  SurveyResponse,
   BlockAResponse,
   GeneralQuestionsResponse,
   DemographicsResponse,
   ExperimentalCondition,
-  ConditionGroup,
-  Product
+  ConditionGroup
 } from '@/types/survey';
 import { createThreeRows, saveWithRetry } from '@/services/surveyService';
-import { assignCondition } from '@/lib/randomization';
 
 /**
  * Survey Context for managing survey state

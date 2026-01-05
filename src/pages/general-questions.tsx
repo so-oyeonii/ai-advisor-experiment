@@ -31,7 +31,7 @@ export default function GeneralQuestionsPage() {
   const [currentStep, setCurrentStep] = useState<GeneralStep>('Q7_AIFamiliarity');
   const [generalData, setGeneralData] = useState<Partial<GeneralQuestionsResponse>>({});
 
-  const handleComplete = (step: GeneralStep, data: any) => {
+  const handleComplete = (step: GeneralStep, data: Record<string, unknown>) => {
     // Merge the response data
     const updatedData = { ...generalData, ...data };
     setGeneralData(updatedData);
@@ -42,7 +42,7 @@ export default function GeneralQuestionsPage() {
       setCurrentStep(GENERAL_STEPS[currentIndex + 1]);
     } else {
       // All general questions completed
-      handleFinalSubmit(updatedData);
+      handleFinalSubmit(updatedData as GeneralQuestionsResponse);
     }
   };
 
@@ -83,25 +83,25 @@ export default function GeneralQuestionsPage() {
       <div className="py-8">
         {currentStep === 'Q7_AIFamiliarity' && (
           <Q7_AIFamiliarity 
-            onComplete={(data: AIFamiliarityResponse) => handleComplete('Q7_AIFamiliarity', data)}
+            onComplete={(data: AIFamiliarityResponse) => handleComplete('Q7_AIFamiliarity', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'Q7_ReviewSkepticism' && (
           <Q7_ReviewSkepticism 
-            onComplete={(data: ReviewSkepticismResponse) => handleComplete('Q7_ReviewSkepticism', data)}
+            onComplete={(data: ReviewSkepticismResponse) => handleComplete('Q7_ReviewSkepticism', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'Q7_AIAttitude' && (
           <Q7_AIAttitude 
-            onComplete={(data: AIAttitudeResponse) => handleComplete('Q7_AIAttitude', data)}
+            onComplete={(data: AIAttitudeResponse) => handleComplete('Q7_AIAttitude', data as unknown as Record<string, unknown>)}
           />
         )}
         
         {currentStep === 'Q8_UsageHabits' && (
           <Q8_UsageHabits 
-            onComplete={(data: UsageHabitsResponse) => handleComplete('Q8_UsageHabits', data)}
+            onComplete={(data: UsageHabitsResponse) => handleComplete('Q8_UsageHabits', data as unknown as Record<string, unknown>)}
           />
         )}
       </div>

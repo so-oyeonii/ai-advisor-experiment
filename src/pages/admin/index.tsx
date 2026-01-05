@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Download, RefreshCw, Users, FileText, Eye, EyeOff } from 'lucide-react';
-import { getAllSurveyResponses } from '@/lib/firebase';
+import { getAllSurveyResponses, SurveyResponseData } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 
 /**
@@ -13,21 +13,33 @@ import { Timestamp } from 'firebase/firestore';
  * - 공통 데이터 (3개 행에 중복): demographics, general questions
  */
 
-interface SurveyResponse {
-  participant_id: string;
-  stimulus_order: number;
-  product: string;
-  advisor_type: string;
-  congruity: string;
-  condition_group: number;
-  review_valence: string;
-  [key: string]: any;
-}
+// Extended type for admin view with flexible field names
+type ExtendedSurveyResponse = Partial<SurveyResponseData> & {
+  participant_id?: string;
+  participantId?: string;
+  stimulus_order?: number;
+  product?: string;
+  advisor_type?: string;
+  advisorType?: string;
+  congruity?: string | 'Congruent' | 'Incongruent';
+  condition_group?: number;
+  review_valence?: string;
+  gender?: string;
+  age?: number | string;
+  advisor_valence?: string;
+  advisorValence?: string;
+  public_valence?: string;
+  publicValence?: string;
+  involvement_1?: number;
+  arg_quality_1?: number;
+  purchase_1?: number;
+  [key: string]: string | number | boolean | undefined | Timestamp | object;
+};
 
 export default function AdminPage() {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [responses, setResponses] = useState<SurveyResponse[]>([]);
+  const [responses, setResponses] = useState<ExtendedSurveyResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<'all' | 'grouped'>('grouped');
@@ -53,17 +65,22 @@ export default function AdminPage() {
       console.log('  - 전체 응답 수:', data.length);
       
       // participant_id와 stimulus_order로 정렬
-      const sorted = [...data].sort((a: any, b: any) => {
-        const pidCompare = (a.participant_id || '').localeCompare(b.participant_id || '');
+      const sorted = ([...data] as ExtendedSurveyResponse[]).sort((a, b) => {
+        const pidA = a.participant_id || a.participantId || '';
+        const pidB = b.participant_id || b.participantId || '';
+        const pidCompare = pidA.localeCompare(pidB);
         if (pidCompare !== 0) return pidCompare;
-        return (a.stimulus_order || 0) - (b.stimulus_order || 0);
+        
+        const orderA = a.stimulus_order || 0;
+        const orderB = b.stimulus_order || 0;
+        return orderA - orderB;
       });
       
-      setResponses(sorted as any);
+      setResponses(sorted);
       setLastUpdate(new Date());
       
       // 통계 계산
-      const uniqueParticipants = new Set(data.map((r: any) => r.participant_id));
+      const uniqueParticipants = new Set(data.map(r => r.participantId));
       console.log('  - 참가자 수:', uniqueParticipants.size);
       console.log('  - 참가자당 평균 응답:', (data.length / uniqueParticipants.size).toFixed(1));
     } catch (error) {
@@ -183,9 +200,9 @@ export default function AdminPage() {
 
   // 참가자별 그룹화
   const groupByParticipant = () => {
-    const grouped = new Map<string, SurveyResponse[]>();
+    const grouped = new Map<string, ExtendedSurveyResponse[]>();
     responses.forEach(response => {
-      const pid = response.participant_id;
+      const pid = response.participant_id || response.participantId || '';
       if (!grouped.has(pid)) {
         grouped.set(pid, []);
       }
@@ -221,7 +238,7 @@ export default function AdminPage() {
     );
   }
 
-  const uniqueParticipants = new Set(responses.map(r => r.participant_id));
+  const uniqueParticipants = new Set(responses.map(r => r.participant_id || r.participantId || ''));
   const groupedData = groupByParticipant();
 
   return (
@@ -401,7 +418,8 @@ export default function AdminPage() {
                               // 조건에 따른 valence 추출
                               const advisorValence = resp.advisor_valence || resp.advisorValence || '-';
                               const publicValence = resp.public_valence || resp.publicValence || '-';
-                              const congruity = resp.congruity;
+                              const congruity = String(resp.congruity || '');
+                              const isCongruent = congruity.toLowerCase() === 'match' || congruity === 'Congruent';
                               
                               return (
                                 <tr key={idx} className="hover:bg-gray-50">
@@ -416,9 +434,9 @@ export default function AdminPage() {
                                   </td>
                                   <td className="px-3 py-2 text-sm">
                                     <span className={`px-2 py-1 rounded text-xs font-bold ${
-                                      congruity === 'match' || congruity === 'Congruent' ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
+                                      isCongruent ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
                                     }`}>
-                                      {congruity === 'match' || congruity === 'Congruent' ? 'Cong' : 'Inco'}
+                                      {isCongruent ? 'Cong' : 'Inco'}
                                     </span>
                                   </td>
                                   <td className="px-3 py-2 text-sm">
@@ -468,10 +486,14 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {responses.map((row, idx) => (
+                  {responses.map((row, idx) => {
+                    const congruity = String(row.congruity || '');
+                    const isCongruent = congruity.toLowerCase() === 'match' || congruity === 'Congruent';
+                    
+                    return (
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm font-mono text-gray-900 sticky left-0 bg-white">
-                        {row.participant_id?.substring(0, 8)}...
+                        {(row.participant_id || row.participantId || '')?.substring(0, 8)}...
                       </td>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-900">
                         {row.stimulus_order}
@@ -488,7 +510,7 @@ export default function AdminPage() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          row.congruity === 'match' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          isCongruent ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
                           {row.congruity}
                         </span>
@@ -500,7 +522,7 @@ export default function AdminPage() {
                         {Object.keys(row).length}
                       </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>

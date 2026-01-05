@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * Custom hook to track page dwell time
@@ -9,14 +9,14 @@ export function usePageDwellTime() {
   const startTimeRef = useRef<number | null>(null);
   const isActiveRef = useRef<boolean>(false);
 
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
     if (!isActiveRef.current) {
       startTimeRef.current = Date.now();
       isActiveRef.current = true;
     }
-  };
+  }, []);
 
-  const stopTimer = (): number => {
+  const stopTimer = useCallback((): number => {
     if (isActiveRef.current && startTimeRef.current !== null) {
       const endTime = Date.now();
       const elapsedSeconds = (endTime - startTimeRef.current) / 1000;
@@ -25,14 +25,14 @@ export function usePageDwellTime() {
       return elapsedSeconds;
     }
     return dwellTime;
-  };
+  }, [dwellTime]);
 
-  const getCurrentDwellTime = (): number => {
+  const getCurrentDwellTime = useCallback((): number => {
     if (isActiveRef.current && startTimeRef.current !== null) {
       return (Date.now() - startTimeRef.current) / 1000;
     }
     return dwellTime;
-  };
+  }, [dwellTime]);
 
   // Automatically start timer on mount
   useEffect(() => {
@@ -44,7 +44,7 @@ export function usePageDwellTime() {
         stopTimer();
       }
     };
-  }, []);
+  }, [startTimer, stopTimer]);
 
   // Handle page visibility changes (user switches tabs)
   useEffect(() => {

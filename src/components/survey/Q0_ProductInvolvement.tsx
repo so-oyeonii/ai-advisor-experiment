@@ -4,11 +4,10 @@ import { Q0_ProductInvolvement as config } from '@/config/surveyQuestions';
 import { ProductInvolvementResponse } from '@/types/survey';
 
 interface Q0Props {
-  product: string;
   onComplete: (responses: ProductInvolvementResponse) => void;
 }
 
-export default function Q0_ProductInvolvement({ product, onComplete }: Q0Props) {
+export default function Q0_ProductInvolvement({ onComplete }: Q0Props) {
   const [responses, setResponses] = useState<Partial<ProductInvolvementResponse>>({});
 
   const handleChange = (variable: string, value: number) => {

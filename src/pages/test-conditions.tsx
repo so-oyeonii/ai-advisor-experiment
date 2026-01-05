@@ -20,7 +20,7 @@ export default function TestConditionsPage() {
     congruity: currentCondition.congruity
   });
 
-  const { product, advisorReview, publicReviews, displayRating, ratingDistribution, ratingCount } = stimulusData;
+  const { product, advisorReview, publicReviews } = stimulusData;
 
   return (
     <div className="h-screen bg-gray-100 flex overflow-hidden">

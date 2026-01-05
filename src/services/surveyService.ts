@@ -1,5 +1,5 @@
 import { db } from '@/lib/firebase';
-import { collection, doc, setDoc, Timestamp } from 'firebase/firestore';
+import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { 
   SurveyResponse, 
   BlockAResponse, 
@@ -20,10 +20,10 @@ const SURVEY_COLLECTION = 'survey_responses';
  */
 export async function saveSurveyResponse(response: SurveyResponse): Promise<void> {
   try {
-    const docId = `${response.participant_id}_${response.stimulus_order}`;
-    const docRef = doc(db, SURVEY_COLLECTION, docId);
+    const responseDocId = `${response.participant_id}_${response.stimulus_order}`;
+    const docRef = doc(db, SURVEY_COLLECTION, responseDocId);
     
-    console.log(`💾 Saving to Firestore: ${docId}`);
+    console.log(`💾 Saving to Firestore: ${responseDocId}`);
     console.log('  - Fields to save:', Object.keys(response).length);
     console.log('  - Sample data:', {
       participant_id: response.participant_id,
@@ -40,7 +40,7 @@ export async function saveSurveyResponse(response: SurveyResponse): Promise<void
     console.log('  - Starting setDoc...');
     await setDoc(docRef, dataToSave);
     
-    console.log(`✅ Saved response for ${docId}`);
+    console.log(`✅ Saved response for ${responseDocId}`);
   } catch (error) {
     console.error(`❌ Error saving survey response for ${response.participant_id}_${response.stimulus_order}:`, error);
     throw error;
@@ -77,7 +77,6 @@ export async function createThreeRows(
     // Create all 3 documents
     const promises = blockAResponses.map((blockA, index) => {
       const stimulusOrder = index + 1;
-      const docId = `${participantId}_${stimulusOrder}`;
       
       console.log(`\n🔨 Creating row ${stimulusOrder}:`);
       console.log('  - blockA keys:', Object.keys(blockA));

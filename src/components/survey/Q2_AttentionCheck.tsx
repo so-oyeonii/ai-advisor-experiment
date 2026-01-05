@@ -3,11 +3,10 @@ import { Q2_AttentionChecks as config } from '@/config/surveyQuestions';
 import { AttentionCheckResponse } from '@/types/survey';
 
 interface Q2Props {
-  product: string;
   onComplete: (responses: AttentionCheckResponse) => void;
 }
 
-export default function Q2_AttentionCheck({ product, onComplete }: Q2Props) {
+export default function Q2_AttentionCheck({ onComplete }: Q2Props) {
   const [responses, setResponses] = useState<Partial<AttentionCheckResponse>>({});
 
   const handleChange = (variable: string, value: string) => {
