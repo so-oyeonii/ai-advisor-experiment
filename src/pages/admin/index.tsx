@@ -117,9 +117,48 @@ export default function AdminPage() {
     }
 
     try {
+      // 참가자별로 그룹화하여 시작/종료 시간 계산
+      const groupedByParticipant = new Map<string, ExtendedSurveyResponse[]>();
+      responses.forEach(response => {
+        const pid = response.participant_id || response.participantId || '';
+        if (!groupedByParticipant.has(pid)) {
+          groupedByParticipant.set(pid, []);
+        }
+        groupedByParticipant.get(pid)!.push(response);
+      });
+
+      // 시간 정보를 추가한 responses 생성
+      const enrichedResponses = responses.map(row => {
+        const pid = row.participant_id || row.participantId || '';
+        const participantResponses = groupedByParticipant.get(pid) || [];
+        
+        // 참가자의 모든 응답에서 시작/종료 시간 찾기
+        const timestamps = participantResponses
+          .map(r => r.createdAt as Timestamp)
+          .filter(t => t != null)
+          .sort((a, b) => a.seconds - b.seconds);
+        
+        const startTime = timestamps.length > 0 ? timestamps[0].toDate().toISOString() : '';
+        const endTime = timestamps.length > 0 ? timestamps[timestamps.length - 1].toDate().toISOString() : '';
+        
+        // 총 소요 시간 계산 (초)
+        const totalDuration = timestamps.length > 1 
+          ? timestamps[timestamps.length - 1].seconds - timestamps[0].seconds
+          : 0;
+        
+        return {
+          ...row,
+          start_time: startTime,
+          completion_time: endTime,
+          total_duration_seconds: totalDuration,
+          advisor_valence: row.advisor_valence || (row as any).advisorValence || '',
+          public_valence: row.public_valence || (row as any).publicValence || ''
+        };
+      });
+
       // 모든 컬럼 이름 수집
       const allColumns = new Set<string>();
-      responses.forEach(row => {
+      enrichedResponses.forEach(row => {
         Object.keys(row).forEach(key => {
           allColumns.add(key);
         });
@@ -129,11 +168,16 @@ export default function AdminPage() {
       const priorityColumns = [
         'participant_id',
         'stimulus_order',
+        'start_time',
+        'completion_time',
+        'total_duration_seconds',
+        'page_dwell_time',
         'condition_group',
         'product',
         'advisor_type',
+        'advisor_valence',
+        'public_valence',
         'congruity',
-        'review_valence',
         'gender',
         'age',
         'education',
@@ -148,16 +192,16 @@ export default function AdminPage() {
       const columns = [...priorityColumns.filter(col => allColumns.has(col)), ...remainingColumns];
       
       console.log('📥 CSV 다운로드 시작');
-      console.log('  - 행 수:', responses.length);
+      console.log('  - 행 수:', enrichedResponses.length);
       console.log('  - 컬럼 수:', columns.length);
       
       // CSV 헤더
       const header = columns.join(',');
       
       // CSV 데이터 행
-      const rows = responses.map(row => {
+      const rows = enrichedResponses.map(row => {
         return columns.map(col => {
-          let value = row[col];
+          let value = (row as Record<string, unknown>)[col];
           
           // Timestamp 변환
           if (value instanceof Timestamp) {
@@ -644,18 +688,19 @@ export default function AdminPage() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">제품</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">어드바이저</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">일치성</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">A-Val</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">P-Val</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Advisor Val</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Public Val</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {responses.map((row, idx) => {
-                    const congruity = String(row.congruity || '');
-                    const isCongruent = congruity.toLowerCase() === 'match' || congruity === 'Congruent';
+                    // Advisor Valence와 Public Valence 추출
+                    const advisorVal = row.advisor_valence || (row as any).advisorValence || '';
+                    const publicVal = row.public_valence || (row as any).publicValence || '';
                     
-                    // A-Val과 P-Val 값 추출
-                    const aVal = row.a_val || row['A-Val'] || '';
-                    const pVal = row.p_val || row['P-Val'] || '';
+                    // Congruity 로직: Congruent = advisor와 public이 다름, Incongruent = 같음
+                    const congruity = String(row.congruity || '');
+                    const isCongruent = congruity === 'Congruent';
                     
                     return (
                     <tr key={idx} className="hover:bg-gray-50">
@@ -672,34 +717,34 @@ export default function AdminPage() {
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          row.advisor_type === 'ai' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                          row.advisor_type === 'ai' || row.advisor_type === 'AI' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {row.advisor_type?.toUpperCase()}
+                          {row.advisor_type === 'ai' || row.advisor_type === 'AI' ? 'AI' : 'Human'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
                           isCongruent ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
-                          {isCongruent ? 'Match' : 'Non-match'}
+                          {congruity || '-'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          String(aVal).toLowerCase() === 'positive' || String(aVal).toLowerCase() === 'pos' 
+                          String(advisorVal).toLowerCase() === 'positive'
                             ? 'bg-emerald-100 text-emerald-800' 
                             : 'bg-orange-100 text-orange-800'
                         }`}>
-                          {String(aVal).toLowerCase() === 'positive' || String(aVal).toLowerCase() === 'pos' ? 'Positive' : 'Negative'}
+                          {String(advisorVal).toLowerCase() === 'positive' ? 'Positive' : String(advisorVal).toLowerCase() === 'negative' ? 'Negative' : '-'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          String(pVal).toLowerCase() === 'positive' || String(pVal).toLowerCase() === 'pos'
+                          String(publicVal).toLowerCase() === 'positive'
                             ? 'bg-emerald-100 text-emerald-800' 
                             : 'bg-orange-100 text-orange-800'
                         }`}>
-                          {String(pVal).toLowerCase() === 'positive' || String(pVal).toLowerCase() === 'pos' ? 'Positive' : 'Negative'}
+                          {String(publicVal).toLowerCase() === 'positive' ? 'Positive' : String(publicVal).toLowerCase() === 'negative' ? 'Negative' : '-'}
                         </span>
                       </td>
                     </tr>
