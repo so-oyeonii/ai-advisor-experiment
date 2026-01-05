@@ -28,9 +28,9 @@ export default function Q7_AIAttitude({ onComplete }: Q7AIAttitudeProps) {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h2 className="text-3xl font-bold text-gray-900 mb-3">{config.title}</h2>
+      <h2 className="text-sm font-semibold text-gray-600 mb-3">{config.title}</h2>
       {config.description && (
-        <p className="text-base text-gray-600 mb-8">{config.description}</p>
+        <p className="text-lg font-medium text-gray-800 mb-8">{config.description}</p>
       )}
       
       <form onSubmit={handleSubmit}>

@@ -27,7 +27,7 @@ export default function Q8_UsageHabits({ onComplete }: Q8Props) {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h2 className="text-3xl font-bold text-gray-900 mb-8">{config.title}</h2>
+      <h2 className="text-sm font-semibold text-gray-600 mb-8">{config.title}</h2>
       
       <form onSubmit={handleSubmit}>
         <div className="space-y-8">

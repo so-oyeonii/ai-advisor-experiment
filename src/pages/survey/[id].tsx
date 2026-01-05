@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useSurvey } from '@/contexts/SurveyContext';
 import { usePageDwellTime } from '@/hooks/usePageDwellTime';
+import { useEffect } from 'react';
 
 // Import all Block A survey components
 import Q0_ProductInvolvement from '@/components/survey/Q0_ProductInvolvement';
@@ -43,6 +44,16 @@ export default function SurveyPage() {
   
   const [currentStep, setCurrentStep] = useState<QuestionStep>('Q0');
   const [blockAData, setBlockAData] = useState<Partial<BlockAResponse>>({});
+
+  // 페이지 로드 시 스크롤을 맨 위로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // 스텍 변경 시도 스크롤을 맨 위로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentStep]);
 
   const handleComplete = (step: QuestionStep, data: Record<string, unknown>) => {
     // Merge the response data

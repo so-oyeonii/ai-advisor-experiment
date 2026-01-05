@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useSurvey } from '@/contexts/SurveyContext';
+import { useEffect } from 'react';
 
 import Q7_AIFamiliarity from '@/components/survey/Q7_AIFamiliarity';
 import Q7_ReviewSkepticism from '@/components/survey/Q7_ReviewSkepticism';
@@ -30,6 +31,16 @@ export default function GeneralQuestionsPage() {
   
   const [currentStep, setCurrentStep] = useState<GeneralStep>('Q7_AIFamiliarity');
   const [generalData, setGeneralData] = useState<Partial<GeneralQuestionsResponse>>({});
+
+  // 페이지 로드 시 스크롤을 맨 위로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // 스텍 변경 시도 스크롤을 맨 위로
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentStep]);
 
   const handleComplete = (step: GeneralStep, data: Record<string, unknown>) => {
     // Merge the response data

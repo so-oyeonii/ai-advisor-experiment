@@ -17,11 +17,10 @@ export default function LikertScale({
 }: LikertScaleProps) {
   return (
     <div className="mb-8">
-      <p className="text-lg font-medium text-gray-900 mb-1">{question}</p>
-      <p className="text-xs text-gray-400 mb-4">[{name}]</p>
-      <div className="flex items-center justify-between gap-4">
-        <span className="text-sm text-gray-700 w-32 text-right flex-shrink-0">{leftLabel}</span>
-        <div className="flex space-x-4 sm:space-x-6 md:space-x-8 justify-center">
+      <p className="text-lg font-medium text-gray-900 mb-4">{question}</p>
+      <div className="flex items-center justify-between gap-6">
+        <span className="text-base text-gray-700 w-36 text-right flex-shrink-0">{leftLabel}</span>
+        <div className="flex space-x-6 sm:space-x-8 md:space-x-10 justify-center">
           {[1, 2, 3, 4, 5, 6, 7].map(value => (
             <label key={value} className="flex flex-col items-center cursor-pointer hover:bg-gray-50 p-2 rounded transition">
               <input 
@@ -36,7 +35,7 @@ export default function LikertScale({
             </label>
           ))}
         </div>
-        <span className="text-sm text-gray-700 w-32 flex-shrink-0">{rightLabel}</span>
+        <span className="text-base text-gray-700 w-36 flex-shrink-0">{rightLabel}</span>
       </div>
     </div>
   );
