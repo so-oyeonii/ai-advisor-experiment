@@ -130,47 +130,44 @@ export default function AdminPage() {
     }
   }, [isAuthenticated]);
 
-  const downloadCSV = () => {
+  const downloadCSV = async () => {
     if (responses.length === 0) {
       alert('다운로드할 데이터가 없습니다');
       return;
     }
 
     try {
-      // 참가자별로 그룹화하여 시작/종료 시간 계산
-      const groupedByParticipant = new Map<string, ExtendedSurveyResponse[]>();
-      responses.forEach(response => {
-        const pid = response.participant_id || response.participantId || '';
-        if (!groupedByParticipant.has(pid)) {
-          groupedByParticipant.set(pid, []);
-        }
-        groupedByParticipant.get(pid)!.push(response);
-      });
+      // sessions 데이터 가져오기
+      const sessions = await getAllSessions();
+      const sessionsMap = new Map(sessions.map(s => [s.participantId, s]));
 
       // 시간 정보를 추가한 responses 생성
       const enrichedResponses = responses.map(row => {
         const pid = row.participant_id || row.participantId || '';
-        const participantResponses = groupedByParticipant.get(pid) || [];
+        const session = sessionsMap.get(pid);
         
-        // 참가자의 모든 응답에서 시작/종료 시간 찾기
-        const timestamps = participantResponses
-          .map(r => r.createdAt as Timestamp)
-          .filter(t => t != null)
-          .sort((a, b) => a.seconds - b.seconds);
+        // 전체 설문 시작/끝 시간 (sessions 테이블에서 가져오기)
+        const formatTimestamp = (ts: Timestamp | undefined) => {
+          if (!ts) return '';
+          const date = ts.toDate();
+          const year = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric' });
+          const month = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit' });
+          const day = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', day: '2-digit' });
+          const hour = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false });
+          const minute = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', minute: '2-digit' });
+          const second = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', second: '2-digit' });
+          return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}`;
+        };
         
-        const startTime = timestamps.length > 0 ? timestamps[0].toDate().toISOString() : '';
-        const endTime = timestamps.length > 0 ? timestamps[timestamps.length - 1].toDate().toISOString() : '';
-        
-        // 총 소요 시간 계산 (초)
-        const totalDuration = timestamps.length > 1 
-          ? timestamps[timestamps.length - 1].seconds - timestamps[0].seconds
-          : 0;
+        const surveyStartTime = formatTimestamp(session?.startTime);
+        const surveyEndTime = formatTimestamp(session?.endTime);
+        const status = session?.completed ? '완료' : '진행중';
         
         return {
           ...row,
-          start_time: startTime,
-          completion_time: endTime,
-          total_duration_seconds: totalDuration,
+          survey_start_time: surveyStartTime,
+          survey_end_time: surveyEndTime,
+          status: status,
           advisor_valence: row.advisor_valence || (row as any).advisorValence || '',
           public_valence: row.public_valence || (row as any).publicValence || ''
         };
@@ -184,22 +181,29 @@ export default function AdminPage() {
         });
       });
 
-      // 컬럼 순서 정의 (중요한 것 먼저)
+      // 컬럼 순서 정의 (export.tsx와 동일하게)
       const priorityColumns = [
+        // 1. 참가자 기본 정보
         'participant_id',
+        'status',
+        'survey_start_time',
+        'survey_end_time',
+        
+        // 2. 자극물 정보
         'stimulus_order',
-        'start_time',
-        'completion_time',
-        'total_duration_seconds',
-        'page_dwell_time',
-        'condition_group',
         'product',
+        'condition_group',
         'advisor_type',
+        'congruity',
         'advisor_valence',
         'public_valence',
-        'congruity',
-        'gender',
+        
+        // 3. 노출 정보
+        'page_dwell_time',
+        
+        // 4. 인구통계
         'age',
+        'gender',
         'education',
         'income',
         'occupation'

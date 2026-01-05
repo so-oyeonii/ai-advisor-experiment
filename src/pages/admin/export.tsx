@@ -83,9 +83,9 @@ interface MergedData {
   attitude_ai_2: string | number;
   attitude_ai_3: string | number;
   attitude_ai_4: string | number;
-  startTime: string;
-  endTime: string;
-  completed: boolean;
+  survey_start_time: string;
+  survey_end_time: string;
+  status: string;
   // Product-level info
   stimulusIndex: number;
   stimulusCode: string; // e.g., "C1_P", "C3_T", "C8_S"
@@ -270,9 +270,9 @@ export default function AdminExportPage() {
           attitude_ai_3: participantDemo?.attitude_ai_3 || '',
           attitude_ai_4: participantDemo?.attitude_ai_4 || '',
           // 전체 설문 시작/끝 시간 (3개 행 모두 동일)
-          startTime: surveyStartTime,
-          endTime: surveyEndTime,
-          completed: session.completed,
+          survey_start_time: surveyStartTime,
+          survey_end_time: surveyEndTime,
+          status: session.completed ? '완료' : '진행중',
           
           // Product-level info (different for each row)
           stimulusIndex: stimulusIdx,
@@ -317,10 +317,10 @@ export default function AdminExportPage() {
       }
     });
 
-    // Sort by endTime (most recent first)
+    // Sort by survey_end_time (most recent first)
     merged.sort((a, b) => {
-      const aTime = a.endTime ? new Date(a.endTime).getTime() : 0;
-      const bTime = b.endTime ? new Date(b.endTime).getTime() : 0;
+      const aTime = a.survey_end_time ? new Date(a.survey_end_time).getTime() : 0;
+      const bTime = b.survey_end_time ? new Date(b.survey_end_time).getTime() : 0;
       return bTime - aTime; // Descending order (most recent first)
     });
 
@@ -330,13 +330,101 @@ export default function AdminExportPage() {
   const convertToCSV = (data: MergedData[]): string => {
     if (data.length === 0) return '';
 
-    // Get all unique keys
-    const allKeys = new Set<string>();
-    data.forEach(row => {
-      Object.keys(row).forEach(key => allKeys.add(key));
-    });
-
-    const headers = Array.from(allKeys).sort();
+    // Define explicit column order for better readability
+    const headers = [
+      // 1. 참가자 기본 정보
+      'participantId',
+      'status',
+      'survey_start_time',
+      'survey_end_time',
+      
+      // 2. 자극물 정보
+      'stimulusIndex',
+      'stimulusCode',
+      'productName',
+      'groupId',
+      'conditionId',
+      'advisorType',
+      'congruity',
+      'advisorValence',
+      'publicValence',
+      
+      // 3. 노출 정보
+      'exposureTimestamp',
+      'dwellTime',
+      
+      // 4. DV: 종속변수
+      'persuasiveness_1',
+      'persuasiveness_2',
+      'persuasiveness_3',
+      'persuasiveness_4',
+      'purchase_intention_1',
+      'purchase_intention_2',
+      'purchase_intention_3',
+      'decision_confidence_1',
+      'decision_confidence_2',
+      'decision_confidence_3',
+      'decision_confidence_4',
+      
+      // 5. M: 매개변수
+      'argument_quality_1',
+      'argument_quality_2',
+      'argument_quality_3',
+      'argument_quality_4',
+      'argument_quality_5',
+      'source_credibility_expertise_1',
+      'source_credibility_expertise_2',
+      'source_credibility_expertise_3',
+      'source_credibility_expertise_4',
+      'source_credibility_trust_1',
+      'source_credibility_trust_2',
+      'source_credibility_trust_3',
+      'source_credibility_trust_4',
+      'persuasive_intent_1',
+      'persuasive_intent_2',
+      'persuasive_intent_3',
+      'mind_perception_agency_1',
+      'mind_perception_agency_2',
+      'mind_perception_agency_3',
+      'mind_perception_experience_1',
+      'mind_perception_experience_2',
+      'mind_perception_experience_3',
+      
+      // 6. Manipulation & Attention Checks
+      'product_involvement_1',
+      'product_involvement_2',
+      'product_involvement_3',
+      'manipulation_check_advisor_type',
+      'manipulation_check_advisor_valence',
+      'manipulation_check_public_valence',
+      'attention_check_1',
+      'attention_check_2',
+      'recall_advisor_review',
+      'recall_public_reviews',
+      
+      // 7. 인구통계 정보
+      'age',
+      'gender',
+      'education',
+      'nationality',
+      'income',
+      'online_shopping_frequency',
+      'shopping_frequency',
+      'ai_usage_frequency',
+      
+      // 8. 개인 특성 변수
+      'ai_familiarity_1',
+      'ai_familiarity_2',
+      'ai_familiarity_3',
+      'review_skepticism_1',
+      'review_skepticism_2',
+      'review_skepticism_3',
+      'review_skepticism_4',
+      'attitude_ai_1',
+      'attitude_ai_2',
+      'attitude_ai_3',
+      'attitude_ai_4'
+    ];
     
     // Create CSV header
     const csvRows = [headers.join(',')];
