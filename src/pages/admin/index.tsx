@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Download, RefreshCw, Users, FileText, Eye, EyeOff } from 'lucide-react';
-import { getAllSurveyResponses, getAllSessions, SurveyResponseData, SessionData } from '@/lib/firebase';
+import { getAllSurveyResponses, getAllSessions, SurveyResponseData } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 
 /**
@@ -168,8 +168,8 @@ export default function AdminPage() {
           survey_start_time: surveyStartTime,
           survey_end_time: surveyEndTime,
           status: status,
-          advisor_valence: row.advisor_valence || (row as any).advisorValence || '',
-          public_valence: row.public_valence || (row as any).publicValence || ''
+          advisor_valence: row.advisor_valence || (row as ExtendedSurveyResponse).advisorValence || '',
+          public_valence: row.public_valence || (row as ExtendedSurveyResponse).publicValence || ''
         };
       });
 
@@ -305,15 +305,15 @@ export default function AdminPage() {
     const participants = Array.from(grouped.entries());
     
     // 완료한 참가자 (3개 자극물 모두 완료)
-    const completedParticipants = participants.filter(([_, responses]) => responses.length === 3);
-    const inProgressParticipants = participants.filter(([_, responses]) => responses.length < 3);
+    const completedParticipants = participants.filter(([, responses]) => responses.length === 3);
+    const inProgressParticipants = participants.filter(([, responses]) => responses.length < 3);
     
     // 완료한 참가자의 소요 시간 계산 (초 단위)
     const completionTimes: number[] = [];
-    completedParticipants.forEach(([_, responses]) => {
+    completedParticipants.forEach(([, responses]) => {
       // 각 자극물의 page_dwell_time을 합산
       const totalTime = responses.reduce((sum, r) => {
-        const dwellTime = r.page_dwell_time || (r as any).responseTime || 0;
+        const dwellTime = r.page_dwell_time || (r as ExtendedSurveyResponse).responseTime || 0;
         return sum + Number(dwellTime);
       }, 0);
       if (totalTime > 0) {
@@ -344,7 +344,7 @@ export default function AdminPage() {
     
     // 각 자극물별로 조건 카운트
     responses.forEach(r => {
-      const conditionGroup = r.condition_group || (r as any).conditionId;
+      const conditionGroup = r.condition_group || (r as ExtendedSurveyResponse).conditionId;
       if (conditionGroup && conditionGroup >= 1 && conditionGroup <= 8) {
         conditionCounts[conditionGroup]++;
       }
@@ -388,7 +388,6 @@ export default function AdminPage() {
     );
   }
 
-  const uniqueParticipants = new Set(responses.map(r => r.participant_id || r.participantId || ''));
   const groupedData = groupByParticipant();
 
   return (
@@ -556,14 +555,14 @@ export default function AdminPage() {
               {Array.from(groupedData.entries()).map(([participantId, participantResponses]) => {
                 // 총 소요 시간 계산
                 const totalTime = participantResponses.reduce((sum, r) => {
-                  const dwellTime = r.page_dwell_time || (r as any).responseTime || 0;
+                  const dwellTime = r.page_dwell_time || (r as ExtendedSurveyResponse).responseTime || 0;
                   return sum + Number(dwellTime);
                 }, 0);
                 
                 // 3개 조건 그룹 모두 추출 (각 자극물마다 다른 조건, 순서대로)
                 const conditionGroups = participantResponses
                   .sort((a, b) => (a.stimulus_order || 0) - (b.stimulus_order || 0))
-                  .map(r => r.condition_group || (r as any)?.conditionId || '-');
+                  .map(r => r.condition_group || (r as ExtendedSurveyResponse)?.conditionId || '-');
                 
                 // 완료 상태 (3개 자극물 모두 완료 여부)
                 const isCompleted = participantResponses.length === 3;
@@ -649,7 +648,7 @@ export default function AdminPage() {
                               const isCongruent = congruity === 'Congruent' || congruityLower === 'congruent' || congruityLower === 'match';
                               
                               // 소요 시간 정보
-                              const dwellTime = resp.page_dwell_time || (resp as any).responseTime || 0;
+                              const dwellTime = Number(resp.page_dwell_time || (resp as ExtendedSurveyResponse).responseTime || 0);
                               
                               const formatDuration = (seconds: number) => {
                                 const mins = Math.floor(seconds / 60);
@@ -727,8 +726,8 @@ export default function AdminPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {responses.map((row, idx) => {
                     // Advisor Valence와 Public Valence 추출
-                    const advisorVal = row.advisor_valence || (row as any).advisorValence || '';
-                    const publicVal = row.public_valence || (row as any).publicValence || '';
+                    const advisorVal = row.advisor_valence || (row as ExtendedSurveyResponse).advisorValence || '';
+                    const publicVal = row.public_valence || (row as ExtendedSurveyResponse).publicValence || '';
                     
                     // Congruity 로직: Congruent = advisor와 public이 다름, Incongruent = 같음
                     const congruity = String(row.congruity || '');
