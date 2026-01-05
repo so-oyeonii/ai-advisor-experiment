@@ -36,21 +36,21 @@ export interface ExperimentCondition {
 
 // 8 conditions in 4 groups
 const EIGHT_CONDITIONS: StimulusCondition[] = [
-  // Group 1: AI + Congruent
-  { conditionId: 1, groupId: 1, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'negative' },
-  { conditionId: 2, groupId: 1, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'positive' },
+  // Group 1: AI + Congruent (advisor와 public이 같음)
+  { conditionId: 1, groupId: 1, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'positive' },
+  { conditionId: 2, groupId: 1, advisorType: 'AI', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'negative' },
   
-  // Group 2: AI + Incongruent
-  { conditionId: 3, groupId: 2, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'positive' },
-  { conditionId: 4, groupId: 2, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'negative' },
+  // Group 2: AI + Incongruent (advisor와 public이 다름)
+  { conditionId: 3, groupId: 2, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'negative' },
+  { conditionId: 4, groupId: 2, advisorType: 'AI', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'positive' },
   
-  // Group 3: Human + Congruent
-  { conditionId: 5, groupId: 3, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'negative' },
-  { conditionId: 6, groupId: 3, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'positive' },
+  // Group 3: Human + Congruent (advisor와 public이 같음)
+  { conditionId: 5, groupId: 3, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'positive', publicValence: 'positive' },
+  { conditionId: 6, groupId: 3, advisorType: 'Human', congruity: 'Congruent', advisorValence: 'negative', publicValence: 'negative' },
   
-  // Group 4: Human + Incongruent
-  { conditionId: 7, groupId: 4, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'positive' },
-  { conditionId: 8, groupId: 4, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'negative' },
+  // Group 4: Human + Incongruent (advisor와 public이 다름)
+  { conditionId: 7, groupId: 4, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'positive', publicValence: 'negative' },
+  { conditionId: 8, groupId: 4, advisorType: 'Human', congruity: 'Incongruent', advisorValence: 'negative', publicValence: 'positive' },
 ];
 
 // 3 products

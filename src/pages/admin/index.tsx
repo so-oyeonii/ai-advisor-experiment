@@ -203,6 +203,16 @@ export default function AdminPage() {
         return columns.map(col => {
           let value = (row as Record<string, unknown>)[col];
           
+          // Congruity 값 정규화 (Congruent 또는 Incongruent로 통일)
+          if (col === 'congruity' && value) {
+            const congruityStr = String(value).toLowerCase();
+            if (congruityStr === 'congruent' || congruityStr === 'match') {
+              value = 'Congruent';
+            } else if (congruityStr === 'incongruent' || congruityStr === 'nonmatch') {
+              value = 'Incongruent';
+            }
+          }
+          
           // Timestamp 변환
           if (value instanceof Timestamp) {
             value = value.toDate().toISOString();
@@ -441,7 +451,16 @@ export default function AdminPage() {
 
           {lastUpdate && (
             <p className="text-sm text-gray-500">
-              마지막 업데이트: {lastUpdate.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}
+              마지막 업데이트: {lastUpdate.toLocaleString('ko-KR', { 
+                timeZone: 'Asia/Seoul', 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit', 
+                hour12: false 
+              })}
             </p>
           )}
         </div>
@@ -595,7 +614,8 @@ export default function AdminPage() {
                               const advisorValence = resp.advisor_valence || resp.advisorValence || '-';
                               const publicValence = resp.public_valence || resp.publicValence || '-';
                               const congruity = String(resp.congruity || '');
-                              const isCongruent = congruity.toLowerCase() === 'match' || congruity === 'Congruent';
+                              const congruityLower = congruity.toLowerCase();
+                              const isCongruent = congruity === 'Congruent' || congruityLower === 'congruent' || congruityLower === 'match';
                               
                               // 시간 정보
                               const dwellTime = resp.page_dwell_time || (resp as any).responseTime || 0;
@@ -609,12 +629,12 @@ export default function AdminPage() {
                               
                               const formatTime = (date: Date | null) => {
                                 if (!date) return '-';
-                                return date.toLocaleString('ko-KR', { 
-                                  month: '2-digit', 
-                                  day: '2-digit', 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
-                                });
+                                const year = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric' });
+                                const month = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit' });
+                                const day = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', day: '2-digit' });
+                                const hour = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false });
+                                const minute = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', minute: '2-digit' });
+                                return `${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
                               };
                               
                               const formatDuration = (seconds: number) => {
@@ -700,7 +720,8 @@ export default function AdminPage() {
                     
                     // Congruity 로직: Congruent = advisor와 public이 다름, Incongruent = 같음
                     const congruity = String(row.congruity || '');
-                    const isCongruent = congruity === 'Congruent';
+                    const congruityLower = congruity.toLowerCase();
+                    const isCongruent = congruity === 'Congruent' || congruityLower === 'congruent' || congruityLower === 'match';
                     
                     return (
                     <tr key={idx} className="hover:bg-gray-50">

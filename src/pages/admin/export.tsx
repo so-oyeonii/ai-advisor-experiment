@@ -31,20 +31,16 @@ const toKSTString = (timestamp: Timestamp | string | Date | undefined | null): s
       return '';
     }
     
-    // Format as KST (Asia/Seoul timezone)
-    const kstString = date.toLocaleString('ko-KR', {
-      timeZone: 'Asia/Seoul',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
+    // Format as KST (Asia/Seoul timezone) in 24-hour format
+    const year = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric' });
+    const month = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit' });
+    const day = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', day: '2-digit' });
+    const hour = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false });
+    const minute = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', minute: '2-digit' });
+    const second = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', second: '2-digit' });
     
-    // Convert to YYYY-MM-DD HH:mm:ss format
-    return kstString.replace(/\. /g, '-').replace(/\.$/, '').replace(/-/g, '-').replace(/\s/g, ' ');
+    // Format: YYYY-MM-DD HH:mm:ss
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}`;
   } catch (error) {
     console.error('Error converting timestamp:', error);
     return '';
@@ -232,6 +228,10 @@ export default function AdminExportPage() {
     sessions.forEach(session => {
       const participantDemo = demographics.find(d => d.participantId === session.participantId);
       
+      // 전체 설문 시작/끝 시간 (3개 행 모두 동일)
+      const surveyStartTime = toKSTString(session.startTime);
+      const surveyEndTime = toKSTString(session.endTime);
+      
       // For each of the 3 products this participant saw
       for (let stimulusIdx = 0; stimulusIdx < 3; stimulusIdx++) {
         const exposure = exposures.find(e => 
@@ -269,8 +269,9 @@ export default function AdminExportPage() {
           attitude_ai_2: participantDemo?.attitude_ai_2 || '',
           attitude_ai_3: participantDemo?.attitude_ai_3 || '',
           attitude_ai_4: participantDemo?.attitude_ai_4 || '',
-          startTime: toKSTString(session.startTime),
-          endTime: toKSTString(session.endTime),
+          // 전체 설문 시작/끝 시간 (3개 행 모두 동일)
+          startTime: surveyStartTime,
+          endTime: surveyEndTime,
           completed: session.completed,
           
           // Product-level info (different for each row)
@@ -410,19 +411,15 @@ export default function AdminExportPage() {
       date = new Date(timestamp as string | number | Date);
     }
     
-    // Format as KST (Korea Standard Time, UTC+9)
-    const kstOptions: Intl.DateTimeFormatOptions = {
-      timeZone: 'Asia/Seoul',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    };
+    // Format as KST (Korea Standard Time, UTC+9) in 24-hour format
+    const year = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', year: 'numeric' });
+    const month = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit' });
+    const day = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', day: '2-digit' });
+    const hour = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour: '2-digit', hour12: false });
+    const minute = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', minute: '2-digit' });
+    const second = date.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', second: '2-digit' });
     
-    return date.toLocaleString('ko-KR', kstOptions).replace(/\. /g, '-').replace('.', '');
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')} ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}:${second.padStart(2, '0')}`;
   };
 
   const calculateDuration = (startTime: unknown, endTime: unknown) => {

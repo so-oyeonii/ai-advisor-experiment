@@ -81,7 +81,7 @@ export default function SurveyPage() {
       condition_group: currentStimulus.condition.conditionId, // C1~C8
       product: currentStimulus.product,
       advisor_type: currentStimulus.condition.advisorType.toLowerCase() === 'ai' ? 'ai' : 'expert',
-      congruity: currentStimulus.condition.congruity.toLowerCase() === 'congruent' ? 'match' : 'nonmatch',
+      congruity: currentStimulus.condition.congruity, // Congruent or Incongruent
       review_valence: currentStimulus.condition.advisorValence,
       advisor_valence: currentStimulus.condition.advisorValence,
       public_valence: currentStimulus.condition.publicValence,
