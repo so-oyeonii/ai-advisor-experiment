@@ -320,15 +320,15 @@ export default function AdminExportPage() {
     // Sort by participant session start time (most recent first), then by stimulus order
     merged.sort((a, b) => {
       // 참가자가 다르면 세션 시작 시간으로 정렬 (최신 참가자가 위에)
-      if (a.participant_id !== b.participant_id) {
+      if (a.participantId !== b.participantId) {
         const aTime = a.survey_start_time ? new Date(a.survey_start_time).getTime() : 0;
         const bTime = b.survey_start_time ? new Date(b.survey_start_time).getTime() : 0;
         return bTime - aTime; // Descending order (most recent first)
       }
       
-      // 같은 참가자면 stimulus_order로 정렬 (0, 1, 2 순서)
-      const orderA = a.stimulus_order || 0;
-      const orderB = b.stimulus_order || 0;
+      // 같은 참가자면 stimulusIndex로 정렬 (0, 1, 2 순서)
+      const orderA = a.stimulusIndex || 0;
+      const orderB = b.stimulusIndex || 0;
       return orderA - orderB;
     });
 

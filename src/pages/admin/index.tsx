@@ -107,9 +107,9 @@ export default function AdminPage() {
           return pidB.localeCompare(pidA);
         }
         
-        // 같은 참가자면 stimulus_order로 정렬 (1, 2, 3 순서)
-        const orderA = a.stimulus_order || 0;
-        const orderB = b.stimulus_order || 0;
+        // 같은 참가자면 stimulus_order로 정렬 (0, 1, 2 순서)
+        const orderA = Number((a.stimulus_order !== undefined ? a.stimulus_order : a.stimulusOrder) || 0);
+        const orderB = Number((b.stimulus_order !== undefined ? b.stimulus_order : b.stimulusOrder) || 0);
         return orderA - orderB;
       });
       
