@@ -42,7 +42,7 @@ export default function AdminPage() {
   const [responses, setResponses] = useState<ExtendedSurveyResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-  const [viewMode, setViewMode] = useState<'all' | 'grouped'>('grouped');
+  const [viewMode, setViewMode] = useState<'all' | 'grouped'>('all');
   const [expandedParticipant, setExpandedParticipant] = useState<string | null>(null);
 
   const ADMIN_PASSWORD = 'admin123';
@@ -211,6 +211,68 @@ export default function AdminPage() {
     return grouped;
   };
 
+  // 통계 계산
+  const calculateStats = () => {
+    const grouped = groupByParticipant();
+    const participants = Array.from(grouped.entries());
+    
+    // 완료한 참가자 (3개 자극물 모두 완료)
+    const completedParticipants = participants.filter(([_, responses]) => responses.length === 3);
+    const inProgressParticipants = participants.filter(([_, responses]) => responses.length < 3);
+    
+    // 완료한 참가자의 소요 시간 계산 (초 단위)
+    const completionTimes: number[] = [];
+    completedParticipants.forEach(([_, responses]) => {
+      // 각 자극물의 page_dwell_time을 합산
+      const totalTime = responses.reduce((sum, r) => {
+        const dwellTime = r.page_dwell_time || (r as any).responseTime || 0;
+        return sum + Number(dwellTime);
+      }, 0);
+      if (totalTime > 0) {
+        completionTimes.push(totalTime);
+      }
+    });
+    
+    // 평균 및 중앙값 계산
+    const avgTime = completionTimes.length > 0 
+      ? completionTimes.reduce((a, b) => a + b, 0) / completionTimes.length 
+      : 0;
+    
+    const median = completionTimes.length > 0
+      ? (() => {
+          const sorted = [...completionTimes].sort((a, b) => a - b);
+          const mid = Math.floor(sorted.length / 2);
+          return sorted.length % 2 === 0 
+            ? (sorted[mid - 1] + sorted[mid]) / 2 
+            : sorted[mid];
+        })()
+      : 0;
+    
+    // 조건별 분포 계산 (C1~C8)
+    const conditionCounts: Record<number, number> = {};
+    for (let i = 1; i <= 8; i++) {
+      conditionCounts[i] = 0;
+    }
+    
+    // 각 자극물별로 조건 카운트
+    responses.forEach(r => {
+      const conditionGroup = r.condition_group || (r as any).conditionId;
+      if (conditionGroup && conditionGroup >= 1 && conditionGroup <= 8) {
+        conditionCounts[conditionGroup]++;
+      }
+    });
+    
+    return {
+      totalCompleted: completedParticipants.length,
+      totalInProgress: inProgressParticipants.length,
+      avgTimeSeconds: avgTime,
+      medianTimeSeconds: median,
+      conditionCounts
+    };
+  };
+
+  const stats = calculateStats();
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -262,41 +324,64 @@ export default function AdminPage() {
           </div>
 
           {/* 통계 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-2 text-blue-700 mb-1">
-                <Users className="w-5 h-5" />
-                <span className="font-semibold">참가자 수</span>
-              </div>
-              <p className="text-3xl font-bold text-blue-800">{uniqueParticipants.size}</p>
-            </div>
-            
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-green-50 p-4 rounded-lg border border-green-200">
               <div className="flex items-center gap-2 text-green-700 mb-1">
-                <FileText className="w-5 h-5" />
-                <span className="font-semibold">전체 응답 행</span>
+                <Users className="w-5 h-5" />
+                <span className="font-semibold">완료한 참가자</span>
               </div>
-              <p className="text-3xl font-bold text-green-800">{responses.length}</p>
+              <p className="text-3xl font-bold text-green-800">{stats.totalCompleted}</p>
+              <p className="text-xs text-green-600 mt-1">3개 자극물 완료</p>
+            </div>
+            
+            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <div className="flex items-center gap-2 text-yellow-700 mb-1">
+                <FileText className="w-5 h-5" />
+                <span className="font-semibold">진행중인 참가자</span>
+              </div>
+              <p className="text-3xl font-bold text-yellow-800">{stats.totalInProgress}</p>
+              <p className="text-xs text-yellow-600 mt-1">미완료 설문</p>
             </div>
             
             <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center gap-2 text-purple-700 mb-1">
-                <span className="font-semibold">1인당 평균</span>
+                <span className="font-semibold">평균 소요 시간</span>
               </div>
               <p className="text-3xl font-bold text-purple-800">
-                {uniqueParticipants.size > 0 ? (responses.length / uniqueParticipants.size).toFixed(1) : 0}
+                {Math.floor(stats.avgTimeSeconds / 60)}분
               </p>
-              <p className="text-xs text-purple-600 mt-1">자극물 개수</p>
+              <p className="text-xs text-purple-600 mt-1">
+                {Math.floor(stats.avgTimeSeconds % 60)}초 • {Math.floor(stats.avgTimeSeconds)}초
+              </p>
             </div>
             
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
-              <div className="flex items-center gap-2 text-orange-700 mb-1">
-                <span className="font-semibold">컬럼 수</span>
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2 text-blue-700 mb-1">
+                <span className="font-semibold">중앙값 시간</span>
               </div>
-              <p className="text-3xl font-bold text-orange-800">
-                {responses.length > 0 ? Object.keys(responses[0]).length : 0}
+              <p className="text-3xl font-bold text-blue-800">
+                {Math.floor(stats.medianTimeSeconds / 60)}분
               </p>
-              <p className="text-xs text-orange-600 mt-1">필드 개수</p>
+              <p className="text-xs text-blue-600 mt-1">
+                {Math.floor(stats.medianTimeSeconds % 60)}초 • {Math.floor(stats.medianTimeSeconds)}초
+              </p>
+            </div>
+          </div>
+
+          {/* 조건별 분포 */}
+          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg border border-indigo-200">
+            <h3 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              조건별 응답 분포 (C1~C8)
+            </h3>
+            <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+              {Object.entries(stats.conditionCounts).map(([condition, count]) => (
+                <div key={condition} className="bg-white p-2 rounded text-center border border-indigo-100">
+                  <div className="text-xs font-semibold text-indigo-600">C{condition}</div>
+                  <div className="text-lg font-bold text-indigo-900">{count}</div>
+                  <div className="text-xs text-gray-500">응답</div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -371,25 +456,57 @@ export default function AdminPage() {
           ) : viewMode === 'grouped' ? (
             // 참가자별 그룹 보기
             <div className="space-y-4">
-              {Array.from(groupedData.entries()).map(([participantId, participantResponses]) => (
+              {Array.from(groupedData.entries()).map(([participantId, participantResponses]) => {
+                // 총 소요 시간 계산
+                const totalTime = participantResponses.reduce((sum, r) => {
+                  const dwellTime = r.page_dwell_time || (r as any).responseTime || 0;
+                  return sum + Number(dwellTime);
+                }, 0);
+                
+                // 조건 그룹 (첫 번째 응답의 condition_group 사용)
+                const conditionGroup = participantResponses[0]?.condition_group || (participantResponses[0] as any)?.conditionId || '-';
+                
+                // 완료 상태 (3개 자극물 모두 완료 여부)
+                const isCompleted = participantResponses.length === 3;
+                
+                return (
                 <div key={participantId} className="border border-gray-200 rounded-lg overflow-hidden">
                   <div
                     className="bg-gray-50 p-4 cursor-pointer hover:bg-gray-100 transition-colors"
                     onClick={() => setExpandedParticipant(expandedParticipant === participantId ? null : participantId)}
                   >
                     <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-semibold text-gray-800 flex items-center gap-2">
-                          {expandedParticipant === participantId ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          참가자: <span className="font-mono text-blue-600">{participantId.substring(0, 8)}...</span>
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {participantResponses.length}개 자극물 응답
-                          {participantResponses[0]?.gender && ` • ${participantResponses[0].gender}`}
-                          {participantResponses[0]?.age && ` • ${participantResponses[0].age}세`}
-                        </p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          {expandedParticipant === participantId ? <EyeOff className="w-4 h-4 text-gray-600" /> : <Eye className="w-4 h-4 text-gray-600" />}
+                          <p className="font-semibold text-gray-800">
+                            참가자: <span className="font-mono text-blue-600">{participantId.substring(0, 12)}...</span>
+                          </p>
+                          <span className={`px-2 py-1 rounded text-xs font-bold ${
+                            isCompleted ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {isCompleted ? '완료' : '진행중'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span className="flex items-center gap-1">
+                            ⏱️ <strong>{Math.floor(totalTime / 60)}분 {Math.floor(totalTime % 60)}초</strong>
+                          </span>
+                          <span className="flex items-center gap-1">
+                            📋 <strong className="text-indigo-600">C{conditionGroup}</strong> 그룹
+                          </span>
+                          {participantResponses[0]?.gender && (
+                            <span>{participantResponses[0].gender}</span>
+                          )}
+                          {participantResponses[0]?.age && (
+                            <span>{participantResponses[0].age}세</span>
+                          )}
+                          <span className="text-gray-400">
+                            {participantResponses.length}/3 자극물
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 ml-4">
                         {expandedParticipant === participantId ? '▼ 접기' : '▶ 펼치기'}
                       </div>
                     </div>
@@ -404,13 +521,14 @@ export default function AdminPage() {
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">순서</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">제품</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cong</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">일치성</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">A-Val</th>
                               <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">P-Val</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">조건번호</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">관여도</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">논증품질</th>
-                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">구매의도</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">조건</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">시작 시간</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">완료 시간</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">소요 시간</th>
+                              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
@@ -420,6 +538,32 @@ export default function AdminPage() {
                               const publicValence = resp.public_valence || resp.publicValence || '-';
                               const congruity = String(resp.congruity || '');
                               const isCongruent = congruity.toLowerCase() === 'match' || congruity === 'Congruent';
+                              
+                              // 시간 정보
+                              const dwellTime = resp.page_dwell_time || (resp as any).responseTime || 0;
+                              const createdAt = (resp as any).createdAt || (resp as any).timestamp;
+                              const startTime = createdAt instanceof Timestamp 
+                                ? new Date(createdAt.toMillis() - dwellTime * 1000) 
+                                : null;
+                              const endTime = createdAt instanceof Timestamp 
+                                ? createdAt.toDate() 
+                                : null;
+                              
+                              const formatTime = (date: Date | null) => {
+                                if (!date) return '-';
+                                return date.toLocaleString('ko-KR', { 
+                                  month: '2-digit', 
+                                  day: '2-digit', 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                });
+                              };
+                              
+                              const formatDuration = (seconds: number) => {
+                                const mins = Math.floor(seconds / 60);
+                                const secs = Math.floor(seconds % 60);
+                                return `${mins}분 ${secs}초`;
+                              };
                               
                               return (
                                 <tr key={idx} className="hover:bg-gray-50">
@@ -436,27 +580,32 @@ export default function AdminPage() {
                                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                                       isCongruent ? 'bg-green-100 text-green-800' : 'bg-orange-100 text-orange-800'
                                     }`}>
-                                      {isCongruent ? 'Cong' : 'Inco'}
+                                      {isCongruent ? 'Match' : 'Non-match'}
                                     </span>
                                   </td>
                                   <td className="px-3 py-2 text-sm">
                                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                                       advisorValence === 'positive' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                     }`}>
-                                      {advisorValence === 'positive' ? 'pos' : advisorValence === 'negative' ? 'neg' : '-'}
+                                      {advisorValence === 'positive' ? 'Pos' : advisorValence === 'negative' ? 'Neg' : '-'}
                                     </span>
                                   </td>
                                   <td className="px-3 py-2 text-sm">
                                     <span className={`px-2 py-1 rounded text-xs font-bold ${
                                       publicValence === 'positive' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                     }`}>
-                                      {publicValence === 'positive' ? 'pos' : publicValence === 'negative' ? 'neg' : '-'}
+                                      {publicValence === 'positive' ? 'Pos' : publicValence === 'negative' ? 'Neg' : '-'}
                                     </span>
                                   </td>
-                                  <td className="px-3 py-2 text-sm font-semibold text-gray-900">C{resp.condition_group}</td>
-                                  <td className="px-3 py-2 text-sm text-gray-900">{resp.involvement_1 || '-'}</td>
-                                  <td className="px-3 py-2 text-sm text-gray-900">{resp.arg_quality_1 || '-'}</td>
-                                  <td className="px-3 py-2 text-sm text-gray-900">{resp.purchase_1 || '-'}</td>
+                                  <td className="px-3 py-2 text-sm font-semibold text-indigo-600">C{resp.condition_group}</td>
+                                  <td className="px-3 py-2 text-xs text-gray-600">{formatTime(startTime)}</td>
+                                  <td className="px-3 py-2 text-xs text-gray-600">{formatTime(endTime)}</td>
+                                  <td className="px-3 py-2 text-sm font-semibold text-gray-900">{formatDuration(dwellTime)}</td>
+                                  <td className="px-3 py-2 text-sm">
+                                    <span className="px-2 py-1 rounded text-xs font-bold bg-green-100 text-green-700">
+                                      완료
+                                    </span>
+                                  </td>
                                 </tr>
                               );
                             })}
@@ -466,7 +615,7 @@ export default function AdminPage() {
                     </div>
                   )}
                 </div>
-              ))}
+              )})}
             </div>
           ) : (
             // 전체 보기
@@ -474,15 +623,15 @@ export default function AdminPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">
                       참가자 ID
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">순서</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">조건그룹</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">제품</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">어드바이저</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">일치성</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">조건</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">컬럼수</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">A-Val</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">P-Val</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -490,13 +639,19 @@ export default function AdminPage() {
                     const congruity = String(row.congruity || '');
                     const isCongruent = congruity.toLowerCase() === 'match' || congruity === 'Congruent';
                     
+                    // A-Val과 P-Val 값 추출
+                    const aVal = row.a_val || row['A-Val'] || '';
+                    const pVal = row.p_val || row['P-Val'] || '';
+                    
                     return (
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm font-mono text-gray-900 sticky left-0 bg-white">
-                        {(row.participant_id || row.participantId || '')?.substring(0, 8)}...
+                        {(row.participant_id || row.participantId || '')?.substring(0, 12)}
                       </td>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                        {row.stimulus_order}
+                      <td className="px-4 py-3 text-sm">
+                        <span className="px-2 py-1 rounded text-xs font-semibold bg-indigo-100 text-indigo-800">
+                          C{row.condition_group}
+                        </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">
                         {row.product}
@@ -505,21 +660,33 @@ export default function AdminPage() {
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
                           row.advisor_type === 'ai' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {row.advisor_type}
+                          {row.advisor_type?.toUpperCase()}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">
                         <span className={`px-2 py-1 rounded text-xs font-semibold ${
                           isCongruent ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
-                          {row.congruity}
+                          {isCongruent ? 'Match' : 'Non-match'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">
-                        C{row.condition_group}
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                          String(aVal).toLowerCase() === 'positive' || String(aVal).toLowerCase() === 'pos' 
+                            ? 'bg-emerald-100 text-emerald-800' 
+                            : 'bg-orange-100 text-orange-800'
+                        }`}>
+                          {String(aVal).toLowerCase() === 'positive' || String(aVal).toLowerCase() === 'pos' ? 'Positive' : 'Negative'}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">
-                        {Object.keys(row).length}
+                      <td className="px-4 py-3 text-sm">
+                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                          String(pVal).toLowerCase() === 'positive' || String(pVal).toLowerCase() === 'pos'
+                            ? 'bg-emerald-100 text-emerald-800' 
+                            : 'bg-orange-100 text-orange-800'
+                        }`}>
+                          {String(pVal).toLowerCase() === 'positive' || String(pVal).toLowerCase() === 'pos' ? 'Positive' : 'Negative'}
+                        </span>
                       </td>
                     </tr>
                   )})}
