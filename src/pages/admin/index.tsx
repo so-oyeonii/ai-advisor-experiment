@@ -84,23 +84,30 @@ export default function AdminPage() {
         return response;
       });
       
-      // 최신순으로 정렬 (createdAt 기준 내림차순), 그 다음 participant_id와 stimulus_order로 정렬
+      // 최신순으로 정렬 (참가자의 세션 시작 시간 기준, 그 다음 stimulus_order로 정렬)
       const sorted = enrichedData.sort((a, b) => {
-        // 먼저 타임스탬프로 정렬 (최신이 먼저)
-        const timeA = a.createdAt as Timestamp;
-        const timeB = b.createdAt as Timestamp;
-        if (timeA && timeB) {
-          const timeCompare = timeB.seconds - timeA.seconds; // 내림차순
-          if (timeCompare !== 0) return timeCompare;
-        }
-        
-        // 같은 시간이면 participant_id로 정렬
+        // 먼저 participant_id로 그룹화하여 비교
         const pidA = a.participant_id || a.participantId || '';
         const pidB = b.participant_id || b.participantId || '';
-        const pidCompare = pidB.localeCompare(pidA); // 내림차순
-        if (pidCompare !== 0) return pidCompare;
         
-        // 같은 participant면 stimulus_order로 정렬
+        // 다른 참가자인 경우: 세션 시작 시간으로 정렬 (최신이 먼저)
+        if (pidA !== pidB) {
+          const timeA = a.survey_start_time as Timestamp;
+          const timeB = b.survey_start_time as Timestamp;
+          if (timeA && timeB) {
+            return timeB.seconds - timeA.seconds; // 내림차순
+          }
+          // survey_start_time이 없으면 createdAt으로 대체
+          const fallbackTimeA = a.createdAt as Timestamp;
+          const fallbackTimeB = b.createdAt as Timestamp;
+          if (fallbackTimeA && fallbackTimeB) {
+            return fallbackTimeB.seconds - fallbackTimeA.seconds;
+          }
+          // 타임스탬프가 없으면 participant_id로 정렬
+          return pidB.localeCompare(pidA);
+        }
+        
+        // 같은 참가자면 stimulus_order로 정렬 (1, 2, 3 순서)
         const orderA = a.stimulus_order || 0;
         const orderB = b.stimulus_order || 0;
         return orderA - orderB;
