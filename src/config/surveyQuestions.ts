@@ -171,61 +171,6 @@ export const M3_PersuasiveIntent: QuestionBlock = {
   ]
 };
 
-export const MV5_MindPerception: QuestionBlock = {
-  title: 'Mind Perception',
-  description: 'Based on your perception of the reviewer of the FEATURED REVIEW you just saw, please answer the following questions.',
-  items: [
-    {
-      variable: 'mind_1',
-      text: 'The reviewer of the featured review can feel pain.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'mind_2',
-      text: 'The reviewer of the featured review can feel pleasure.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'mind_3',
-      text: 'The reviewer of the featured review can experience emotions.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'mind_4',
-      text: 'The reviewer of the featured review can have subjective experiences.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'mind_5',
-      text: 'The reviewer of the featured review can think.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'mind_6',
-      text: 'The reviewer of the featured review can plan actions.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'mind_7',
-      text: 'The reviewer of the featured review can exercise self-control.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'mind_8',
-      text: 'The reviewer of the featured review can communicate intentions clearly.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    }
-  ]
-};
-
 export const DV1_Persuasiveness: QuestionBlock = {
   title: 'Perceived Persuasiveness',
   description: 'Please indicate how persuasive you found the FEATURED REVIEW shown at the top.',
@@ -511,7 +456,6 @@ export const SURVEY_QUESTIONS = {
     M2a_CredibilityExpertise,
     M2b_CredibilityTrustworthiness,
     M3_PersuasiveIntent,
-    MV5_MindPerception,
     DV1_Persuasiveness,
     DV2_PurchaseIntention,
     DV3_DecisionConfidence

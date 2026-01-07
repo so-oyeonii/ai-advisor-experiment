@@ -386,24 +386,12 @@ export default function AdminExportPage() {
       'persuasive_intent_1',
       'persuasive_intent_2',
       'persuasive_intent_3',
-      'mind_1',
-      'mind_2',
-      'mind_3',
-      'mind_4',
-      'mind_5',
-      'mind_6',
-      'mind_7',
-      'mind_8',
       
-      // 6. Recall Task
-      'recall_1',
-      'recall_2',
-      'recall_3',
-      'recall_4',
-      'recall_5',
-      'recall_6',
-      'recall_7',
-      'recall_8',
+      // 6. Recall Task (dynamic array)
+      'recalled_words',
+      'word_count',
+      'recall_combined_text',
+      'recall_time_seconds',
       
       // 7. 인구통계 정보
       'age',

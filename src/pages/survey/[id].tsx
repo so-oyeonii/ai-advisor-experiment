@@ -9,7 +9,6 @@ import Q3_RecallTask from '@/components/survey/Q3_RecallTask';
 import M2a_SourceCredibilityExpertise from '@/components/survey/M2a_SourceCredibilityExpertise';
 import M2b_SourceCredibilityTrust from '@/components/survey/M2b_SourceCredibilityTrust';
 import M3_PersuasiveIntent from '@/components/survey/M3_PersuasiveIntent';
-import MV5_MindPerception from '@/components/survey/MV5_MindPerception';
 import DV1_Persuasiveness from '@/components/survey/DV1_Persuasiveness';
 import DV2_PurchaseIntention from '@/components/survey/DV2_PurchaseIntention';
 import DV3_DecisionConfidence from '@/components/survey/DV3_DecisionConfidence';
@@ -22,12 +21,12 @@ import type {
 type QuestionStep = 
   | 'Q3'
   | 'M2a' | 'M2b' | 'M3' 
-  | 'MV5' | 'DV1' | 'DV2' | 'DV3';
+  | 'DV1' | 'DV2' | 'DV3';
 
 const QUESTION_STEPS: QuestionStep[] = [
   'Q3',
   'M2a', 'M2b', 'M3', 
-  'MV5', 'DV1', 'DV2', 'DV3'
+  'DV1', 'DV2', 'DV3'
 ];
 
 export default function SurveyPage() {
@@ -167,12 +166,6 @@ export default function SurveyPage() {
         {currentStep === 'M3' && (
           <M3_PersuasiveIntent 
             onComplete={(data) => handleComplete('M3', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
-        {currentStep === 'MV5' && (
-          <MV5_MindPerception 
-            onComplete={(data) => handleComplete('MV5', data as unknown as Record<string, unknown>)}
           />
         )}
         

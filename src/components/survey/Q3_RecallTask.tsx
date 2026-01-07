@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, FormEvent } from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Plus, Trash2 } from 'lucide-react';
 import { Q3_RecallTask as config } from '@/config/surveyQuestions';
 import type { RecallTaskResponse } from '@/types/survey';
 
@@ -8,29 +8,27 @@ interface Q3_RecallTaskProps {
 }
 
 export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
-  const [responses, setResponses] = useState<Partial<RecallTaskResponse>>({
-    recall_1: '',
-    recall_2: '',
-    recall_3: '',
-    recall_4: '',
-    recall_5: '',
-    recall_6: '',
-    recall_7: '',
-    recall_8: ''
-  });
+  const [words, setWords] = useState<string[]>(['']); // Start with one empty box
   const [timeLeft, setTimeLeft] = useState(90); // 90 seconds
   const [elapsedTime, setElapsedTime] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
 
-  // Check if user has entered at least one point
-  const hasContent = Object.values(responses).some(value => value && value.trim().length > 0);
+  // Check if user has entered at least one word
+  const hasContent = words.some(word => word.trim().length > 0);
+  const filledWords = words.filter(word => word.trim().length > 0);
   
   // Auto-submit function
   const handleAutoSubmit = useCallback(() => {
     if (hasContent) {
-      onComplete(responses as RecallTaskResponse);
+      const recallData: RecallTaskResponse = {
+        recalled_words: filledWords,
+        word_count: filledWords.length,
+        recall_combined_text: filledWords.join(' | '),
+        recall_time_seconds: 90 - timeLeft
+      };
+      onComplete(recallData);
     }
-  }, [responses, hasContent, onComplete]);
+  }, [filledWords, hasContent, timeLeft, onComplete]);
   
   // Timer countdown
   useEffect(() => {
@@ -62,16 +60,37 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     }
   }, [elapsedTime, hasContent]);
   
-  // Update response
-  const handleChange = (variable: string, value: string) => {
-    setResponses(prev => ({ ...prev, [variable]: value }));
+  // Add new word box
+  const handleAddWord = () => {
+    setWords([...words, '']);
+  };
+  
+  // Remove word box
+  const handleRemoveWord = (index: number) => {
+    if (words.length > 1) {
+      setWords(words.filter((_, i) => i !== index));
+    }
+  };
+  
+  // Update word value
+  const handleWordChange = (index: number, value: string) => {
+    const newWords = [...words];
+    newWords[index] = value;
+    setWords(newWords);
   };
   
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!canContinue || !hasContent) return;
     
-    onComplete(responses as RecallTaskResponse);
+    const recallData: RecallTaskResponse = {
+      recalled_words: filledWords,
+      word_count: filledWords.length,
+      recall_combined_text: filledWords.join(' | '),
+      recall_time_seconds: 90 - timeLeft
+    };
+    
+    onComplete(recallData);
   };
   
   const formatTime = (seconds: number) => {
@@ -98,64 +117,99 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
         </div>
         
         {/* Instructions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-          <p className="text-blue-900 font-medium mb-2 whitespace-pre-line">
-            {config.instruction}
-          </p>
-          <p className="text-blue-700 text-sm">
-            • You can continue after 30 seconds<br />
-            • You must enter at least one information point to continue
-          </p>
+        {config.instruction && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+              {config.instruction}
+            </p>
+          </div>
+        )}
+        
+        {/* Warning when time is low */}
+        {timeLeft <= 30 && timeLeft > 0 && (
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+            <p className="text-yellow-800 text-sm font-medium">
+              ⏰ {timeLeft} seconds remaining
+            </p>
+          </div>
+        )}
+        
+        {/* Word Count */}
+        <div className="mb-4 text-sm text-gray-600">
+          <span className="font-semibold">{filledWords.length}</span> information point{filledWords.length !== 1 ? 's' : ''} entered
         </div>
         
-        {/* Input Boxes */}
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 mb-6">
-            {config.items.map((item, index) => (
-              <div key={item.variable} className="flex items-start space-x-3">
-                <div className="flex-shrink-0 w-8 h-10 flex items-center justify-center bg-blue-100 rounded-md text-blue-700 font-semibold">
-                  {index + 1}
-                </div>
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={responses[item.variable as keyof RecallTaskResponse] || ''}
-                    onChange={(e) => handleChange(item.variable, e.target.value)}
-                    placeholder={item.text}
-                    className="w-full p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none text-lg"
-                    autoFocus={index === 0}
-                  />
-                </div>
-              </div>
-            ))}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Dynamic Word Boxes */}
+          {words.map((word, index) => (
+            <div key={index} className="flex items-center space-x-2">
+              <span className="text-gray-500 font-medium w-8">{index + 1}.</span>
+              <input
+                type="text"
+                value={word}
+                onChange={(e) => handleWordChange(index, e.target.value)}
+                placeholder="Enter an information point..."
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={timeLeft === 0}
+              />
+              {words.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => handleRemoveWord(index)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  disabled={timeLeft === 0}
+                >
+                  <Trash2 size={20} />
+                </button>
+              )}
+            </div>
+          ))}
+          
+          {/* Add Word Button */}
+          <button
+            type="button"
+            onClick={handleAddWord}
+            disabled={timeLeft === 0}
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Plus size={20} />
+            <span>Add Another Information Point</span>
+          </button>
+          
+          {/* Status Messages */}
+          <div className="space-y-2">
+            {!hasContent && (
+              <p className="text-sm text-gray-500">
+                Please enter at least one information point to continue.
+              </p>
+            )}
+            
+            {hasContent && elapsedTime < 30 && (
+              <p className="text-sm text-gray-500">
+                Please wait at least 30 seconds before continuing ({30 - elapsedTime}s remaining).
+              </p>
+            )}
+            
+            {canContinue && (
+              <p className="text-sm text-green-600 font-medium">
+                ✓ You can now continue
+              </p>
+            )}
           </div>
           
           {/* Continue Button */}
-          <button 
+          <button
             type="submit"
             disabled={!canContinue || !hasContent}
-            className={`w-full mt-6 py-3 rounded-md text-lg font-semibold transition ${
+            className={`w-full py-4 rounded-lg font-semibold text-lg transition-all ${
               canContinue && hasContent
-                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {!hasContent
-              ? 'Please enter at least one information point'
-              : elapsedTime < 30
-              ? `Please wait ${Math.max(0, 30 - elapsedTime)}s...`
-              : 'Continue'
-            }
+            {timeLeft === 0 ? 'Time Expired - Submit' : 'Continue to Next Question'}
           </button>
         </form>
-        
-        {timeLeft === 0 && (
-          <p className="mt-4 text-center text-sm text-gray-600">
-            {hasContent 
-              ? "Time's up! Submitting automatically..." 
-              : "Time's up! Please enter at least one information point to continue."}
-          </p>
-        )}
       </div>
     </div>
   );

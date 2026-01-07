@@ -91,17 +91,13 @@ export interface ExperimentalCondition {
 }
 
 /**
- * Q3: Recall Task (8 text inputs)
+ * Q3: Recall Task (dynamic word array)
  */
 export interface RecallTaskResponse {
-  recall_1: string;
-  recall_2: string;
-  recall_3: string;
-  recall_4: string;
-  recall_5: string;
-  recall_6: string;
-  recall_7: string;
-  recall_8: string;
+  recalled_words: string[];
+  word_count: number;
+  recall_combined_text: string;
+  recall_time_seconds: number;
 }
 
 /**
@@ -135,20 +131,6 @@ export interface PersuasiveIntentResponse {
   ppi_3: number;
   ppi_4: number;
   ppi_5: number;
-}
-
-/**
- * MV5: Mind Perception (8 items, 1-7 scale)
- */
-export interface MindPerceptionResponse {
-  mind_1: number;
-  mind_2: number;
-  mind_3: number;
-  mind_4: number;
-  mind_5: number;
-  mind_6: number;
-  mind_7: number;
-  mind_8: number;
 }
 
 /**
@@ -187,7 +169,6 @@ export interface BlockAResponse extends
   CredibilityExpertiseResponse,
   CredibilityTrustworthinessResponse,
   PersuasiveIntentResponse,
-  MindPerceptionResponse,
   PersuasivenessResponse,
   PurchaseIntentionResponse,
   DecisionConfidenceResponse {}
