@@ -35,9 +35,23 @@ export default function ConsentPage() {
       // Extract condition info from first stimulus (representative)
       const firstCondition = experimentCondition.selectedStimuli[0].condition;
       
-      // 3. Create session in Firebase
-      console.log('📝 Saving to Firebase...');
-      await saveSession({
+      // 3. Save to sessionStorage for client-side access (do this first!)
+      sessionStorage.setItem('participantId', participantId);
+      sessionStorage.setItem('experimentCondition', JSON.stringify(experimentCondition));
+      sessionStorage.setItem('currentStimulusIndex', '0');
+      sessionStorage.setItem('hasConsented', 'true');
+      console.log('✅ Saved to sessionStorage');
+      
+      // 4. Initialize SurveyContext
+      initializeSurvey();
+      console.log('✅ Initialized SurveyContext');
+      
+      // 5. Navigate to scenario page FIRST (don't wait for Firebase)
+      console.log('🔄 Navigating to /scenario...');
+      router.push('/scenario');
+      
+      // 6. Try to save to Firebase in background (non-blocking)
+      saveSession({
         participantId,
         conditionNumber: experimentCondition.selectedStimuli[0].condition.conditionId,
         groupId: firstCondition.groupId,
@@ -57,23 +71,11 @@ export default function ConsentPage() {
         completedStimuli: [],
         completed: false,
         startTime: getKSTTimestamp(),
+      }).then(() => {
+        console.log('✅ Saved to Firebase successfully');
+      }).catch(firebaseError => {
+        console.warn('⚠️ Firebase save failed:', firebaseError);
       });
-      console.log('✅ Saved to Firebase successfully');
-      
-      // 4. Save to sessionStorage for client-side access
-      sessionStorage.setItem('participantId', participantId);
-      sessionStorage.setItem('experimentCondition', JSON.stringify(experimentCondition));
-      sessionStorage.setItem('currentStimulusIndex', '0');
-      console.log('✅ Saved to sessionStorage');
-      
-      // 5. Initialize SurveyContext
-      initializeSurvey();
-      console.log('✅ Initialized SurveyContext');
-      
-      // 6. Navigate to first stimulus
-      console.log('🔄 Navigating to /stimulus/0...');
-      await router.push('/stimulus/0');
-      console.log('✅ Navigation complete');
     } catch (err) {
       console.error('❌ Error initializing session:', err);
       setError(`Failed to initialize session: ${err instanceof Error ? err.message : 'Unknown error'}. Please try again.`);
