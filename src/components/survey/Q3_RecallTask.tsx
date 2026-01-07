@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, Plus, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback, FormEvent } from 'react';
+import { Clock } from 'lucide-react';
 import { Q3_RecallTask as config } from '@/config/surveyQuestions';
 import type { RecallTaskResponse } from '@/types/survey';
 
@@ -8,31 +8,29 @@ interface Q3_RecallTaskProps {
 }
 
 export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
-  const [recallWords, setRecallWords] = useState<string[]>(['']); // Array of words - starts with one empty box
+  const [responses, setResponses] = useState<Partial<RecallTaskResponse>>({
+    recall_1: '',
+    recall_2: '',
+    recall_3: '',
+    recall_4: '',
+    recall_5: '',
+    recall_6: '',
+    recall_7: '',
+    recall_8: ''
+  });
   const [timeLeft, setTimeLeft] = useState(90); // 90 seconds
   const [elapsedTime, setElapsedTime] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
 
-  // Check if user has entered at least one word
-  const hasContent = recallWords.some(word => word.trim().length > 0);
-  const wordCount = recallWords.filter(word => word.trim().length > 0).length;
+  // Check if user has entered at least one point
+  const hasContent = Object.values(responses).some(value => value && value.trim().length > 0);
   
   // Auto-submit function
   const handleAutoSubmit = useCallback(() => {
-    // Filter out empty words
-    const filteredWords = recallWords.filter(word => word.trim().length > 0);
-    
-    if (filteredWords.length > 0) {
-      const data: RecallTaskResponse = {
-        recalled_words: filteredWords,
-        word_count: filteredWords.length,
-        recall_combined_text: filteredWords.join(', '),
-        recall_time_seconds: elapsedTime
-      };
-      
-      onComplete(data);
+    if (hasContent) {
+      onComplete(responses as RecallTaskResponse);
     }
-  }, [recallWords, elapsedTime, onComplete]);
+  }, [responses, hasContent, onComplete]);
   
   // Timer countdown
   useEffect(() => {
@@ -64,39 +62,16 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     }
   }, [elapsedTime, hasContent]);
   
-  // Add new word box
-  const addWordBox = () => {
-    setRecallWords([...recallWords, '']);
-  };
-
-  // Remove word box
-  const removeWordBox = (index: number) => {
-    if (recallWords.length > 1) {
-      setRecallWords(recallWords.filter((_, i) => i !== index));
-    }
-  };
-
-  // Update word at index
-  const updateWord = (index: number, value: string) => {
-    const newWords = [...recallWords];
-    newWords[index] = value;
-    setRecallWords(newWords);
+  // Update response
+  const handleChange = (variable: string, value: string) => {
+    setResponses(prev => ({ ...prev, [variable]: value }));
   };
   
-  const handleSubmit = () => {
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
     if (!canContinue || !hasContent) return;
     
-    // Filter out empty words
-    const filteredWords = recallWords.filter(word => word.trim().length > 0);
-    
-    const data: RecallTaskResponse = {
-      recalled_words: filteredWords,
-      word_count: filteredWords.length,
-      recall_combined_text: filteredWords.join(', '),
-      recall_time_seconds: elapsedTime
-    };
-    
-    onComplete(data);
+    onComplete(responses as RecallTaskResponse);
   };
   
   const formatTime = (seconds: number) => {
@@ -106,14 +81,13 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="max-w-4xl mx-auto px-6 py-8">
       <div className="bg-white rounded-lg shadow-md p-8">
         
         {/* Header with Timer */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{config.title}</h2>
-            <p className="text-gray-600">{config.description}</p>
           </div>
           <div className="flex items-center space-x-2">
             <Clock size={24} className={timeLeft <= 10 ? 'text-red-600' : 'text-blue-600'} />
@@ -125,78 +99,61 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
         
         {/* Instructions */}
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
-          <p className="text-blue-900 font-medium mb-2">
-            Please write down the words/phrases you remember from the previous page.
+          <p className="text-blue-900 font-medium mb-2 whitespace-pre-line">
+            {config.instruction}
           </p>
           <p className="text-blue-700 text-sm">
-            • Enter one word or phrase per box<br />
-            • Click the + button to add more boxes<br />
-            • You must enter at least one word to continue
+            • You can continue after 30 seconds<br />
+            • You must enter at least one information point to continue
           </p>
         </div>
         
-        {/* Word Boxes */}
-        <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
-          {recallWords.map((word, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={word}
-                onChange={(e) => updateWord(index, e.target.value)}
-                placeholder="Enter a word or phrase you remember..."
-                className="flex-1 p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
-                autoFocus={index === 0}
-              />
-              {recallWords.length > 1 && (
-                <button
-                  onClick={() => removeWordBox(index)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-md transition"
-                  title="Remove"
-                >
-                  <X size={20} />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-        
-        {/* Add Button */}
-        <button
-          onClick={addWordBox}
-          className="w-full py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-600 hover:border-blue-500 hover:text-blue-600 transition flex items-center justify-center space-x-2"
-        >
-          <Plus size={20} />
-          <span>Add another word/phrase</span>
-        </button>
-        
-        {/* Word Count */}
-        <div className="mt-4 text-sm text-gray-600 text-right">
-          Words entered: {wordCount}
-        </div>
-        
-        {/* Continue Button */}
-        <button 
-          onClick={handleSubmit}
-          disabled={!canContinue || !hasContent}
-          className={`w-full mt-6 py-3 rounded-md text-lg font-semibold transition ${
-            canContinue && hasContent
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
-        >
-          {!hasContent
-            ? 'Please enter at least one word'
-            : elapsedTime < 30
-            ? `Please wait ${Math.max(0, 30 - elapsedTime)}s...`
-            : 'Continue'
-          }
-        </button>
+        {/* Input Boxes */}
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 mb-6">
+            {config.items.map((item, index) => (
+              <div key={item.variable} className="flex items-start space-x-3">
+                <div className="flex-shrink-0 w-8 h-10 flex items-center justify-center bg-blue-100 rounded-md text-blue-700 font-semibold">
+                  {index + 1}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={responses[item.variable as keyof RecallTaskResponse] || ''}
+                    onChange={(e) => handleChange(item.variable, e.target.value)}
+                    placeholder={item.text}
+                    className="w-full p-3 border-2 border-gray-300 rounded-md focus:border-blue-500 focus:outline-none text-lg"
+                    autoFocus={index === 0}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Continue Button */}
+          <button 
+            type="submit"
+            disabled={!canContinue || !hasContent}
+            className={`w-full mt-6 py-3 rounded-md text-lg font-semibold transition ${
+              canContinue && hasContent
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {!hasContent
+              ? 'Please enter at least one information point'
+              : elapsedTime < 30
+              ? `Please wait ${Math.max(0, 30 - elapsedTime)}s...`
+              : 'Continue'
+            }
+          </button>
+        </form>
         
         {timeLeft === 0 && (
           <p className="mt-4 text-center text-sm text-gray-600">
             {hasContent 
               ? "Time's up! Submitting automatically..." 
-              : "Time's up! Please enter at least one word to continue."}
+              : "Time's up! Please enter at least one information point to continue."}
           </p>
         )}
       </div>

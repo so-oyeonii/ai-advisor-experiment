@@ -44,84 +44,6 @@ export interface QuestionBlock {
  * Block A: Stimulus-Specific Questions (Repeated 3 times)
  */
 
-export const Q0_ProductInvolvement: QuestionBlock = {
-  title: 'Product Involvement',
-  items: [
-    {
-      variable: 'involvement_1',
-      text: 'I have a strong interest in this product.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'involvement_2',
-      text: 'This product is important to me.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'involvement_3',
-      text: 'I pay close attention to information related to this product.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    }
-  ]
-};
-
-export const Q1_ManipulationChecks: QuestionBlock = {
-  title: 'Manipulation Checks',
-  items: [
-    {
-      variable: 'manip_advisor_type',
-      text: 'Who wrote the FEATURED REVIEW shown at the TOP of the product page?',
-      scaleType: 'categorical',
-      options: [
-        { value: 'ai', label: 'An Artificial Intelligence (AI) System' },
-        { value: 'human', label: 'A Human Expert (or Reviewer)' },
-        { value: 'unsure', label: 'I am not sure' }
-      ]
-    },
-    {
-      variable: 'manip_review_valence',
-      text: 'Overall, was the FEATURED REVIEW positive or negative about the product?',
-      scaleType: 'categorical',
-      options: [
-        { value: 'positive', label: 'Mostly positive (recommended the product)' },
-        { value: 'negative', label: 'Mostly negative (did not recommend the product)' },
-        { value: 'neutral', label: "Neutral / I don't remember" }
-      ]
-    }
-  ]
-};
-
-export const Q2_AttentionChecks: QuestionBlock = {
-  title: 'Attention Checks',
-  items: [
-    {
-      variable: 'attention_congruity',
-      text: 'How did the FEATURED REVIEW at the top compare to the CUSTOMER REVIEWS below it?',
-      scaleType: 'categorical',
-      options: [
-        { value: 'similar', label: 'They were mostly similar/consistent with each other' },
-        { value: 'different', label: 'They were mostly different/inconsistent with each other' },
-        { value: 'unsure', label: "I'm not sure / I don't remember" }
-      ]
-    },
-    {
-      variable: 'attention_product',
-      text: 'What type of product was shown on the page you just viewed?',
-      scaleType: 'categorical',
-      options: [
-        { value: 'protein', label: 'Protein powder' },
-        { value: 'toilet', label: 'Toilet paper' },
-        { value: 'soap', label: 'Hand soap' },
-        { value: 'unsure', label: "I don't remember" }
-      ],
-      warning: '⚠️ Participants who fail this attention check will not receive compensation.'
-    }
-  ]
-};
-
 export const Q3_RecallTask: QuestionBlock = {
   title: 'Recall Task',
   instruction: 'Please recall the set of reviews you just read and list as many information points as you can remember.\n\nExamples include product features, advantages and disadvantages, usage experiences, specifications or numerical information, comparisons, and cautions.\n\nPlease write one point per box within 90 seconds:',
@@ -135,37 +57,6 @@ export const Q3_RecallTask: QuestionBlock = {
     { variable: 'recall_6', text: 'Information point 6:', scaleType: 'text' },
     { variable: 'recall_7', text: 'Information point 7:', scaleType: 'text' },
     { variable: 'recall_8', text: 'Information point 8:', scaleType: 'text' }
-  ]
-};
-
-export const M1_ArgumentQuality: QuestionBlock = {
-  title: 'Perceived Argument Quality',
-  description: 'Please evaluate the argument in the FEATURED REVIEW shown at the top.',
-  items: [
-    {
-      variable: 'arg_quality_1',
-      text: 'The argument in the featured review is logical.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'arg_quality_2',
-      text: 'The argument in the featured review is convincing.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'arg_quality_3',
-      text: 'The argument in the featured review is relevant.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'arg_quality_4',
-      text: 'The argument in the featured review is strong.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    }
   ]
 };
 
@@ -616,11 +507,7 @@ export const Demographics: QuestionBlock = {
 export const SURVEY_QUESTIONS = {
   // Block A: Stimulus-Specific (Repeated 3 times)
   blockA: {
-    Q0_ProductInvolvement,
-    Q1_ManipulationChecks,
-    Q2_AttentionChecks,
     Q3_RecallTask,
-    M1_ArgumentQuality,
     M2a_CredibilityExpertise,
     M2b_CredibilityTrustworthiness,
     M3_PersuasiveIntent,

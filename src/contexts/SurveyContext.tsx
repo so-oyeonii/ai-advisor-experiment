@@ -145,8 +145,8 @@ export function SurveyProvider({ children }: SurveyProviderProps) {
     console.log('  - Response keys:', Object.keys(response));
     console.log('  - Sample fields:', {
       product: response.product,
-      involvement_1: response.involvement_1,
-      arg_quality_1: response.arg_quality_1,
+      recall_1: response.recall_1,
+      credibility_expertise_1: response.credibility_expertise_1,
       confidence: response.confidence
     });
     

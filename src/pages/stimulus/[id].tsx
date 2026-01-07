@@ -66,18 +66,30 @@ export default function StimulusPage() {
   }, [router.isReady, id, router]);
 
   const handleContinue = async () => {
-    if (!participantId || !condition || !stimulusData) return;
+    console.log('🔘 Continue button clicked');
+    console.log('  - participantId:', participantId);
+    console.log('  - condition:', condition);
+    console.log('  - stimulusData:', stimulusData ? 'exists' : 'missing');
+    
+    if (!participantId || !condition || !stimulusData) {
+      console.error('❌ Missing required data for continue');
+      return;
+    }
     
     try {
       // Calculate dwell time in seconds
       const dwellTime = (Date.now() - dwellStartTime.current) / 1000;
+      console.log('  - dwellTime:', dwellTime, 'seconds');
       
       // Get full condition info
       const storedFullCondition = sessionStorage.getItem(`condition_${currentIndex}`);
       const fullCondition = storedFullCondition ? JSON.parse(storedFullCondition) : null;
+      console.log('  - fullCondition:', fullCondition);
       
       // Save stimulus exposure to Firebase
-      await saveStimulusExposure({
+      console.log('💾 Saving stimulus exposure to Firebase...');
+      
+      const exposureData = {
         exposureId: `${participantId}_${condition.product}_${currentIndex}`,
         participantId,
         stimulusId: `${condition.product}_${condition.advisorType}_${condition.congruity}`,
@@ -91,20 +103,27 @@ export default function StimulusPage() {
         publicValence: condition.publicValence,
         advisorName: condition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review',
         recommendation: condition.advisorValence,
-        reasoning: stimulusData.advisorReview,
+        reasoning: stimulusData.advisorReview.substring(0, 1000), // Limit length
         exposureOrder: currentIndex,
         dwellTime,
         exposureStartTime: Timestamp.fromMillis(dwellStartTime.current),
         exposureEndTime: getKSTTimestamp(),
-      });
+      };
+      
+      console.log('💾 Exposure data prepared, saving...');
+      await saveStimulusExposure(exposureData);
       
       // Store dwell time in sessionStorage for reference
       sessionStorage.setItem(`dwellTime_${currentIndex}`, dwellTime.toString());
       
+      console.log('✅ Stimulus exposure saved successfully');
+      console.log('🔄 Navigating to survey page...');
+      
       // Navigate to survey (not recall anymore)
       router.push(`/survey/${id}`);
     } catch (error) {
-      console.error('Error saving stimulus exposure:', error);
+      console.error('❌ Error saving stimulus exposure:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       alert('Failed to save data. Please try again.');
     }
   };

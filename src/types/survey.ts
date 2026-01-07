@@ -91,48 +91,17 @@ export interface ExperimentalCondition {
 }
 
 /**
- * Q0: Product Involvement (3 items, 1-7 scale)
- */
-export interface ProductInvolvementResponse {
-  involvement_1: number;
-  involvement_2: number;
-  involvement_3: number;
-}
-
-/**
- * Q1: Manipulation Checks (2 items, categorical)
- */
-export interface ManipulationCheckResponse {
-  manip_advisor_type: ManipAdvisorType;
-  manip_review_valence: ManipReviewValence;
-}
-
-/**
- * Q2: Attention Checks (2 items, categorical)
- */
-export interface AttentionCheckResponse {
-  attention_congruity: AttentionCongruity;
-  attention_product: AttentionProduct;
-}
-
-/**
- * Q3: Recall Task (dynamic word/phrase entry)
+ * Q3: Recall Task (8 text inputs)
  */
 export interface RecallTaskResponse {
-  recalled_words: string[];
-  word_count: number;
-  recall_combined_text: string;
-  recall_time_seconds: number;
-}
-
-/**
- * M1: Perceived Argument Quality (4 items, 1-7 scale)
- */
-export interface ArgumentQualityResponse {
-  arg_quality_1: number;
-  arg_quality_2: number;
-  arg_quality_3: number;
-  arg_quality_4: number;
+  recall_1: string;
+  recall_2: string;
+  recall_3: string;
+  recall_4: string;
+  recall_5: string;
+  recall_6: string;
+  recall_7: string;
+  recall_8: string;
 }
 
 /**
@@ -214,11 +183,7 @@ export interface DecisionConfidenceResponse {
  * (Repeated for each of the 3 stimuli)
  */
 export interface BlockAResponse extends
-  ProductInvolvementResponse,
-  ManipulationCheckResponse,
-  AttentionCheckResponse,
   RecallTaskResponse,
-  ArgumentQualityResponse,
   CredibilityExpertiseResponse,
   CredibilityTrustworthinessResponse,
   PersuasiveIntentResponse,

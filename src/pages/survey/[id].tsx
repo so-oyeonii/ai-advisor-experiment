@@ -5,11 +5,7 @@ import { usePageDwellTime } from '@/hooks/usePageDwellTime';
 import { useEffect } from 'react';
 
 // Import all Block A survey components
-import Q0_ProductInvolvement from '@/components/survey/Q0_ProductInvolvement';
-import Q1_ManipulationCheck from '@/components/survey/Q1_ManipulationCheck';
-import Q2_AttentionCheck from '@/components/survey/Q2_AttentionCheck';
 import Q3_RecallTask from '@/components/survey/Q3_RecallTask';
-import M1_ArgumentQuality from '@/components/survey/M1_ArgumentQuality';
 import M2a_SourceCredibilityExpertise from '@/components/survey/M2a_SourceCredibilityExpertise';
 import M2b_SourceCredibilityTrust from '@/components/survey/M2b_SourceCredibilityTrust';
 import M3_PersuasiveIntent from '@/components/survey/M3_PersuasiveIntent';
@@ -24,13 +20,13 @@ import type {
 } from '@/types/survey';
 
 type QuestionStep = 
-  | 'Q0' | 'Q1' | 'Q2' | 'Q3'
-  | 'M1' | 'M2a' | 'M2b' | 'M3' 
+  | 'Q3'
+  | 'M2a' | 'M2b' | 'M3' 
   | 'MV5' | 'DV1' | 'DV2' | 'DV3';
 
 const QUESTION_STEPS: QuestionStep[] = [
-  'Q0', 'Q1', 'Q2', 'Q3',
-  'M1', 'M2a', 'M2b', 'M3', 
+  'Q3',
+  'M2a', 'M2b', 'M3', 
   'MV5', 'DV1', 'DV2', 'DV3'
 ];
 
@@ -42,7 +38,7 @@ export default function SurveyPage() {
   const { saveBlockAResponse, goToNextStimulus } = useSurvey();
   const { getCurrentDwellTime } = usePageDwellTime();
   
-  const [currentStep, setCurrentStep] = useState<QuestionStep>('Q0');
+  const [currentStep, setCurrentStep] = useState<QuestionStep>('Q3');
   const [blockAData, setBlockAData] = useState<Partial<BlockAResponse>>({});
 
   // 페이지 로드 시 스크롤을 맨 위로
@@ -102,9 +98,8 @@ export default function SurveyPage() {
     console.log('📊 Complete Block A Response:', {
       totalKeys: Object.keys(completeBlockAResponse).length,
       product: completeBlockAResponse.product,
-      involvement_1: completeBlockAResponse.involvement_1,
-      arg_quality_1: completeBlockAResponse.arg_quality_1,
-      recalled_words: completeBlockAResponse.recalled_words
+      recall_1: completeBlockAResponse.recall_1,
+      credibility_expertise_1: completeBlockAResponse.credibility_expertise_1
     });
     
     // Save to context (saveBlockAResponse expects page_dwell_time to be included)
@@ -151,33 +146,9 @@ export default function SurveyPage() {
 
       {/* Question Components */}
       <div className="py-8">
-        {currentStep === 'Q0' && (
-          <Q0_ProductInvolvement 
-            onComplete={(data) => handleComplete('Q0', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
-        {currentStep === 'Q1' && (
-          <Q1_ManipulationCheck 
-            onComplete={(data) => handleComplete('Q1', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
-        {currentStep === 'Q2' && (
-          <Q2_AttentionCheck 
-            onComplete={(data) => handleComplete('Q2', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
         {currentStep === 'Q3' && (
           <Q3_RecallTask 
             onComplete={(data) => handleComplete('Q3', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
-        {currentStep === 'M1' && (
-          <M1_ArgumentQuality 
-            onComplete={(data) => handleComplete('M1', data as unknown as Record<string, unknown>)}
           />
         )}
         

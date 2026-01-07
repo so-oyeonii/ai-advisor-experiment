@@ -30,8 +30,8 @@ type ExtendedSurveyResponse = Partial<SurveyResponseData> & {
   advisorValence?: string;
   public_valence?: string;
   publicValence?: string;
-  involvement_1?: number;
-  arg_quality_1?: number;
+  recall_1?: string;
+  credibility_expertise_1?: number;
   purchase_1?: number;
   survey_start_time?: string | Timestamp;
   survey_end_time?: string | Timestamp;

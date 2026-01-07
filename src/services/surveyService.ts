@@ -29,7 +29,7 @@ export async function saveSurveyResponse(response: SurveyResponse): Promise<void
       participant_id: response.participant_id,
       product: response.product,
       gender: response.gender,
-      involvement_1: response.involvement_1
+      recall_1: response.recall_1
     });
     
     const dataToSave = {

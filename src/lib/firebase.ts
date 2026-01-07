@@ -5,17 +5,25 @@ import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, getDocs, Time
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyDI26pyq90LhlVD9n8sICMT2BryAgV4EMM",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "ai-advisor-experiment.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "ai-advisor-experiment",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "ai-advisor-experiment.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "685896095806",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:685896095806:web:0bf50c9c75ed5cd2a3b8fd",
 };
+
+console.log('🔥 Firebase config loaded:', {
+  projectId: firebaseConfig.projectId,
+  authDomain: firebaseConfig.authDomain,
+  hasApiKey: !!firebaseConfig.apiKey
+});
 
 // Initialize Firebase (avoid reinitializing in development)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 export const db = getFirestore(app);
+
+console.log('🔥 Firebase initialized, db:', !!db);
 
 // Utility function to get current timestamp (stores as UTC, which is correct)
 export const getKSTTimestamp = (): Timestamp => {
@@ -181,15 +189,34 @@ export interface StimulusExposureData {
  */
 export async function saveStimulusExposure(exposureData: Omit<StimulusExposureData, 'createdAt'>): Promise<void> {
   try {
-    const exposureRef = doc(db, COLLECTIONS.STIMULUS_EXPOSURES, exposureData.exposureId);
-    
-    await setDoc(exposureRef, {
-      ...exposureData,
-      createdAt: getKSTTimestamp(),
+    console.log('🔥 [Firebase] saveStimulusExposure called with:', {
+      exposureId: exposureData.exposureId,
+      participantId: exposureData.participantId,
+      productId: exposureData.productId
     });
+    
+    const exposureRef = doc(db, COLLECTIONS.STIMULUS_EXPOSURES, exposureData.exposureId);
+    console.log('🔥 [Firebase] Document reference created');
+    
+    // Test with minimal data first
+    const minimalData = {
+      exposureId: exposureData.exposureId,
+      participantId: exposureData.participantId,
+      productId: exposureData.productId,
+      productName: exposureData.productName,
+      dwellTime: exposureData.dwellTime,
+      createdAt: getKSTTimestamp(),
+    };
+    
+    console.log('🔥 [Firebase] Attempting to save minimal data:', minimalData);
+    
+    await setDoc(exposureRef, minimalData);
+    
+    console.log('🔥 [Firebase] setDoc completed successfully');
   } catch (error) {
-    console.error('Error saving stimulus exposure:', error);
-    throw new Error('Failed to save stimulus exposure');
+    console.error('🔥 [Firebase] Error saving stimulus exposure:', error);
+    console.error('🔥 [Firebase] Error stack:', error instanceof Error ? error.stack : 'No stack');
+    throw error;
   }
 }
 
