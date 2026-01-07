@@ -270,7 +270,7 @@ export default function StimulusPage() {
                       <span className="text-sm font-medium text-gray-700">{review.rating}.0 out of 5 stars</span>
                       <span className="text-xs text-orange-700 font-semibold">✓ Verified Purchase</span>
                     </div>
-                    <p className="text-sm text-gray-700">{review.text}</p>
+                    <p className="text-sm text-gray-700 blur-sm select-none">{review.text}</p>
                   </div>
                 ))}
                 {/* Gradient overlay to suggest more content below */}
