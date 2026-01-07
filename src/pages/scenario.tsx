@@ -1,11 +1,10 @@
 // Scenario introduction page - Set context for the experiment
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ShoppingCart, Sparkles, Star, User, Bot } from 'lucide-react';
 
 export default function ScenarioPage() {
   const router = useRouter();
-  const [participantId, setParticipantId] = useState<string>('');
 
   useEffect(() => {
     // Check if participant has consented
@@ -16,8 +15,6 @@ export default function ScenarioPage() {
       router.push('/consent');
       return;
     }
-    
-    setParticipantId(storedParticipantId);
   }, [router]);
 
   const handleContinue = () => {
@@ -86,7 +83,7 @@ export default function ScenarioPage() {
                   NEW
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">
-                  Amazon's New Expert Review Service
+                  Amazon&apos;s New Expert Review Service
                 </h2>
               </div>
               
@@ -118,7 +115,7 @@ export default function ScenarioPage() {
                     <h3 className="font-bold text-gray-900 text-lg">AI Expert</h3>
                   </div>
                   <p className="text-gray-700 text-sm leading-relaxed">
-                    Amazon's AI technology analyzes vast amounts of data to provide objective and detailed reviews.
+                    Amazon&apos;s AI technology analyzes vast amounts of data to provide objective and detailed reviews.
                   </p>
                 </div>
               </div>
