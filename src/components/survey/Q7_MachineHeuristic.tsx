@@ -34,9 +34,9 @@ export default function Q7_MachineHeuristic({ onComplete }: Q7MachineHeuristicPr
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      {/* 대표 질문 - 눈에 띄는 카드 스타일 */}
+      {/* 대표 질문 - 초록색 카드 스타일 (general-questions 테마) */}
       {config.description && (
-        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
+        <div className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-6 mb-10">
           <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
             {config.description}
           </p>
