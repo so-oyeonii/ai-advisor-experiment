@@ -1,46 +1,51 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
-import { M2a_MessageCredibility as config } from '@/config/surveyQuestions';
+import { M2a_MessageCredibility, M2b_Trust } from '@/config/surveyQuestions';
 
-interface MessageCredibilityResponse {
+interface CombinedCredibilityResponse {
   message_credibility_1: number;
   message_credibility_2: number;
   message_credibility_3: number;
+  trust_1: number;
+  trust_2: number;
+  trust_3: number;
 }
 
 interface M2aProps {
-  onComplete: (responses: MessageCredibilityResponse) => void;
+  onComplete: (responses: CombinedCredibilityResponse) => void;
 }
 
 export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps) {
-  const [responses, setResponses] = useState<Partial<MessageCredibilityResponse>>({});
+  const [responses, setResponses] = useState<Partial<CombinedCredibilityResponse>>({});
 
   const handleChange = (variable: string, value: number) => {
     setResponses(prev => ({ ...prev, [variable]: value }));
   };
 
+  const allItems = [...M2a_MessageCredibility.items, ...M2b_Trust.items];
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    const allAnswered = config.items.every(item =>
-      responses[item.variable as keyof MessageCredibilityResponse] !== undefined
+    const allAnswered = allItems.every(item =>
+      responses[item.variable as keyof CombinedCredibilityResponse] !== undefined
     );
 
     if (allAnswered) {
-      onComplete(responses as MessageCredibilityResponse);
+      onComplete(responses as CombinedCredibilityResponse);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-sm font-semibold text-gray-600 mb-3">{config.title}</h2>
-      {config.description && (
-        <p className="text-lg font-medium text-gray-800 mb-8 whitespace-pre-line">{config.description}</p>
-      )}
-
-      <form onSubmit={handleSubmit}>
+      {/* Message Credibility Section */}
+      <div className="mb-10">
+        <h2 className="text-sm font-semibold text-gray-600 mb-3">{M2a_MessageCredibility.title}</h2>
+        <p className="text-lg font-medium text-gray-800 mb-6 whitespace-pre-line">
+          {M2a_MessageCredibility.description}
+        </p>
         <div className="space-y-6">
-          {config.items.map((item) => (
+          {M2a_MessageCredibility.items.map((item) => (
             <LikertScale
               key={item.variable}
               name={item.variable}
@@ -51,7 +56,29 @@ export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps)
             />
           ))}
         </div>
+      </div>
 
+      {/* Trust Section */}
+      <div className="mb-8 pt-8 border-t border-gray-200">
+        <h2 className="text-sm font-semibold text-gray-600 mb-3">{M2b_Trust.title}</h2>
+        <p className="text-lg font-medium text-gray-800 mb-6 whitespace-pre-line">
+          {M2b_Trust.description}
+        </p>
+        <div className="space-y-6">
+          {M2b_Trust.items.map((item) => (
+            <LikertScale
+              key={item.variable}
+              name={item.variable}
+              question={item.text}
+              minLabel={item.scaleLabels?.min || ''}
+              maxLabel={item.scaleLabels?.max || ''}
+              onChange={(e) => handleChange(item.variable, parseInt(e.target.value))}
+            />
+          ))}
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit}>
         <div className="mt-8 flex justify-end">
           <button
             type="submit"

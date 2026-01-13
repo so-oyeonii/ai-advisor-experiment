@@ -7,7 +7,6 @@ import { useEffect } from 'react';
 // Import all Block A survey components
 import Q3_RecallTask from '@/components/survey/Q3_RecallTask';
 import M2a_SourceCredibilityExpertise from '@/components/survey/M2a_SourceCredibilityExpertise';
-import M2b_SourceCredibilityTrust from '@/components/survey/M2b_SourceCredibilityTrust';
 import M3_PersuasiveIntent from '@/components/survey/M3_PersuasiveIntent';
 import DV1_Persuasiveness from '@/components/survey/DV1_Persuasiveness';
 import DV2_PurchaseIntention from '@/components/survey/DV2_PurchaseIntention';
@@ -18,15 +17,15 @@ import type {
   ExperimentalCondition
 } from '@/types/survey';
 
-type QuestionStep = 
+type QuestionStep =
   | 'Q3'
-  | 'M2a' | 'M2b' | 'M3' 
+  | 'M2a' | 'M3'
   | 'DV1' | 'DV2' | 'DV3';
 
 const QUESTION_STEPS: QuestionStep[] = [
   'Q3',
   'M3',           // PPI first
-  'M2a', 'M2b',   // Source Credibility after
+  'M2a',          // Message Credibility + Trust (combined)
   'DV1', 'DV2', 'DV3'
 ];
 
@@ -153,17 +152,11 @@ export default function SurveyPage() {
         )}
         
         {currentStep === 'M2a' && (
-          <M2a_SourceCredibilityExpertise 
+          <M2a_SourceCredibilityExpertise
             onComplete={(data) => handleComplete('M2a', data as unknown as Record<string, unknown>)}
           />
         )}
-        
-        {currentStep === 'M2b' && (
-          <M2b_SourceCredibilityTrust 
-            onComplete={(data) => handleComplete('M2b', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
+
         {currentStep === 'M3' && (
           <M3_PersuasiveIntent 
             onComplete={(data) => handleComplete('M3', data as unknown as Record<string, unknown>)}
