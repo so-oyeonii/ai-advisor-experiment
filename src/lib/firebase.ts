@@ -390,14 +390,14 @@ export interface DemographicsData {
   ai_familiarity_1?: number;
   ai_familiarity_2?: number;
   ai_familiarity_3?: number;
+  machine_heuristic_1?: number;
+  machine_heuristic_2?: number;
+  machine_heuristic_3?: number;
+  machine_heuristic_4?: number;
   review_skepticism_1?: number;
   review_skepticism_2?: number;
   review_skepticism_3?: number;
   review_skepticism_4?: number;
-  attitude_ai_1?: number;
-  attitude_ai_2?: number;
-  attitude_ai_3?: number;
-  attitude_ai_4?: number;
   createdAt: Timestamp;
 }
 

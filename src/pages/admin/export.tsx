@@ -73,16 +73,16 @@ interface MergedData {
   ai_familiarity_1: string | number;
   ai_familiarity_2: string | number;
   ai_familiarity_3: string | number;
+  // Machine Heuristic scores (1-7 Likert scale)
+  machine_heuristic_1: string | number;
+  machine_heuristic_2: string | number;
+  machine_heuristic_3: string | number;
+  machine_heuristic_4: string | number;
   // Review Skepticism scores (1-7 Likert scale)
   review_skepticism_1: string | number;
   review_skepticism_2: string | number;
   review_skepticism_3: string | number;
   review_skepticism_4: string | number;
-  // Attitude toward AI scores (1-7 Likert scale)
-  attitude_ai_1: string | number;
-  attitude_ai_2: string | number;
-  attitude_ai_3: string | number;
-  attitude_ai_4: string | number;
   survey_start_time: string;
   survey_end_time: string;
   status: string;
@@ -259,16 +259,16 @@ export default function AdminExportPage() {
           ai_familiarity_1: participantDemo?.ai_familiarity_1 || '',
           ai_familiarity_2: participantDemo?.ai_familiarity_2 || '',
           ai_familiarity_3: participantDemo?.ai_familiarity_3 || '',
+          // Machine Heuristic scores
+          machine_heuristic_1: participantDemo?.machine_heuristic_1 || '',
+          machine_heuristic_2: participantDemo?.machine_heuristic_2 || '',
+          machine_heuristic_3: participantDemo?.machine_heuristic_3 || '',
+          machine_heuristic_4: participantDemo?.machine_heuristic_4 || '',
           // Review Skepticism scores
           review_skepticism_1: participantDemo?.review_skepticism_1 || '',
           review_skepticism_2: participantDemo?.review_skepticism_2 || '',
           review_skepticism_3: participantDemo?.review_skepticism_3 || '',
           review_skepticism_4: participantDemo?.review_skepticism_4 || '',
-          // Attitude toward AI scores
-          attitude_ai_1: participantDemo?.attitude_ai_1 || '',
-          attitude_ai_2: participantDemo?.attitude_ai_2 || '',
-          attitude_ai_3: participantDemo?.attitude_ai_3 || '',
-          attitude_ai_4: participantDemo?.attitude_ai_4 || '',
           // 전체 설문 시작/끝 시간 (3개 행 모두 동일)
           survey_start_time: surveyStartTime,
           survey_end_time: surveyEndTime,
@@ -366,26 +366,23 @@ export default function AdminExportPage() {
       'persuasiveness_2',
       'persuasiveness_3',
       'persuasiveness_4',
-      'purchase_intention_1',
-      'purchase_intention_2',
-      'purchase_intention_3',
-      'decision_confidence_1',
-      'decision_confidence_2',
-      'decision_confidence_3',
-      'decision_confidence_4',
-      
+      'purchase_1',
+      'purchase_2',
+      'confidence',
+
       // 5. M: 매개변수
-      'source_credibility_expertise_1',
-      'source_credibility_expertise_2',
-      'source_credibility_expertise_3',
-      'source_credibility_expertise_4',
-      'source_credibility_trust_1',
-      'source_credibility_trust_2',
-      'source_credibility_trust_3',
-      'source_credibility_trust_4',
-      'persuasive_intent_1',
-      'persuasive_intent_2',
-      'persuasive_intent_3',
+      'message_credibility_1',
+      'message_credibility_2',
+      'message_credibility_3',
+      'trust_1',
+      'trust_2',
+      'trust_3',
+      'ppi_1',
+      'ppi_2',
+      'ppi_3',
+      'ppi_4',
+      'ppi_5',
+      'perceived_error',
       
       // 6. Recall Task (dynamic array)
       'recalled_words',
@@ -407,14 +404,14 @@ export default function AdminExportPage() {
       'ai_familiarity_1',
       'ai_familiarity_2',
       'ai_familiarity_3',
+      'machine_heuristic_1',
+      'machine_heuristic_2',
+      'machine_heuristic_3',
+      'machine_heuristic_4',
       'review_skepticism_1',
       'review_skepticism_2',
       'review_skepticism_3',
-      'review_skepticism_4',
-      'attitude_ai_1',
-      'attitude_ai_2',
-      'attitude_ai_3',
-      'attitude_ai_4'
+      'review_skepticism_4'
     ];
     
     // Create CSV header
