@@ -45,8 +45,8 @@ export default function M2b_SourceCredibilityTrust({ onComplete }: M2bProps) {
               key={item.variable}
               name={item.variable}
               question={item.text}
-              minLabel={item.scaleLabels?.min || ''}
-              maxLabel={item.scaleLabels?.max || ''}
+              leftLabel={item.scaleLabels?.min || ''}
+              rightLabel={item.scaleLabels?.max || ''}
               onChange={(e) => handleChange(item.variable, parseInt(e.target.value))}
             />
           ))}

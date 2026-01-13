@@ -50,8 +50,8 @@ export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps)
               key={item.variable}
               name={item.variable}
               question={item.text}
-              minLabel={item.scaleLabels?.min || ''}
-              maxLabel={item.scaleLabels?.max || ''}
+              leftLabel={item.scaleLabels?.min || ''}
+              rightLabel={item.scaleLabels?.max || ''}
               onChange={(e) => handleChange(item.variable, parseInt(e.target.value))}
             />
           ))}
@@ -70,8 +70,8 @@ export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps)
               key={item.variable}
               name={item.variable}
               question={item.text}
-              minLabel={item.scaleLabels?.min || ''}
-              maxLabel={item.scaleLabels?.max || ''}
+              leftLabel={item.scaleLabels?.min || ''}
+              rightLabel={item.scaleLabels?.max || ''}
               onChange={(e) => handleChange(item.variable, parseInt(e.target.value))}
             />
           ))}
