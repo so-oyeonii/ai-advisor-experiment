@@ -82,33 +82,45 @@ export default function ScenarioPage() {
                   NEW
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900">
-                  Expert Review Service
+                  Amazon&apos;s New Expert Review Service
                 </h2>
               </div>
-              <p className="text-gray-800 leading-relaxed mb-3">
-                Amazon offers <span className="font-bold text-purple-700">Expert Reviews</span> on products.
+              <p className="text-gray-800 leading-relaxed">
+                Amazon is offering a new service featuring <span className="font-bold text-purple-700">Expert Reviews</span> on products.
               </p>
+            </div>
+          </div>
 
-              {/* Expert Types - 컴팩트 버전 */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-white p-3 rounded-lg border border-blue-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <User className="w-5 h-5 text-blue-600" />
-                    <span className="font-bold text-gray-900">Human Expert</span>
+          {/* Expert Types - 강조된 섹션 */}
+          <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-xl border-2 border-purple-200">
+            <h3 className="text-center font-bold text-gray-900 mb-3 text-lg">
+              ⭐ Please Read Carefully: Types of Expert Reviews ⭐
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Human Expert */}
+              <div className="bg-white p-4 rounded-lg shadow-md border-2 border-blue-300">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="bg-blue-100 p-2 rounded-full">
+                    <User className="w-6 h-6 text-blue-600" />
                   </div>
-                  <p className="text-gray-600 text-xs leading-relaxed">
-                    Specialized experts analyze and review products.
-                  </p>
+                  <h4 className="font-bold text-gray-900 text-lg">Human Expert</h4>
                 </div>
-                <div className="bg-white p-3 rounded-lg border border-purple-200">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Bot className="w-5 h-5 text-purple-600" />
-                    <span className="font-bold text-gray-900">AI Expert</span>
+                <p className="text-gray-700 leading-relaxed">
+                  Human experts with <span className="font-semibold text-blue-700">specialized knowledge</span> in the field thoroughly analyze products and write detailed reviews.
+                </p>
+              </div>
+
+              {/* AI Expert */}
+              <div className="bg-white p-4 rounded-lg shadow-md border-2 border-purple-300">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="bg-purple-100 p-2 rounded-full">
+                    <Bot className="w-6 h-6 text-purple-600" />
                   </div>
-                  <p className="text-gray-600 text-xs leading-relaxed">
-                    AI analyzes data for objective reviews.
-                  </p>
+                  <h4 className="font-bold text-gray-900 text-lg">AI Expert</h4>
                 </div>
+                <p className="text-gray-700 leading-relaxed">
+                  Amazon&apos;s <span className="font-semibold text-purple-700">AI technology</span> analyzes vast amounts of data to provide objective and detailed reviews.
+                </p>
               </div>
             </div>
           </div>
