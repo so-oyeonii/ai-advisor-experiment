@@ -168,7 +168,7 @@ export default function StimulusPage() {
                 )}
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {condition.advisorType === 'AI' ? "AI Expert's Review" : "Human Expert's Review"}
+                {condition.advisorType === 'AI' ? "AI Expert's Review" : "Expert's Review"}
               </h2>
               <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-full text-sm font-bold mb-4">
                 NEW FEATURE
@@ -211,11 +211,7 @@ export default function StimulusPage() {
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-start">
                       <span className="mr-2">👨‍🔬</span>
-                      <span><strong>Professional Credentials:</strong> Holds relevant certifications and degrees in fields related to the product category (e.g., nutrition, chemistry, consumer sciences).</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="mr-2">🔍</span>
-                      <span><strong>Hands-On Testing:</strong> Personally evaluates products through rigorous testing protocols and real-world usage scenarios.</span>
+                      <span><strong>Professional Credentials:</strong> A human professional who holds relevant certifications and degrees in fields related to the product category (e.g., nutrition, chemistry, consumer sciences).</span>
                     </li>
                     <li className="flex items-start">
                       <span className="mr-2">📚</span>
