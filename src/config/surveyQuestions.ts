@@ -169,7 +169,7 @@ export const M3_PersuasiveIntent: QuestionBlock = {
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'ppi_6',
+      variable: 'perceived_error',
       text: 'I felt that there was an error in this review.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
