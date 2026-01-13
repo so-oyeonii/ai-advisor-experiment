@@ -14,6 +14,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   const [canContinue, setCanContinue] = useState(false);
   const [hasStartedWriting, setHasStartedWriting] = useState(false); // Track if user started writing
   const [bonusTimeGiven, setBonusTimeGiven] = useState(false); // Track if bonus time was given
+  const [bonusElapsedTime, setBonusElapsedTime] = useState(0); // Track elapsed time since bonus started
 
   // Check if user has entered at least one word
   const hasContent = words.some(word => word.trim().length > 0);
@@ -53,19 +54,29 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     return () => clearInterval(timer);
   }, [hasContent, hasStartedWriting, handleAutoSubmit]);
   
-  // Enable continue button after 30 seconds IF user has entered content
-  // Or immediately if bonus time was given (user already waited 90+ seconds)
+  // Track bonus elapsed time
   useEffect(() => {
-    if (bonusTimeGiven && hasContent) {
-      // Bonus time case: can continue immediately once they have content
+    if (!bonusTimeGiven) return;
+
+    const bonusTimer = setInterval(() => {
+      setBonusElapsedTime(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(bonusTimer);
+  }, [bonusTimeGiven]);
+
+  // Enable continue button after 30 seconds IF user has entered content
+  useEffect(() => {
+    if (bonusTimeGiven && hasContent && bonusElapsedTime >= 30) {
+      // Bonus time case: need to wait 30 seconds after starting to write
       setCanContinue(true);
-    } else if (elapsedTime >= 30 && hasContent) {
-      // Normal case: wait 30 seconds
+    } else if (!bonusTimeGiven && elapsedTime >= 30 && hasContent) {
+      // Normal case: wait 30 seconds from page load
       setCanContinue(true);
     } else if (!hasContent) {
       setCanContinue(false);
     }
-  }, [elapsedTime, hasContent, bonusTimeGiven]);
+  }, [elapsedTime, hasContent, bonusTimeGiven, bonusElapsedTime]);
   
   // Add new word box
   const handleAddWord = () => {
@@ -209,7 +220,13 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
               </p>
             )}
 
-            {bonusTimeGiven && timeLeft > 0 && (
+            {bonusTimeGiven && timeLeft > 0 && bonusElapsedTime < 30 && (
+              <p className="text-sm text-orange-600 font-medium">
+                ⏰ Bonus time! Please wait {30 - bonusElapsedTime} seconds before continuing.
+              </p>
+            )}
+
+            {bonusTimeGiven && timeLeft > 0 && bonusElapsedTime >= 30 && (
               <p className="text-sm text-orange-600 font-medium">
                 ⏰ Bonus time! {timeLeft} seconds remaining.
               </p>
