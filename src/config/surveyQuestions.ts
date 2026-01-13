@@ -155,29 +155,29 @@ export const M3_PersuasiveIntent: QuestionBlock = {
 
 export const DV1_Persuasiveness: QuestionBlock = {
   title: 'Perceived Persuasiveness',
-  description: 'Please indicate how persuasive you found the FEATURED REVIEW shown at the top.',
+  description: 'Please indicate how persuasive you found the expert\'s review.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'persuasiveness_1',
-      text: 'The featured review changed my opinion.',
+      text: "The expert's review changed my opinion.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_2',
-      text: 'I was convinced by the featured review.',
+      text: "I was convinced by the expert's review.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_3',
-      text: 'The featured review influenced me.',
+      text: "The expert's review influenced me.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_4',
-      text: 'I will reconsider my position after reading the featured review.',
+      text: "I will reconsider my position after reading the expert's review.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -186,30 +186,17 @@ export const DV1_Persuasiveness: QuestionBlock = {
 
 export const DV2_PurchaseIntention: QuestionBlock = {
   title: 'Purchase Intention',
-  description: 'The following questions ask about your intention to purchase THIS SPECIFIC PRODUCT shown on the page.',
-  warning: '⚠️ Important Note: These questions ask about your intention to buy the product itself, NOT how persuasive the review was. Your answer should reflect your actual purchase interest in the product based on all information shown.',
+  description: 'The following questions ask about your purchase intention regarding the product shown on the previous page.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'purchase_1',
-      text: 'After reading the featured review, it makes me desire to buy this product.',
+      text: 'I would purchase this product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'purchase_2',
-      text: 'I will consider buying this product after I read the featured review.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'purchase_3',
-      text: 'I intend to try this product discussed in the featured review.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'purchase_4',
-      text: 'In the future, I intend to buy this product discussed in the featured review.',
+      text: 'I would consider buying this product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -218,7 +205,7 @@ export const DV2_PurchaseIntention: QuestionBlock = {
 
 export const DV3_DecisionConfidence: QuestionBlock = {
   title: 'Decision Confidence',
-  description: 'How confident are you in the judgment you made based on the FEATURED REVIEW?\n\nPlease indicate your level of confidence in your evaluation of the product after reading the featured review.',
+  description: 'How confident are you in the judgment you made based on the expert\'s review?\nPlease indicate your level of confidence in your evaluation of the product after reading the expert\'s review.\n(1 = Not at all confident, 7 = Very confident)',
   items: [
     {
       variable: 'confidence',
