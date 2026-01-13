@@ -84,7 +84,7 @@ export default function TestConditionsPage() {
             ) : (
               <div className="space-y-3 text-gray-700">
                 <p className="text-sm sm:text-base leading-relaxed">
-                  This product review has been written by a <span className="font-bold text-blue-700">certified Human Expert</span> with specialized knowledge.
+                  This product&apos;s expert review has been written by a <span className="font-bold text-blue-700">certified Human Expert</span> with specialized knowledge.
                 </p>
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-lg">
                   <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">What Makes Our Human Experts Qualified:</h3>
