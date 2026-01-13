@@ -9,56 +9,36 @@ interface Q3_RecallTaskProps {
 
 export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   const [words, setWords] = useState<string[]>(['']); // Start with one empty box
-  const [initialTimeLeft, setInitialTimeLeft] = useState(90); // 90 seconds initial timer
-  const [bonusTimeLeft, setBonusTimeLeft] = useState(30); // 30 seconds bonus timer (after 90s)
-  const [bonusTimerStarted, setBonusTimerStarted] = useState(false); // Has bonus timer started?
+  const [displayTimeLeft, setDisplayTimeLeft] = useState(90); // 90 seconds display timer
+  const [writingStartTime, setWritingStartTime] = useState<number | null>(null); // When user started writing
+  const [secondsUntilCanContinue, setSecondsUntilCanContinue] = useState<number | null>(null);
   const pageLoadTime = useRef(Date.now()); // When page loaded
 
   // Check if user has entered at least one word
   const hasContent = words.some(word => word.trim().length > 0);
   const filledWords = words.filter(word => word.trim().length > 0);
 
-  // Initial 90 second countdown
+  // Display timer countdown (90 seconds, then shows time since writing started)
   useEffect(() => {
-    if (initialTimeLeft <= 0) return; // Timer finished
-
     const timer = setInterval(() => {
-      setInitialTimeLeft(prev => Math.max(0, prev - 1));
-    }, 1000);
+      if (!writingStartTime) {
+        // Before writing: count down from 90
+        const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+        setDisplayTimeLeft(Math.max(0, 90 - elapsed));
+      } else {
+        // After writing started: show remaining time until can continue (30 - elapsed)
+        const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
+        const remaining = Math.max(0, 30 - writingElapsed);
+        setSecondsUntilCanContinue(remaining);
+        setDisplayTimeLeft(remaining);
+      }
+    }, 500);
 
     return () => clearInterval(timer);
-  }, [initialTimeLeft]);
+  }, [writingStartTime]);
 
-  // Bonus 30 second countdown (only starts after 90s AND user has content)
-  useEffect(() => {
-    // Don't start bonus timer until initial 90 seconds is done
-    if (initialTimeLeft > 0) return;
-
-    // Don't start bonus timer if no content
-    if (!hasContent) {
-      setBonusTimerStarted(false);
-      setBonusTimeLeft(30);
-      return;
-    }
-
-    // Start bonus timer when 90s done AND has content
-    if (!bonusTimerStarted) {
-      setBonusTimerStarted(true);
-      setBonusTimeLeft(30);
-    }
-
-    // Countdown bonus timer
-    if (bonusTimeLeft <= 0) return;
-
-    const timer = setInterval(() => {
-      setBonusTimeLeft(prev => Math.max(0, prev - 1));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [initialTimeLeft, hasContent, bonusTimerStarted, bonusTimeLeft]);
-
-  // Can continue when: has content AND initial 90s done AND bonus 30s done
-  const canContinue = hasContent && initialTimeLeft === 0 && bonusTimerStarted && bonusTimeLeft === 0;
+  // Can continue when: has content AND 30 seconds have passed since writing started
+  const canContinue = hasContent && writingStartTime !== null && secondsUntilCanContinue === 0;
 
   // Add new word box
   const handleAddWord = () => {
@@ -71,11 +51,11 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
       const newWords = words.filter((_, i) => i !== index);
       setWords(newWords);
 
-      // If all content was removed, reset bonus timer
+      // If all content was removed, reset writing start time
       const hasAnyContent = newWords.some(word => word.trim().length > 0);
       if (!hasAnyContent) {
-        setBonusTimerStarted(false);
-        setBonusTimeLeft(30);
+        setWritingStartTime(null);
+        setSecondsUntilCanContinue(null);
       }
     }
   };
@@ -86,11 +66,16 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     newWords[index] = value;
     setWords(newWords);
 
-    // If user deleted all content, reset bonus timer
+    // Check if this is the first time user started writing
     const hasAnyContent = newWords.some(word => word.trim().length > 0);
-    if (!hasAnyContent) {
-      setBonusTimerStarted(false);
-      setBonusTimeLeft(30);
+    if (hasAnyContent && !writingStartTime) {
+      setWritingStartTime(Date.now());
+    }
+
+    // If user deleted all content, reset writing start time
+    if (!hasAnyContent && writingStartTime) {
+      setWritingStartTime(null);
+      setSecondsUntilCanContinue(null);
     }
   };
 
@@ -116,36 +101,14 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Determine which timer to display
-  const getDisplayTime = () => {
-    if (initialTimeLeft > 0) {
-      return initialTimeLeft;
-    }
-    // After 90s, show bonus timer if user has content
-    if (hasContent) {
-      return bonusTimeLeft;
-    }
-    // After 90s but no content, show 0:00
-    return 0;
-  };
-
-  const displayTime = getDisplayTime();
-
   // Status message logic
   const getStatusMessage = () => {
     if (!hasContent) {
-      if (initialTimeLeft > 0) {
-        return `Please enter at least one information point to continue. (${formatTime(initialTimeLeft)} remaining)`;
-      }
-      return 'Time is up. Please enter at least one information point to continue.';
+      return 'Please enter at least one information point to continue.';
     }
 
-    if (initialTimeLeft > 0) {
-      return `Please wait for the initial time to complete. (${formatTime(initialTimeLeft)} remaining)`;
-    }
-
-    if (bonusTimeLeft > 0) {
-      return `Please wait ${bonusTimeLeft} seconds before continuing.`;
+    if (secondsUntilCanContinue !== null && secondsUntilCanContinue > 0) {
+      return `Please wait ${secondsUntilCanContinue} seconds before continuing.`;
     }
 
     return null; // canContinue is true
@@ -163,9 +126,9 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{config.title}</h2>
           </div>
           <div className="flex items-center space-x-2">
-            <Clock size={24} className={displayTime <= 10 && displayTime > 0 ? 'text-red-600' : 'text-blue-600'} />
-            <span className={`text-3xl font-mono font-bold ${displayTime <= 10 && displayTime > 0 ? 'text-red-600' : 'text-gray-900'}`}>
-              {formatTime(displayTime)}
+            <Clock size={24} className={displayTimeLeft <= 10 && displayTimeLeft > 0 ? 'text-red-600' : 'text-blue-600'} />
+            <span className={`text-3xl font-mono font-bold ${displayTimeLeft <= 10 && displayTimeLeft > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+              {formatTime(displayTimeLeft)}
             </span>
           </div>
         </div>
@@ -180,10 +143,10 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
         )}
 
         {/* Warning when time is low */}
-        {displayTime <= 30 && displayTime > 0 && (
+        {writingStartTime && secondsUntilCanContinue !== null && secondsUntilCanContinue <= 10 && secondsUntilCanContinue > 0 && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
             <p className="text-yellow-800 text-sm font-medium">
-              {initialTimeLeft > 0 ? `${displayTime} seconds remaining` : `${displayTime} seconds until you can continue`}
+              ⏰ {secondsUntilCanContinue} seconds until you can continue
             </p>
           </div>
         )}
@@ -230,14 +193,14 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
           {/* Status Messages */}
           <div className="space-y-2">
             {statusMessage && (
-              <p className={`text-sm ${!hasContent && initialTimeLeft === 0 ? 'text-orange-600' : 'text-gray-500'}`}>
+              <p className="text-sm text-gray-500">
                 {statusMessage}
               </p>
             )}
 
             {canContinue && (
               <p className="text-sm text-green-600 font-medium">
-                You can now continue
+                ✓ You can now continue
               </p>
             )}
           </div>

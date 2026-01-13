@@ -314,7 +314,7 @@ export default function StimulusPage() {
                   )}
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 mb-2">
-                      {condition.advisorType === 'AI' ? "AI Expert's Review" : "Human Expert's Review"}
+                      {condition.advisorType === 'AI' ? "AI Expert's Review" : "Expert's Review"}
                     </h3>
                     <div className="flex items-center space-x-2 mb-3 flex-wrap">
                       <div className="flex">
