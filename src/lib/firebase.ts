@@ -198,20 +198,21 @@ export async function saveStimulusExposure(exposureData: Omit<StimulusExposureDa
     
     const exposureRef = doc(db, COLLECTIONS.STIMULUS_EXPOSURES, exposureData.exposureId);
     console.log('🔥 [Firebase] Document reference created');
-    
-    // Test with minimal data first
-    const minimalData = {
-      exposureId: exposureData.exposureId,
-      participantId: exposureData.participantId,
-      productId: exposureData.productId,
-      productName: exposureData.productName,
-      dwellTime: exposureData.dwellTime,
+
+    // Save all exposure data including exposureOrder for matching
+    const fullData = {
+      ...exposureData,
       createdAt: getKSTTimestamp(),
     };
-    
-    console.log('🔥 [Firebase] Attempting to save minimal data:', minimalData);
-    
-    await setDoc(exposureRef, minimalData);
+
+    console.log('🔥 [Firebase] Saving exposure data:', {
+      exposureId: fullData.exposureId,
+      participantId: fullData.participantId,
+      exposureOrder: fullData.exposureOrder,
+      dwellTime: fullData.dwellTime
+    });
+
+    await setDoc(exposureRef, fullData);
     
     console.log('🔥 [Firebase] setDoc completed successfully');
   } catch (error) {
@@ -381,23 +382,24 @@ export interface DemographicsData {
   participantId: string;
   age: string;
   gender: string;
+  gender_other?: string;
   education: string;
-  nationality?: string;
   income?: string;
-  online_shopping_frequency?: string;
+  occupation?: string;
+  occupation_other?: string;
   shopping_frequency?: string;
   ai_usage_frequency?: string;
   ai_familiarity_1?: number;
   ai_familiarity_2?: number;
   ai_familiarity_3?: number;
+  machine_heuristic_1?: number;
+  machine_heuristic_2?: number;
+  machine_heuristic_3?: number;
+  machine_heuristic_4?: number;
   review_skepticism_1?: number;
   review_skepticism_2?: number;
   review_skepticism_3?: number;
   review_skepticism_4?: number;
-  attitude_ai_1?: number;
-  attitude_ai_2?: number;
-  attitude_ai_3?: number;
-  attitude_ai_4?: number;
   createdAt: Timestamp;
 }
 

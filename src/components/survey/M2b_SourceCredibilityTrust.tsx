@@ -1,14 +1,19 @@
 import { useState, FormEvent } from 'react';
-import SemanticDifferential from '../SemanticDifferential';
-import { M2b_CredibilityTrustworthiness as config } from '@/config/surveyQuestions';
-import { CredibilityTrustworthinessResponse } from '@/types/survey';
+import LikertScale from '../LikertScale';
+import { M2b_Trust as config } from '@/config/surveyQuestions';
+
+interface TrustResponse {
+  trust_1: number;
+  trust_2: number;
+  trust_3: number;
+}
 
 interface M2bProps {
-  onComplete: (responses: CredibilityTrustworthinessResponse) => void;
+  onComplete: (responses: TrustResponse) => void;
 }
 
 export default function M2b_SourceCredibilityTrust({ onComplete }: M2bProps) {
-  const [responses, setResponses] = useState<Partial<CredibilityTrustworthinessResponse>>({});
+  const [responses, setResponses] = useState<Partial<TrustResponse>>({});
 
   const handleChange = (variable: string, value: number) => {
     setResponses(prev => ({ ...prev, [variable]: value }));
@@ -16,29 +21,30 @@ export default function M2b_SourceCredibilityTrust({ onComplete }: M2bProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    
-    const allAnswered = config.items.every(item => 
-      responses[item.variable as keyof CredibilityTrustworthinessResponse] !== undefined
+
+    const allAnswered = config.items.every(item =>
+      responses[item.variable as keyof TrustResponse] !== undefined
     );
 
     if (allAnswered) {
-      onComplete(responses as CredibilityTrustworthinessResponse);
+      onComplete(responses as TrustResponse);
     }
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6">
       <h2 className="text-sm font-semibold text-gray-600 mb-3">{config.title}</h2>
       {config.description && (
-        <p className="text-lg font-medium text-gray-800 mb-8">{config.description}</p>
+        <p className="text-lg font-medium text-gray-800 mb-8 whitespace-pre-line">{config.description}</p>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
           {config.items.map((item) => (
-            <SemanticDifferential
+            <LikertScale
               key={item.variable}
               name={item.variable}
+              question={item.text}
               leftLabel={item.scaleLabels?.min || ''}
               rightLabel={item.scaleLabels?.max || ''}
               onChange={(e) => handleChange(item.variable, parseInt(e.target.value))}

@@ -60,111 +60,93 @@ export const Q3_RecallTask: QuestionBlock = {
   ]
 };
 
-export const M2a_CredibilityExpertise: QuestionBlock = {
-  title: 'Source Credibility - Expertise',
-  description: 'The following questions are about the SOURCE (reviewer) who created the FEATURED REVIEW at the top. Please rate the source (reviewer) on the following dimensions:',
+export const M2a_MessageCredibility: QuestionBlock = {
+  title: 'Message Credibility',
+  description: 'How well do the following adjectives describe the expert\'s review you just read?\n(1 = describes very poorly, 7 = describes very well)',
   items: [
     {
-      variable: 'credibility_expertise_1',
-      text: 'Not Expert (1) --- Expert (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Not Expert', max: 'Expert' }
+      variable: 'message_credibility_1',
+      text: 'Accurate',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Describes very poorly', max: 'Describes very well' }
     },
     {
-      variable: 'credibility_expertise_2',
-      text: 'Inexperienced (1) --- Experienced (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Inexperienced', max: 'Experienced' }
+      variable: 'message_credibility_2',
+      text: 'Authentic',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Describes very poorly', max: 'Describes very well' }
     },
     {
-      variable: 'credibility_expertise_3',
-      text: 'Unknowledgeable (1) --- Knowledgeable (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unknowledgeable', max: 'Knowledgeable' }
-    },
-    {
-      variable: 'credibility_expertise_4',
-      text: 'Unqualified (1) --- Qualified (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unqualified', max: 'Qualified' }
-    },
-    {
-      variable: 'credibility_expertise_5',
-      text: 'Unskilled (1) --- Skilled (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unskilled', max: 'Skilled' }
+      variable: 'message_credibility_3',
+      text: 'Believable',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Describes very poorly', max: 'Describes very well' }
     }
   ]
 };
 
-export const M2b_CredibilityTrustworthiness: QuestionBlock = {
-  title: 'Source Credibility - Trustworthiness',
-  description: 'Thinking about the source (reviewer) of the FEATURED REVIEW at the top, please rate:',
+export const M2b_Trust: QuestionBlock = {
+  title: 'Trust',
+  description: 'Please rate your agreement with the following statements about the expert reviewer you just saw.\n(1 = Not at all, 7 = Extremely)',
   items: [
     {
-      variable: 'credibility_trust_1',
-      text: 'Undependable (1) --- Dependable (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Undependable', max: 'Dependable' }
+      variable: 'trust_1',
+      text: 'I am confident in this expert reviewer.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
-      variable: 'credibility_trust_2',
-      text: 'Dishonest (1) --- Honest (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Dishonest', max: 'Honest' }
+      variable: 'trust_2',
+      text: 'This expert reviewer is reliable.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
-      variable: 'credibility_trust_3',
-      text: 'Unreliable (1) --- Reliable (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unreliable', max: 'Reliable' }
-    },
-    {
-      variable: 'credibility_trust_4',
-      text: 'Insincere (1) --- Sincere (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Insincere', max: 'Sincere' }
-    },
-    {
-      variable: 'credibility_trust_5',
-      text: 'Untrustworthy (1) --- Trustworthy (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Untrustworthy', max: 'Trustworthy' }
+      variable: 'trust_3',
+      text: 'I can trust this expert reviewer.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Not at all', max: 'Extremely' }
     }
   ]
 };
 
 export const M3_PersuasiveIntent: QuestionBlock = {
   title: 'Perceived Persuasive Intent',
-  description: 'The following questions are about the SOURCE (reviewer) who created the FEATURED REVIEW shown at the top of the product page. Please indicate your agreement with each statement:',
+  description: 'Please indicate your agreement with each statement:\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'ppi_1',
-      text: 'This reviewer was primarily trying to persuade me to buy the product.',
+      text: 'This expert reviewer was primarily trying to persuade me either to buy or not to buy the product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_2',
-      text: 'This reviewer had an ulterior motive for the review.',
+      text: 'This expert reviewer had an ulterior motive for the review.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_3',
-      text: "This reviewer's statements seem suspicious.",
+      text: "This expert reviewer's statements seem suspicious.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_4',
-      text: 'This reviewer was trying to manipulate my opinion.',
+      text: 'This expert reviewer was trying to manipulate my opinion.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_5',
-      text: "This reviewer may have exaggerated the product's performance.",
+      text: "This expert reviewer may have exaggerated the product's performance.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'perceived_error',
+      text: 'I felt that there was an error in this review.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -173,29 +155,29 @@ export const M3_PersuasiveIntent: QuestionBlock = {
 
 export const DV1_Persuasiveness: QuestionBlock = {
   title: 'Perceived Persuasiveness',
-  description: 'Please indicate how persuasive you found the FEATURED REVIEW shown at the top.',
+  description: 'Please indicate how persuasive you found the expert\'s review.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'persuasiveness_1',
-      text: 'The featured review changed my opinion.',
+      text: "The expert's review changed my opinion.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_2',
-      text: 'I was convinced by the featured review.',
+      text: "I was convinced by the expert's review.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_3',
-      text: 'The featured review influenced me.',
+      text: "The expert's review influenced me.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_4',
-      text: 'I will reconsider my position after reading the featured review.',
+      text: "I will reconsider my position after reading the expert's review.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -204,30 +186,17 @@ export const DV1_Persuasiveness: QuestionBlock = {
 
 export const DV2_PurchaseIntention: QuestionBlock = {
   title: 'Purchase Intention',
-  description: 'The following questions ask about your intention to purchase THIS SPECIFIC PRODUCT shown on the page.',
-  warning: '⚠️ Important Note: These questions ask about your intention to buy the product itself, NOT how persuasive the review was. Your answer should reflect your actual purchase interest in the product based on all information shown.',
+  description: 'The following questions ask about your purchase intention regarding the product shown on the previous page.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'purchase_1',
-      text: 'After reading the featured review, it makes me desire to buy this product.',
+      text: 'I would purchase this product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'purchase_2',
-      text: 'I will consider buying this product after I read the featured review.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'purchase_3',
-      text: 'I intend to try this product discussed in the featured review.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'purchase_4',
-      text: 'In the future, I intend to buy this product discussed in the featured review.',
+      text: 'I would consider buying this product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -236,7 +205,7 @@ export const DV2_PurchaseIntention: QuestionBlock = {
 
 export const DV3_DecisionConfidence: QuestionBlock = {
   title: 'Decision Confidence',
-  description: 'How confident are you in the judgment you made based on the FEATURED REVIEW?\n\nPlease indicate your level of confidence in your evaluation of the product after reading the featured review.',
+  description: 'How confident are you in the judgment you made based on the expert\'s review?\nPlease indicate your level of confidence in your evaluation of the product after reading the expert\'s review.\n(1 = Not at all confident, 7 = Very confident)',
   items: [
     {
       variable: 'confidence',
@@ -253,7 +222,7 @@ export const DV3_DecisionConfidence: QuestionBlock = {
 
 export const Q7_AIFamiliarity: QuestionBlock = {
   title: 'AI Familiarity',
-  description: 'Thinking about your general experience with AI technology, please indicate your level of agreement:',
+  description: 'Thinking about your general experience with AI technology, please indicate your level of agreement:\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'ai_familiarity_1',
@@ -278,7 +247,7 @@ export const Q7_AIFamiliarity: QuestionBlock = {
 
 export const Q7_ReviewSkepticism: QuestionBlock = {
   title: 'Review Skepticism',
-  description: 'In general, when you read online product reviews, how much do you agree with the following statements?',
+  description: 'In general, when you read online product reviews, how much do you agree with the following statements?\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'review_skepticism_1',
@@ -307,31 +276,31 @@ export const Q7_ReviewSkepticism: QuestionBlock = {
   ]
 };
 
-export const Q7_AIAttitude: QuestionBlock = {
-  title: 'Attitude Toward AI',
-  description: 'Overall, how do you feel about AI in shopping contexts? Please indicate your level of agreement:',
+export const Q7_MachineHeuristic: QuestionBlock = {
+  title: 'Machine Heuristic',
+  description: 'Below are statements about artificial intelligence (AI).\nPlease indicate your agreement based on your general beliefs about AI.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
-      variable: 'ai_attitude_1',
-      text: 'AI enhances my shopping experience.',
+      variable: 'machine_heuristic_1',
+      text: 'When AI performs a task, the results are more objective than when humans perform the same task.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'ai_attitude_2',
-      text: "I'm comfortable interacting with AI during shopping.",
+      variable: 'machine_heuristic_2',
+      text: 'AI can handle tasks in a more secure and reliable manner than humans.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'ai_attitude_3',
-      text: 'I trust AI-driven product suggestions.',
+      variable: 'machine_heuristic_3',
+      text: 'AI has high precision, so it performs tasks more accurately than humans.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'ai_attitude_4',
-      text: 'AI accurately provides product recommendations.',
+      variable: 'machine_heuristic_4',
+      text: 'AI is less likely to make errors caused by emotions or biases.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -339,7 +308,8 @@ export const Q7_AIAttitude: QuestionBlock = {
 };
 
 export const Q8_UsageHabits: QuestionBlock = {
-  title: 'Shopping and Technology Usage Habits',
+  title: 'Usage Behavior',
+  description: 'Please tell us about your general shopping and technology usage habits:',
   items: [
     {
       variable: 'shopping_frequency',
@@ -453,8 +423,8 @@ export const SURVEY_QUESTIONS = {
   // Block A: Stimulus-Specific (Repeated 3 times)
   blockA: {
     Q3_RecallTask,
-    M2a_CredibilityExpertise,
-    M2b_CredibilityTrustworthiness,
+    M2a_MessageCredibility,
+    M2b_Trust,
     M3_PersuasiveIntent,
     DV1_Persuasiveness,
     DV2_PurchaseIntention,
@@ -464,8 +434,8 @@ export const SURVEY_QUESTIONS = {
   // General Questions (Asked once)
   general: {
     Q7_AIFamiliarity,
+    Q7_MachineHeuristic,
     Q7_ReviewSkepticism,
-    Q7_AIAttitude,
     Q8_UsageHabits
   },
   

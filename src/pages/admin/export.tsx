@@ -61,28 +61,30 @@ interface SessionWithDemographics extends SessionData {
 interface MergedData {
   // Participant-level info
   participantId: string;
+  informedConsent: string;
   age: string | number;
   gender: string | number;
+  gender_other: string;
   education: string | number;
-  nationality: string | number;
   income: string | number;
-  online_shopping_frequency: string | number;
+  occupation: string | number;
+  occupation_other: string;
   shopping_frequency: string | number;
   ai_usage_frequency: string | number;
   // AI Familiarity scores (1-7 Likert scale)
   ai_familiarity_1: string | number;
   ai_familiarity_2: string | number;
   ai_familiarity_3: string | number;
+  // Machine Heuristic scores (1-7 Likert scale)
+  machine_heuristic_1: string | number;
+  machine_heuristic_2: string | number;
+  machine_heuristic_3: string | number;
+  machine_heuristic_4: string | number;
   // Review Skepticism scores (1-7 Likert scale)
   review_skepticism_1: string | number;
   review_skepticism_2: string | number;
   review_skepticism_3: string | number;
   review_skepticism_4: string | number;
-  // Attitude toward AI scores (1-7 Likert scale)
-  attitude_ai_1: string | number;
-  attitude_ai_2: string | number;
-  attitude_ai_3: string | number;
-  attitude_ai_4: string | number;
   survey_start_time: string;
   survey_end_time: string;
   status: string;
@@ -98,9 +100,11 @@ interface MergedData {
   publicValence: string | number;
   dwellTime: string | number;
   exposureTimestamp: string;
-  recalledWords: string;
-  recalledText: string;
-  recallTime: string | number;
+  // Recall data
+  recalled_words: string;
+  word_count: string | number;
+  recall_combined_text: string;
+  recall_time_seconds: string | number;
   recallTimestamp: string;
   surveyTimestamp?: string;
   // Survey responses (dynamic keys like survey_q1, survey_q2, etc.)
@@ -240,35 +244,40 @@ export default function AdminExportPage() {
         const recall = recalls.find(r => 
           r.participantId === session.participantId && Number(r.stimulusId) === stimulusIdx
         );
-        const survey = surveys.find(s => 
-          s.participantId === session.participantId && Number(s.stimulusId) === stimulusIdx
-        );
+        // survey_responses는 participant_id와 stimulus_order 필드 사용
+        const surveyData = surveys as unknown as Array<Record<string, unknown>>;
+        const survey = surveyData.find(s =>
+          (s.participant_id === session.participantId || s.participantId === session.participantId) &&
+          (Number(s.stimulus_order) === stimulusIdx + 1 || Number(s.stimulusId) === stimulusIdx)
+        ) as SurveyResponseData | undefined;
 
         const row: MergedData = {
           // Participant-level info (same for all 3 rows)
           participantId: session.participantId,
+          informedConsent: 'agree', // 설문 참가한 사람은 모두 동의한 것으로 저장
           age: participantDemo?.age || '',
           gender: participantDemo?.gender || '',
+          gender_other: participantDemo?.gender_other || '',
           education: participantDemo?.education || '',
-          nationality: participantDemo?.nationality || '',
           income: participantDemo?.income || '',
-          online_shopping_frequency: participantDemo?.online_shopping_frequency || '',
+          occupation: participantDemo?.occupation || '',
+          occupation_other: participantDemo?.occupation_other || '',
           shopping_frequency: participantDemo?.shopping_frequency || '',
           ai_usage_frequency: participantDemo?.ai_usage_frequency || '',
           // AI Familiarity scores
           ai_familiarity_1: participantDemo?.ai_familiarity_1 || '',
           ai_familiarity_2: participantDemo?.ai_familiarity_2 || '',
           ai_familiarity_3: participantDemo?.ai_familiarity_3 || '',
+          // Machine Heuristic scores
+          machine_heuristic_1: participantDemo?.machine_heuristic_1 || '',
+          machine_heuristic_2: participantDemo?.machine_heuristic_2 || '',
+          machine_heuristic_3: participantDemo?.machine_heuristic_3 || '',
+          machine_heuristic_4: participantDemo?.machine_heuristic_4 || '',
           // Review Skepticism scores
           review_skepticism_1: participantDemo?.review_skepticism_1 || '',
           review_skepticism_2: participantDemo?.review_skepticism_2 || '',
           review_skepticism_3: participantDemo?.review_skepticism_3 || '',
           review_skepticism_4: participantDemo?.review_skepticism_4 || '',
-          // Attitude toward AI scores
-          attitude_ai_1: participantDemo?.attitude_ai_1 || '',
-          attitude_ai_2: participantDemo?.attitude_ai_2 || '',
-          attitude_ai_3: participantDemo?.attitude_ai_3 || '',
-          attitude_ai_4: participantDemo?.attitude_ai_4 || '',
           // 전체 설문 시작/끝 시간 (3개 행 모두 동일)
           survey_start_time: surveyStartTime,
           survey_end_time: surveyEndTime,
@@ -296,20 +305,36 @@ export default function AdminExportPage() {
           // Stimulus exposure data
           dwellTime: exposure?.dwellTime || '',
           exposureTimestamp: toKSTString(exposure?.createdAt),
-          
-          // Recall data
-          recalledWords: recall?.recalledWords ? recall.recalledWords.join(' | ') : '',
-          recalledText: recall?.recalledRecommendation || '',
-          recallTime: recall?.recallTime || '',
+
+          // Recall data - 필드명을 헤더와 일치시킴
+          recalled_words: recall?.recalledWords ? recall.recalledWords.join(' | ') : '',
+          word_count: recall?.recalledWords ? recall.recalledWords.length : '',
+          recall_combined_text: recall?.recalledRecommendation || '',
+          recall_time_seconds: recall?.recallTime || '',
           recallTimestamp: toKSTString(recall?.createdAt),
         };
 
-        // Add survey responses
+        // Add survey responses - survey_responses에서 직접 필드 접근
         if (survey) {
-          const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
-          Object.keys(responseData).forEach(key => {
-            row[`survey_${key}`] = responseData[key];
+          // survey 객체에서 직접 필드 추출 (responseData 안에 있지 않음)
+          const surveyData = survey as unknown as Record<string, unknown>;
+
+          // Survey response fields
+          const surveyFields = [
+            'ppi_1', 'ppi_2', 'ppi_3', 'ppi_4', 'ppi_5', 'perceived_error',
+            'message_credibility_1', 'message_credibility_2', 'message_credibility_3',
+            'trust_1', 'trust_2', 'trust_3',
+            'persuasiveness_1', 'persuasiveness_2', 'persuasiveness_3', 'persuasiveness_4',
+            'purchase_1', 'purchase_2',
+            'confidence'
+          ];
+
+          surveyFields.forEach(key => {
+            if (surveyData[key] !== undefined) {
+              row[key] = surveyData[key] as string | number;
+            }
           });
+
           row.surveyTimestamp = toKSTString(survey.createdAt);
         }
 
@@ -338,15 +363,16 @@ export default function AdminExportPage() {
   const convertToCSV = (data: MergedData[]): string => {
     if (data.length === 0) return '';
 
-    // Define explicit column order for better readability
+    // Define explicit column order - 설문 순서와 동일하게 정렬
     const headers = [
       // 1. 참가자 기본 정보
       'participantId',
+      'informedConsent',
       'status',
       'survey_start_time',
       'survey_end_time',
-      
-      // 2. 자극물 정보
+
+      // 2. 자극물 조건 정보
       'stimulusIndex',
       'stimulusCode',
       'productName',
@@ -356,65 +382,77 @@ export default function AdminExportPage() {
       'congruity',
       'advisorValence',
       'publicValence',
-      
-      // 3. 노출 정보
+
+      // 3. 자극물 노출 정보
       'exposureTimestamp',
       'dwellTime',
-      
-      // 4. DV: 종속변수
-      'persuasiveness_1',
-      'persuasiveness_2',
-      'persuasiveness_3',
-      'persuasiveness_4',
-      'purchase_intention_1',
-      'purchase_intention_2',
-      'purchase_intention_3',
-      'decision_confidence_1',
-      'decision_confidence_2',
-      'decision_confidence_3',
-      'decision_confidence_4',
-      
-      // 5. M: 매개변수
-      'source_credibility_expertise_1',
-      'source_credibility_expertise_2',
-      'source_credibility_expertise_3',
-      'source_credibility_expertise_4',
-      'source_credibility_trust_1',
-      'source_credibility_trust_2',
-      'source_credibility_trust_3',
-      'source_credibility_trust_4',
-      'persuasive_intent_1',
-      'persuasive_intent_2',
-      'persuasive_intent_3',
-      
-      // 6. Recall Task (dynamic array)
+
+      // 4. Q3: Recall Task
       'recalled_words',
       'word_count',
       'recall_combined_text',
       'recall_time_seconds',
-      
-      // 7. 인구통계 정보
-      'age',
-      'gender',
-      'education',
-      'nationality',
-      'income',
-      'online_shopping_frequency',
-      'shopping_frequency',
-      'ai_usage_frequency',
-      
-      // 8. 개인 특성 변수
+
+      // 5. M3: PPI (Perceived Persuasive Intent)
+      'ppi_1',
+      'ppi_2',
+      'ppi_3',
+      'ppi_4',
+      'ppi_5',
+      'perceived_error',
+
+      // 6. M2a: Message Credibility
+      'message_credibility_1',
+      'message_credibility_2',
+      'message_credibility_3',
+
+      // 7. M2b: Trust
+      'trust_1',
+      'trust_2',
+      'trust_3',
+
+      // 8. DV1: Persuasiveness
+      'persuasiveness_1',
+      'persuasiveness_2',
+      'persuasiveness_3',
+      'persuasiveness_4',
+
+      // 9. DV2: Purchase Intention
+      'purchase_1',
+      'purchase_2',
+
+      // 10. DV3: Decision Confidence
+      'confidence',
+
+      // 11. Q7: AI Familiarity
       'ai_familiarity_1',
       'ai_familiarity_2',
       'ai_familiarity_3',
+
+      // 12. Q7: Machine Heuristic
+      'machine_heuristic_1',
+      'machine_heuristic_2',
+      'machine_heuristic_3',
+      'machine_heuristic_4',
+
+      // 13. Q7: Review Skepticism
       'review_skepticism_1',
       'review_skepticism_2',
       'review_skepticism_3',
       'review_skepticism_4',
-      'attitude_ai_1',
-      'attitude_ai_2',
-      'attitude_ai_3',
-      'attitude_ai_4'
+
+      // 14. Q8: Usage Habits
+      'shopping_frequency',
+      'ai_usage_frequency',
+
+      // 15. Demographics
+      'age',
+      'gender',
+      'gender_other',
+      'education',
+      'income',
+      'occupation',
+      'occupation_other'
     ];
     
     // Create CSV header

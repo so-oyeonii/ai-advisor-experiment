@@ -101,29 +101,25 @@ export interface RecallTaskResponse {
 }
 
 /**
- * M2a: Source Credibility - Expertise (5 items, 1-7 scale)
+ * M2a: Message Credibility (3 items, 1-7 scale)
  */
-export interface CredibilityExpertiseResponse {
-  credibility_expertise_1: number;
-  credibility_expertise_2: number;
-  credibility_expertise_3: number;
-  credibility_expertise_4: number;
-  credibility_expertise_5: number;
+export interface MessageCredibilityResponse {
+  message_credibility_1: number;
+  message_credibility_2: number;
+  message_credibility_3: number;
 }
 
 /**
- * M2b: Source Credibility - Trustworthiness (5 items, 1-7 scale)
+ * M2b: Trust (3 items, 1-7 scale)
  */
-export interface CredibilityTrustworthinessResponse {
-  credibility_trust_1: number;
-  credibility_trust_2: number;
-  credibility_trust_3: number;
-  credibility_trust_4: number;
-  credibility_trust_5: number;
+export interface TrustResponse {
+  trust_1: number;
+  trust_2: number;
+  trust_3: number;
 }
 
 /**
- * M3: Perceived Persuasive Intent (5 items, 1-7 scale)
+ * M3: Perceived Persuasive Intent (6 items, 1-7 scale)
  */
 export interface PersuasiveIntentResponse {
   ppi_1: number;
@@ -131,6 +127,7 @@ export interface PersuasiveIntentResponse {
   ppi_3: number;
   ppi_4: number;
   ppi_5: number;
+  perceived_error: number;
 }
 
 /**
@@ -144,13 +141,11 @@ export interface PersuasivenessResponse {
 }
 
 /**
- * DV2: Purchase Intention (4 items, 1-7 scale)
+ * DV2: Purchase Intention (2 items, 1-7 scale)
  */
 export interface PurchaseIntentionResponse {
   purchase_1: number;
   purchase_2: number;
-  purchase_3: number;
-  purchase_4: number;
 }
 
 /**
@@ -166,8 +161,8 @@ export interface DecisionConfidenceResponse {
  */
 export interface BlockAResponse extends
   RecallTaskResponse,
-  CredibilityExpertiseResponse,
-  CredibilityTrustworthinessResponse,
+  MessageCredibilityResponse,
+  TrustResponse,
   PersuasiveIntentResponse,
   PersuasivenessResponse,
   PurchaseIntentionResponse,
@@ -193,13 +188,13 @@ export interface ReviewSkepticismResponse {
 }
 
 /**
- * Q7: Attitude Toward AI (4 items, 1-7 scale)
+ * Q7: Machine Heuristic (4 items, 1-7 scale)
  */
-export interface AIAttitudeResponse {
-  ai_attitude_1: number;
-  ai_attitude_2: number;
-  ai_attitude_3: number;
-  ai_attitude_4: number;
+export interface MachineHeuristicResponse {
+  machine_heuristic_1: number;
+  machine_heuristic_2: number;
+  machine_heuristic_3: number;
+  machine_heuristic_4: number;
 }
 
 /**
@@ -216,8 +211,8 @@ export interface UsageHabitsResponse {
  */
 export interface GeneralQuestionsResponse extends
   AIFamiliarityResponse,
+  MachineHeuristicResponse,
   ReviewSkepticismResponse,
-  AIAttitudeResponse,
   UsageHabitsResponse {}
 
 /**

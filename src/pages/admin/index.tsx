@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Download, RefreshCw, Users, FileText, Eye, EyeOff } from 'lucide-react';
-import { getAllSurveyResponses, getAllSessions, SurveyResponseData } from '@/lib/firebase';
+import { getAllSurveyResponses, getAllSessions, getAllStimulusExposures, SurveyResponseData, StimulusExposureData } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 
 /**
@@ -31,10 +31,11 @@ type ExtendedSurveyResponse = Partial<SurveyResponseData> & {
   public_valence?: string;
   publicValence?: string;
   recall_1?: string;
-  credibility_expertise_1?: number;
+  message_credibility_1?: number;
   purchase_1?: number;
   survey_start_time?: string | Timestamp;
   survey_end_time?: string | Timestamp;
+  stimulus_dwell_time?: number; // 자극물 페이지 체류 시간 (초)
   [key: string]: string | number | boolean | undefined | Timestamp | object;
 };
 
@@ -61,15 +62,24 @@ export default function AdminPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [data, sessions] = await Promise.all([
+      const [data, sessions, exposures] = await Promise.all([
         getAllSurveyResponses(),
-        getAllSessions()
+        getAllSessions(),
+        getAllStimulusExposures()
       ]);
-      
+
       console.log('📊 어드민: Firebase에서 데이터 가져옴');
       console.log('  - 전체 응답 수:', data.length);
       console.log('  - 세션 수:', sessions.length);
-      
+      console.log('  - 자극물 노출 수:', exposures.length);
+
+      // stimulus_exposures를 participantId + exposureOrder로 맵핑
+      const exposureMap = new Map<string, StimulusExposureData>();
+      exposures.forEach(exp => {
+        const key = `${exp.participantId}_${exp.exposureOrder}`;
+        exposureMap.set(key, exp);
+      });
+
       // survey_responses를 참가자별로 그룹화
       const surveyResponsesByParticipant = new Map<string, ExtendedSurveyResponse[]>();
       (data as ExtendedSurveyResponse[]).forEach(response => {
@@ -79,22 +89,29 @@ export default function AdminPage() {
         }
         surveyResponsesByParticipant.get(pid)!.push(response);
       });
-      
+
       // 모든 세션을 기준으로 데이터 구성 (진행중 + 완료)
       const allData: ExtendedSurveyResponse[] = [];
-      
+
       sessions.forEach(session => {
         const pid = session.participantId;
         const participantResponses = surveyResponsesByParticipant.get(pid) || [];
-        
+
         if (participantResponses.length > 0) {
           // 설문 응답이 있으면 해당 응답들 사용
           participantResponses.forEach(response => {
+            // 해당 자극물의 체류 시간 찾기
+            // stimulus_order는 1-based (1,2,3), exposureOrder는 0-based (0,1,2)
+            const stimulusOrder = Number(response.stimulus_order ?? response.stimulusOrder ?? 1);
+            const exposureKey = `${pid}_${stimulusOrder - 1}`;
+            const exposure = exposureMap.get(exposureKey);
+
             allData.push({
               ...response,
               survey_start_time: session.startTime,
               survey_end_time: session.endTime,
-              status: session.completed ? 'completed' : 'in_progress'
+              status: session.completed ? 'completed' : 'in_progress',
+              stimulus_dwell_time: exposure?.dwellTime || 0
             });
           });
         } else {
@@ -109,7 +126,7 @@ export default function AdminPage() {
           } as ExtendedSurveyResponse);
         }
       });
-      
+
       const enrichedData = allData;
       
       // 최신순으로 정렬 (참가자의 세션 시작 시간 기준, 그 다음 stimulus_order로 정렬)
@@ -200,6 +217,7 @@ export default function AdminPage() {
         
         return {
           ...row,
+          informedConsent: 'agree', // 설문 참가한 사람은 모두 동의한 것으로 저장
           survey_start_time: surveyStartTime,
           survey_end_time: surveyEndTime,
           status: status,
@@ -216,15 +234,16 @@ export default function AdminPage() {
         });
       });
 
-      // 컬럼 순서 정의 (export.tsx와 동일하게)
-      const priorityColumns = [
+      // 59개 고정 컬럼 (export.tsx와 동일)
+      const columns = [
         // 1. 참가자 기본 정보
         'participant_id',
+        'informedConsent',
         'status',
         'survey_start_time',
         'survey_end_time',
-        
-        // 2. 자극물 정보
+
+        // 2. 자극물 조건 정보
         'stimulus_order',
         'product',
         'condition_group',
@@ -232,23 +251,77 @@ export default function AdminPage() {
         'congruity',
         'advisor_valence',
         'public_valence',
-        
-        // 3. 노출 정보
-        'page_dwell_time',
-        
-        // 4. 인구통계
+
+        // 3. 자극물 노출 정보
+        'stimulus_dwell_time',
+
+        // 4. Q3: Recall Task
+        'recalled_words',
+        'word_count',
+        'recall_combined_text',
+        'recall_time_seconds',
+
+        // 5. M3: PPI
+        'ppi_1',
+        'ppi_2',
+        'ppi_3',
+        'ppi_4',
+        'ppi_5',
+        'perceived_error',
+
+        // 6. M2a: Message Credibility
+        'message_credibility_1',
+        'message_credibility_2',
+        'message_credibility_3',
+
+        // 7. M2b: Trust
+        'trust_1',
+        'trust_2',
+        'trust_3',
+
+        // 8. DV1: Persuasiveness
+        'persuasiveness_1',
+        'persuasiveness_2',
+        'persuasiveness_3',
+        'persuasiveness_4',
+
+        // 9. DV2: Purchase Intention
+        'purchase_1',
+        'purchase_2',
+
+        // 10. DV3: Decision Confidence
+        'confidence',
+
+        // 11. Q7: AI Familiarity
+        'ai_familiarity_1',
+        'ai_familiarity_2',
+        'ai_familiarity_3',
+
+        // 12. Q7: Machine Heuristic
+        'machine_heuristic_1',
+        'machine_heuristic_2',
+        'machine_heuristic_3',
+        'machine_heuristic_4',
+
+        // 13. Q7: Review Skepticism
+        'review_skepticism_1',
+        'review_skepticism_2',
+        'review_skepticism_3',
+        'review_skepticism_4',
+
+        // 14. Q8: Usage Habits
+        'shopping_frequency',
+        'ai_usage_frequency',
+
+        // 15. Demographics
         'age',
         'gender',
+        'gender_other',
         'education',
         'income',
-        'occupation'
+        'occupation',
+        'occupation_other'
       ];
-
-      const remainingColumns = Array.from(allColumns)
-        .filter(col => !priorityColumns.includes(col) && col !== 'timestamp')
-        .sort();
-
-      const columns = [...priorityColumns.filter(col => allColumns.has(col)), ...remainingColumns];
       
       console.log('📥 CSV 다운로드 시작');
       console.log('  - 행 수:', enrichedResponses.length);
@@ -343,16 +416,21 @@ export default function AdminPage() {
     const completedParticipants = participants.filter(([, responses]) => responses.length === 3);
     const inProgressParticipants = participants.filter(([, responses]) => responses.length < 3);
     
-    // 완료한 참가자의 소요 시간 계산 (초 단위)
+    // 완료한 참가자의 전체 설문 소요 시간 계산 (시작~끝, 초 단위)
     const completionTimes: number[] = [];
     completedParticipants.forEach(([, responses]) => {
-      // 각 자극물의 page_dwell_time을 합산
-      const totalTime = responses.reduce((sum, r) => {
-        const dwellTime = r.page_dwell_time || (r as ExtendedSurveyResponse).responseTime || 0;
-        return sum + Number(dwellTime);
-      }, 0);
-      if (totalTime > 0) {
-        completionTimes.push(totalTime);
+      // 첫 번째 응답에서 survey_start_time과 survey_end_time 가져오기
+      const firstResponse = responses[0];
+      const startTime = firstResponse?.survey_start_time as Timestamp | undefined;
+      const endTime = firstResponse?.survey_end_time as Timestamp | undefined;
+
+      if (startTime && endTime) {
+        const startMs = startTime instanceof Timestamp ? startTime.toMillis() : new Date(startTime).getTime();
+        const endMs = endTime instanceof Timestamp ? endTime.toMillis() : new Date(endTime).getTime();
+        const totalSeconds = (endMs - startMs) / 1000;
+        if (totalSeconds > 0) {
+          completionTimes.push(totalSeconds);
+        }
       }
     });
     
@@ -589,7 +667,7 @@ export default function AdminPage() {
               {Array.from(groupedData.entries()).map(([participantId, participantResponses]) => {
                 // 총 소요 시간 계산
                 const totalTime = participantResponses.reduce((sum, r) => {
-                  const dwellTime = r.page_dwell_time || (r as ExtendedSurveyResponse).responseTime || 0;
+                  const dwellTime = r.stimulus_dwell_time || 0;
                   return sum + Number(dwellTime);
                 }, 0);
                 
@@ -693,7 +771,7 @@ export default function AdminPage() {
                               const isCongruent = congruity === 'Congruent' || congruityLower === 'congruent' || congruityLower === 'match';
                               
                               // 소요 시간 정보
-                              const dwellTime = Number(resp.page_dwell_time || (resp as ExtendedSurveyResponse).responseTime || 0);
+                              const dwellTime = Number(resp.stimulus_dwell_time || 0);
                               
                               const formatDuration = (seconds: number) => {
                                 const mins = Math.floor(seconds / 60);

@@ -1,14 +1,20 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
-import { Q7_AIAttitude as config } from '@/config/surveyQuestions';
-import { AIAttitudeResponse } from '@/types/survey';
+import { Q7_MachineHeuristic as config } from '@/config/surveyQuestions';
 
-interface Q7AIAttitudeProps {
-  onComplete: (responses: AIAttitudeResponse) => void;
+interface MachineHeuristicResponse {
+  machine_heuristic_1: number;
+  machine_heuristic_2: number;
+  machine_heuristic_3: number;
+  machine_heuristic_4: number;
 }
 
-export default function Q7_AIAttitude({ onComplete }: Q7AIAttitudeProps) {
-  const [responses, setResponses] = useState<Partial<AIAttitudeResponse>>({});
+interface Q7MachineHeuristicProps {
+  onComplete: (responses: MachineHeuristicResponse) => void;
+}
+
+export default function Q7_MachineHeuristic({ onComplete }: Q7MachineHeuristicProps) {
+  const [responses, setResponses] = useState<Partial<MachineHeuristicResponse>>({});
 
   const handleChange = (variable: string, value: number) => {
     setResponses(prev => ({ ...prev, [variable]: value }));
@@ -16,13 +22,13 @@ export default function Q7_AIAttitude({ onComplete }: Q7AIAttitudeProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    
-    const allAnswered = config.items.every(item => 
-      responses[item.variable as keyof AIAttitudeResponse] !== undefined
+
+    const allAnswered = config.items.every(item =>
+      responses[item.variable as keyof MachineHeuristicResponse] !== undefined
     );
 
     if (allAnswered) {
-      onComplete(responses as AIAttitudeResponse);
+      onComplete(responses as MachineHeuristicResponse);
     }
   };
 
@@ -30,9 +36,9 @@ export default function Q7_AIAttitude({ onComplete }: Q7AIAttitudeProps) {
     <div className="max-w-5xl mx-auto p-6">
       <h2 className="text-sm font-semibold text-gray-600 mb-3">{config.title}</h2>
       {config.description && (
-        <p className="text-lg font-medium text-gray-800 mb-8">{config.description}</p>
+        <p className="text-lg font-medium text-gray-800 mb-8 whitespace-pre-line">{config.description}</p>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
           {config.items.map((item) => (

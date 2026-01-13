@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, FormEvent } from 'react';
+import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import { Clock, Plus, Trash2 } from 'lucide-react';
 import { Q3_RecallTask as config } from '@/config/surveyQuestions';
 import type { RecallTaskResponse } from '@/types/survey';
@@ -9,113 +9,151 @@ interface Q3_RecallTaskProps {
 
 export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   const [words, setWords] = useState<string[]>(['']); // Start with one empty box
-  const [timeLeft, setTimeLeft] = useState(90); // 90 seconds
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [canContinue, setCanContinue] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(90); // 90 seconds countdown
+  const [writingStartTime, setWritingStartTime] = useState<number | null>(null);
+  const pageLoadTime = useRef(Date.now());
 
   // Check if user has entered at least one word
   const hasContent = words.some(word => word.trim().length > 0);
   const filledWords = words.filter(word => word.trim().length > 0);
-  
-  // Auto-submit function
-  const handleAutoSubmit = useCallback(() => {
-    if (hasContent) {
-      const recallData: RecallTaskResponse = {
-        recalled_words: filledWords,
-        word_count: filledWords.length,
-        recall_combined_text: filledWords.join(' | '),
-        recall_time_seconds: 90 - timeLeft
-      };
-      onComplete(recallData);
+
+  // 90 second countdown timer (never resets)
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+      setTimeLeft(Math.max(0, 90 - elapsed));
+    }, 500);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  // Button activation logic:
+  // - Must have content
+  // - Always need 30 seconds since writing started (regardless of 90 second timer)
+  const canContinue = (() => {
+    if (!hasContent) return false;
+
+    // Always need 30 seconds since writing started
+    if (writingStartTime) {
+      const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
+      return writingElapsed >= 30;
     }
-  }, [filledWords, hasContent, timeLeft, onComplete]);
-  
-  // Timer countdown
+
+    return false;
+  })();
+
+  // Calculate seconds until can continue (for display)
+  const getSecondsUntilCanContinue = () => {
+    if (!hasContent || !writingStartTime) return null;
+
+    const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
+    return Math.max(0, 30 - writingElapsed);
+  };
+
+  const [secondsUntilContinue, setSecondsUntilContinue] = useState<number | null>(null);
+
+  // Update seconds until continue
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          // Only auto-submit if user has entered content
-          if (hasContent) {
-            handleAutoSubmit();
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
-      
-      setElapsedTime(prev => prev + 1);
-    }, 1000);
-    
+      setSecondsUntilContinue(getSecondsUntilCanContinue());
+    }, 500);
     return () => clearInterval(timer);
-  }, [hasContent, handleAutoSubmit]);
-  
-  // Enable continue button after 30 seconds IF user has entered content
-  useEffect(() => {
-    if (elapsedTime >= 30 && hasContent) {
-      setCanContinue(true);
-    } else if (!hasContent) {
-      setCanContinue(false);
-    }
-  }, [elapsedTime, hasContent]);
-  
+  }, [writingStartTime, hasContent]);
+
   // Add new word box
   const handleAddWord = () => {
     setWords([...words, '']);
   };
-  
+
   // Remove word box
   const handleRemoveWord = (index: number) => {
     if (words.length > 1) {
-      setWords(words.filter((_, i) => i !== index));
+      const newWords = words.filter((_, i) => i !== index);
+      setWords(newWords);
+
+      // If all content was removed, reset writing start time
+      const hasAnyContent = newWords.some(word => word.trim().length > 0);
+      if (!hasAnyContent) {
+        setWritingStartTime(null);
+      }
     }
   };
-  
+
   // Update word value
   const handleWordChange = (index: number, value: string) => {
     const newWords = [...words];
     newWords[index] = value;
     setWords(newWords);
+
+    // Check if this is the first time user started writing
+    const hasAnyContent = newWords.some(word => word.trim().length > 0);
+    if (hasAnyContent && !writingStartTime) {
+      setWritingStartTime(Date.now());
+    }
+
+    // If user deleted all content, reset writing start time
+    if (!hasAnyContent && writingStartTime) {
+      setWritingStartTime(null);
+    }
   };
-  
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!canContinue || !hasContent) return;
-    
+    if (!canContinue) return;
+
+    const totalTime = Math.round((Date.now() - pageLoadTime.current) / 1000);
+
     const recallData: RecallTaskResponse = {
       recalled_words: filledWords,
       word_count: filledWords.length,
       recall_combined_text: filledWords.join(' | '),
-      recall_time_seconds: 90 - timeLeft
+      recall_time_seconds: totalTime
     };
-    
+
     onComplete(recallData);
   };
-  
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // Status message logic
+  const getStatusMessage = () => {
+    if (!hasContent) {
+      return 'Please enter at least one information point to continue.';
+    }
+
+    // Show wait time after writing started
+    if (secondsUntilContinue !== null && secondsUntilContinue > 0) {
+      return `Please wait ${secondsUntilContinue} seconds before continuing.`;
+    }
+
+    return null;
+  };
+
+  const statusMessage = getStatusMessage();
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
       <div className="bg-white rounded-lg shadow-md p-8">
-        
+
         {/* Header with Timer */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{config.title}</h2>
           </div>
           <div className="flex items-center space-x-2">
-            <Clock size={24} className={timeLeft <= 10 ? 'text-red-600' : 'text-blue-600'} />
-            <span className={`text-3xl font-mono font-bold ${timeLeft <= 10 ? 'text-red-600' : 'text-gray-900'}`}>
+            <Clock size={24} className={timeLeft <= 10 && timeLeft > 0 ? 'text-red-600' : 'text-blue-600'} />
+            <span className={`text-3xl font-mono font-bold ${timeLeft <= 10 && timeLeft > 0 ? 'text-red-600' : 'text-gray-900'}`}>
               {formatTime(timeLeft)}
             </span>
           </div>
         </div>
-        
+
         {/* Instructions */}
         {config.instruction && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -124,23 +162,14 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
             </p>
           </div>
         )}
-        
-        {/* Warning when time is low */}
-        {timeLeft <= 30 && timeLeft > 0 && (
-          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-            <p className="text-yellow-800 text-sm font-medium">
-              ⏰ {timeLeft} seconds remaining
-            </p>
-          </div>
-        )}
-        
+
         {/* Word Count */}
         <div className="mb-4 text-sm text-gray-600">
           <span className="font-semibold">{filledWords.length}</span> information point{filledWords.length !== 1 ? 's' : ''} entered
         </div>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Dynamic Word Boxes */}
+          {/* Dynamic Word Boxes - Always enabled */}
           {words.map((word, index) => (
             <div key={index} className="flex items-center space-x-2">
               <span className="text-gray-500 font-medium w-8">{index + 1}.</span>
@@ -150,64 +179,55 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
                 onChange={(e) => handleWordChange(index, e.target.value)}
                 placeholder="Enter an information point..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={timeLeft === 0}
               />
               {words.length > 1 && (
                 <button
                   type="button"
                   onClick={() => handleRemoveWord(index)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  disabled={timeLeft === 0}
                 >
                   <Trash2 size={20} />
                 </button>
               )}
             </div>
           ))}
-          
-          {/* Add Word Button */}
+
+          {/* Add Word Button - Always enabled */}
           <button
             type="button"
             onClick={handleAddWord}
-            disabled={timeLeft === 0}
-            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center space-x-2"
           >
             <Plus size={20} />
             <span>Add Another Information Point</span>
           </button>
-          
+
           {/* Status Messages */}
           <div className="space-y-2">
-            {!hasContent && (
+            {statusMessage && (
               <p className="text-sm text-gray-500">
-                Please enter at least one information point to continue.
+                {statusMessage}
               </p>
             )}
-            
-            {hasContent && elapsedTime < 30 && (
-              <p className="text-sm text-gray-500">
-                Please wait at least 30 seconds before continuing ({30 - elapsedTime}s remaining).
-              </p>
-            )}
-            
+
             {canContinue && (
               <p className="text-sm text-green-600 font-medium">
                 ✓ You can now continue
               </p>
             )}
           </div>
-          
+
           {/* Continue Button */}
           <button
             type="submit"
-            disabled={!canContinue || !hasContent}
+            disabled={!canContinue}
             className={`w-full py-4 rounded-lg font-semibold text-lg transition-all ${
-              canContinue && hasContent
+              canContinue
                 ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {timeLeft === 0 ? 'Time Expired - Submit' : 'Continue to Next Question'}
+            Continue to Next Question
           </button>
         </form>
       </div>
