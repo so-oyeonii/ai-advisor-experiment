@@ -9,8 +9,7 @@ import Q3_RecallTask from '@/components/survey/Q3_RecallTask';
 import M2a_SourceCredibilityExpertise from '@/components/survey/M2a_SourceCredibilityExpertise';
 import M3_PersuasiveIntent from '@/components/survey/M3_PersuasiveIntent';
 import DV1_Persuasiveness from '@/components/survey/DV1_Persuasiveness';
-import DV2_PurchaseIntention from '@/components/survey/DV2_PurchaseIntention';
-import DV3_DecisionConfidence from '@/components/survey/DV3_DecisionConfidence';
+import DV2_PurchaseIntention from '@/components/survey/DV2_PurchaseIntention'; // DV3 (confidence) 포함
 
 import type {
   BlockAResponse,
@@ -20,13 +19,13 @@ import type {
 type QuestionStep =
   | 'Q3'
   | 'M2a' | 'M3'
-  | 'DV1' | 'DV2' | 'DV3';
+  | 'DV1' | 'DV2'; // DV3는 DV2에 통합됨
 
 const QUESTION_STEPS: QuestionStep[] = [
   'Q3',
   'M3',           // PPI first
   'M2a',          // Message Credibility + Trust (combined)
-  'DV1', 'DV2', 'DV3'
+  'DV1', 'DV2'    // DV2에 Purchase + Confidence 통합
 ];
 
 export default function SurveyPage() {
@@ -170,14 +169,8 @@ export default function SurveyPage() {
         )}
         
         {currentStep === 'DV2' && (
-          <DV2_PurchaseIntention 
+          <DV2_PurchaseIntention
             onComplete={(data) => handleComplete('DV2', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
-        {currentStep === 'DV3' && (
-          <DV3_DecisionConfidence 
-            onComplete={(data) => handleComplete('DV3', data as unknown as Record<string, unknown>)}
           />
         )}
       </div>
