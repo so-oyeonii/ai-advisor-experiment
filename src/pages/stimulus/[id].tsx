@@ -382,13 +382,8 @@ export default function StimulusPage() {
                     <p className="text-sm text-gray-700 blur-sm select-none">{review.text}</p>
                   </div>
                 ))}
-                {/* Gradient overlay to suggest more content below */}
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
-              </div>
-              
-              {/* Scroll hint */}
-              <div className="mt-2 text-center text-xs text-gray-500">
-                ↓ Scroll to see more reviews
+                {/* Subtle gradient overlay */}
+                <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white/70 to-transparent pointer-events-none"></div>
               </div>
             </div>
           </div>
