@@ -1,26 +1,6 @@
 import { Check, AlertTriangle, Mail, FileText, Shield, UserX } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 export default function CompletePage() {
-  const [canClose, setCanClose] = useState(false);
-
-  useEffect(() => {
-    // Check if window was opened by script (can be closed)
-    setCanClose(window.opener !== null);
-  }, []);
-
-  const handleClose = () => {
-    // Try to close window
-    window.close();
-
-    // If still open after 100ms, show message
-    setTimeout(() => {
-      if (!window.closed) {
-        alert('Please close this browser tab manually (Ctrl+W or Cmd+W)');
-      }
-    }, 100);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 py-8 px-4">
       <div className="max-w-3xl mx-auto">
@@ -198,28 +178,15 @@ export default function CompletePage() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="mt-6 space-y-3">
+        {/* Action Button */}
+        <div className="mt-6">
           <button
             onClick={() => window.location.href = 'https://www.google.com'}
             className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 transition font-semibold text-lg shadow-md"
           >
             Continue to Survey Platform
           </button>
-
-          <button
-            onClick={handleClose}
-            className="w-full bg-gray-600 text-white px-6 py-4 rounded-xl hover:bg-gray-700 transition font-semibold text-lg shadow-md"
-          >
-            Close Window
-          </button>
         </div>
-
-        {!canClose && (
-          <p className="mt-4 text-sm text-gray-500 text-center">
-            If the window doesn&apos;t close automatically, please close this tab manually.
-          </p>
-        )}
       </div>
     </div>
   );
