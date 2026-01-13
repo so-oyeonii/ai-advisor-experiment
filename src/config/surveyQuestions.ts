@@ -136,35 +136,41 @@ export const M2b_CredibilityTrustworthiness: QuestionBlock = {
 
 export const M3_PersuasiveIntent: QuestionBlock = {
   title: 'Perceived Persuasive Intent',
-  description: 'The following questions are about the SOURCE (reviewer) who created the FEATURED REVIEW shown at the top of the product page. Please indicate your agreement with each statement:',
+  description: 'Please indicate your agreement with each statement:\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'ppi_1',
-      text: 'This reviewer was primarily trying to persuade me to buy the product.',
+      text: 'This expert reviewer was primarily trying to persuade me either to buy or not to buy the product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_2',
-      text: 'This reviewer had an ulterior motive for the review.',
+      text: 'This expert reviewer had an ulterior motive for the review.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_3',
-      text: "This reviewer's statements seem suspicious.",
+      text: "This expert reviewer's statements seem suspicious.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_4',
-      text: 'This reviewer was trying to manipulate my opinion.',
+      text: 'This expert reviewer was trying to manipulate my opinion.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_5',
-      text: "This reviewer may have exaggerated the product's performance.",
+      text: "This expert reviewer may have exaggerated the product's performance.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'ppi_6',
+      text: 'I felt that there was an error in this review.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
