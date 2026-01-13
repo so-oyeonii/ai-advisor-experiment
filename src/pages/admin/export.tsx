@@ -244,9 +244,12 @@ export default function AdminExportPage() {
         const recall = recalls.find(r => 
           r.participantId === session.participantId && Number(r.stimulusId) === stimulusIdx
         );
-        const survey = surveys.find(s => 
-          s.participantId === session.participantId && Number(s.stimulusId) === stimulusIdx
-        );
+        // survey_responses는 participant_id와 stimulus_order 필드 사용
+        const surveyData = surveys as unknown as Array<Record<string, unknown>>;
+        const survey = surveyData.find(s =>
+          (s.participant_id === session.participantId || s.participantId === session.participantId) &&
+          (Number(s.stimulus_order) === stimulusIdx + 1 || Number(s.stimulusId) === stimulusIdx)
+        ) as SurveyResponseData | undefined;
 
         const row: MergedData = {
           // Participant-level info (same for all 3 rows)
@@ -311,12 +314,27 @@ export default function AdminExportPage() {
           recallTimestamp: toKSTString(recall?.createdAt),
         };
 
-        // Add survey responses - 접두사 없이 추가
+        // Add survey responses - survey_responses에서 직접 필드 접근
         if (survey) {
-          const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
-          Object.keys(responseData).forEach(key => {
-            row[key] = responseData[key]; // survey_ 접두사 제거
+          // survey 객체에서 직접 필드 추출 (responseData 안에 있지 않음)
+          const surveyData = survey as unknown as Record<string, unknown>;
+
+          // Survey response fields
+          const surveyFields = [
+            'ppi_1', 'ppi_2', 'ppi_3', 'ppi_4', 'ppi_5', 'perceived_error',
+            'message_credibility_1', 'message_credibility_2', 'message_credibility_3',
+            'trust_1', 'trust_2', 'trust_3',
+            'persuasiveness_1', 'persuasiveness_2', 'persuasiveness_3', 'persuasiveness_4',
+            'purchase_1', 'purchase_2',
+            'confidence'
+          ];
+
+          surveyFields.forEach(key => {
+            if (surveyData[key] !== undefined) {
+              row[key] = surveyData[key] as string | number;
+            }
           });
+
           row.surveyTimestamp = toKSTString(survey.createdAt);
         }
 

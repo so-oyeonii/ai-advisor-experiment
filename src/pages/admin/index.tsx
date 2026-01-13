@@ -359,16 +359,21 @@ export default function AdminPage() {
     const completedParticipants = participants.filter(([, responses]) => responses.length === 3);
     const inProgressParticipants = participants.filter(([, responses]) => responses.length < 3);
     
-    // 완료한 참가자의 소요 시간 계산 (초 단위)
+    // 완료한 참가자의 전체 설문 소요 시간 계산 (시작~끝, 초 단위)
     const completionTimes: number[] = [];
     completedParticipants.forEach(([, responses]) => {
-      // 각 자극물의 page_dwell_time을 합산
-      const totalTime = responses.reduce((sum, r) => {
-        const dwellTime = r.stimulus_dwell_time || 0;
-        return sum + Number(dwellTime);
-      }, 0);
-      if (totalTime > 0) {
-        completionTimes.push(totalTime);
+      // 첫 번째 응답에서 survey_start_time과 survey_end_time 가져오기
+      const firstResponse = responses[0];
+      const startTime = firstResponse?.survey_start_time as Timestamp | undefined;
+      const endTime = firstResponse?.survey_end_time as Timestamp | undefined;
+
+      if (startTime && endTime) {
+        const startMs = startTime instanceof Timestamp ? startTime.toMillis() : new Date(startTime).getTime();
+        const endMs = endTime instanceof Timestamp ? endTime.toMillis() : new Date(endTime).getTime();
+        const totalSeconds = (endMs - startMs) / 1000;
+        if (totalSeconds > 0) {
+          completionTimes.push(totalSeconds);
+        }
       }
     });
     
