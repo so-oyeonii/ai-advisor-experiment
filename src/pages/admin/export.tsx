@@ -342,7 +342,7 @@ export default function AdminExportPage() {
   const convertToCSV = (data: MergedData[]): string => {
     if (data.length === 0) return '';
 
-    // Define explicit column order for better readability
+    // Define explicit column order - 설문 순서와 동일하게 정렬
     const headers = [
       // 1. 참가자 기본 정보
       'participantId',
@@ -350,8 +350,8 @@ export default function AdminExportPage() {
       'status',
       'survey_start_time',
       'survey_end_time',
-      
-      // 2. 자극물 정보
+
+      // 2. 자극물 조건 정보
       'stimulusIndex',
       'stimulusCode',
       'productName',
@@ -361,63 +361,77 @@ export default function AdminExportPage() {
       'congruity',
       'advisorValence',
       'publicValence',
-      
-      // 3. 노출 정보
+
+      // 3. 자극물 노출 정보
       'exposureTimestamp',
       'dwellTime',
-      
-      // 4. DV: 종속변수
-      'persuasiveness_1',
-      'persuasiveness_2',
-      'persuasiveness_3',
-      'persuasiveness_4',
-      'purchase_1',
-      'purchase_2',
-      'confidence',
 
-      // 5. M: 매개변수
-      'message_credibility_1',
-      'message_credibility_2',
-      'message_credibility_3',
-      'trust_1',
-      'trust_2',
-      'trust_3',
+      // 4. Q3: Recall Task
+      'recalled_words',
+      'word_count',
+      'recall_combined_text',
+      'recall_time_seconds',
+
+      // 5. M3: PPI (Perceived Persuasive Intent)
       'ppi_1',
       'ppi_2',
       'ppi_3',
       'ppi_4',
       'ppi_5',
       'perceived_error',
-      
-      // 6. Recall Task (dynamic array)
-      'recalled_words',
-      'word_count',
-      'recall_combined_text',
-      'recall_time_seconds',
-      
-      // 7. 인구통계 정보
+
+      // 6. M2a: Message Credibility
+      'message_credibility_1',
+      'message_credibility_2',
+      'message_credibility_3',
+
+      // 7. M2b: Trust
+      'trust_1',
+      'trust_2',
+      'trust_3',
+
+      // 8. DV1: Persuasiveness
+      'persuasiveness_1',
+      'persuasiveness_2',
+      'persuasiveness_3',
+      'persuasiveness_4',
+
+      // 9. DV2: Purchase Intention
+      'purchase_1',
+      'purchase_2',
+
+      // 10. DV3: Decision Confidence
+      'confidence',
+
+      // 11. Q7: AI Familiarity
+      'ai_familiarity_1',
+      'ai_familiarity_2',
+      'ai_familiarity_3',
+
+      // 12. Q7: Machine Heuristic
+      'machine_heuristic_1',
+      'machine_heuristic_2',
+      'machine_heuristic_3',
+      'machine_heuristic_4',
+
+      // 13. Q7: Review Skepticism
+      'review_skepticism_1',
+      'review_skepticism_2',
+      'review_skepticism_3',
+      'review_skepticism_4',
+
+      // 14. Q8: Usage Habits
+      'shopping_frequency',
+      'ai_usage_frequency',
+
+      // 15. Demographics
       'age',
       'gender',
       'gender_other',
       'education',
       'income',
       'occupation',
-      'occupation_other',
-      'shopping_frequency',
-      'ai_usage_frequency',
-      
-      // 8. 개인 특성 변수
-      'ai_familiarity_1',
-      'ai_familiarity_2',
-      'ai_familiarity_3',
-      'machine_heuristic_1',
-      'machine_heuristic_2',
-      'machine_heuristic_3',
-      'machine_heuristic_4',
-      'review_skepticism_1',
-      'review_skepticism_2',
-      'review_skepticism_3',
-      'review_skepticism_4'
+      'occupation_other'
     ];
     
     // Create CSV header
