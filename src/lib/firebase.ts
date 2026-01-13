@@ -60,6 +60,7 @@ const COLLECTIONS = {
 
 export interface SessionData {
   participantId: string;
+  informedConsent: string; // 실험참가 개인정보 동의 ("agreed")
   conditionNumber: number;
   groupId: number; // 1-4: Which of the 4 groups (2x2 grid)
   conditionId: number; // 1-8: Specific condition within the 8 total conditions

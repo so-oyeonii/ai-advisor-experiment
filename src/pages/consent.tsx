@@ -53,6 +53,7 @@ export default function ConsentPage() {
       // 6. Try to save to Firebase in background (non-blocking)
       saveSession({
         participantId,
+        informedConsent: 'agreed', // 실험참가 개인정보 동의
         conditionNumber: experimentCondition.selectedStimuli[0].condition.conditionId,
         groupId: firstCondition.groupId,
         conditionId: firstCondition.conditionId,
@@ -60,11 +61,11 @@ export default function ConsentPage() {
         congruity: firstCondition.congruity,
         advisorValence: firstCondition.advisorValence,
         publicValence: firstCondition.publicValence,
-        patternKey: experimentCondition.selectedStimuli.map((s) => 
+        patternKey: experimentCondition.selectedStimuli.map((s) =>
           s.condition.advisorValence === 'positive' ? 'A' : 'B'
         ).join(''),
         productOrder: experimentCondition.selectedStimuli.map(s => s.product),
-        stimulusOrder: experimentCondition.selectedStimuli.map((s) => 
+        stimulusOrder: experimentCondition.selectedStimuli.map((s) =>
           `${s.product}_${s.condition.conditionId}`
         ),
         currentStimulusIndex: 0,
