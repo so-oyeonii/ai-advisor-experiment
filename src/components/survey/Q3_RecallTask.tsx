@@ -9,50 +9,52 @@ interface Q3_RecallTaskProps {
 
 export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   const [words, setWords] = useState<string[]>(['']); // Start with one empty box
-  const [timeLeft, setTimeLeft] = useState(90); // 90 seconds
+  const [initialTimeLeft, setInitialTimeLeft] = useState(90); // 90 seconds initial timer
   const [writingStartTime, setWritingStartTime] = useState<number | null>(null); // When user started writing
   const [canContinue, setCanContinue] = useState(false);
-  const [timerPaused, setTimerPaused] = useState(false); // Pause timer when it hits 0 and user hasn't written
+  const [waitTimeLeft, setWaitTimeLeft] = useState<number | null>(null); // 30 second wait timer after writing starts
 
   // Check if user has entered at least one word
   const hasContent = words.some(word => word.trim().length > 0);
   const filledWords = words.filter(word => word.trim().length > 0);
 
-  // Timer countdown
+  // Initial 90 second countdown (before user writes anything)
   useEffect(() => {
-    if (timerPaused) return;
+    if (writingStartTime !== null) return; // Stop initial timer once user starts writing
+
+    if (initialTimeLeft <= 0) return; // Timer finished
 
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) {
-          // If user hasn't started writing, pause the timer at 0
-          if (!writingStartTime) {
-            setTimerPaused(true);
-          }
-          return 0;
-        }
-        return prev - 1;
-      });
+      setInitialTimeLeft(prev => Math.max(0, prev - 1));
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timerPaused, writingStartTime]);
+  }, [initialTimeLeft, writingStartTime]);
 
-  // Enable continue button after 30 seconds of writing
+  // 30 second wait timer after user starts writing
   useEffect(() => {
     if (!writingStartTime || !hasContent) {
       setCanContinue(false);
+      setWaitTimeLeft(null);
       return;
     }
 
-    const checkInterval = setInterval(() => {
-      const elapsed = (Date.now() - writingStartTime) / 1000;
-      if (elapsed >= 30 && hasContent) {
+    // Calculate remaining wait time
+    const updateWaitTime = () => {
+      const elapsed = Math.floor((Date.now() - writingStartTime) / 1000);
+      const remaining = Math.max(0, 30 - elapsed);
+      setWaitTimeLeft(remaining);
+
+      if (remaining === 0 && hasContent) {
         setCanContinue(true);
       }
-    }, 500);
+    };
 
-    return () => clearInterval(checkInterval);
+    updateWaitTime(); // Initial check
+
+    const timer = setInterval(updateWaitTime, 500);
+
+    return () => clearInterval(timer);
   }, [writingStartTime, hasContent]);
 
   // Add new word box
@@ -63,7 +65,16 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   // Remove word box
   const handleRemoveWord = (index: number) => {
     if (words.length > 1) {
-      setWords(words.filter((_, i) => i !== index));
+      const newWords = words.filter((_, i) => i !== index);
+      setWords(newWords);
+
+      // If all content was removed, reset writing start time
+      const hasAnyContent = newWords.some(word => word.trim().length > 0);
+      if (!hasAnyContent) {
+        setWritingStartTime(null);
+        setCanContinue(false);
+        setWaitTimeLeft(null);
+      }
     }
   };
 
@@ -76,13 +87,15 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     // Check if this is the first time user started writing
     const hasAnyContent = newWords.some(word => word.trim().length > 0);
     if (hasAnyContent && !writingStartTime) {
+      // Start the 30 second wait timer
       setWritingStartTime(Date.now());
+    }
 
-      // If timer was paused (hit 0 without writing), restart with 30 seconds
-      if (timerPaused) {
-        setTimerPaused(false);
-        setTimeLeft(30);
-      }
+    // If user deleted all content, reset
+    if (!hasAnyContent && writingStartTime) {
+      setWritingStartTime(null);
+      setCanContinue(false);
+      setWaitTimeLeft(null);
     }
   };
 
@@ -106,12 +119,18 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Calculate time until can continue
-  const getWaitTime = () => {
-    if (!writingStartTime) return 30;
-    const elapsed = Math.floor((Date.now() - writingStartTime) / 1000);
-    return Math.max(0, 30 - elapsed);
+  // Determine which timer to display
+  const getDisplayTime = () => {
+    // If user hasn't started writing, show initial timer
+    if (!writingStartTime) {
+      return initialTimeLeft;
+    }
+    // If user has started writing, show wait time
+    return waitTimeLeft ?? 0;
   };
+
+  const displayTime = getDisplayTime();
+  const isWaitingPhase = writingStartTime !== null && waitTimeLeft !== null && waitTimeLeft > 0;
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-8">
@@ -123,9 +142,9 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{config.title}</h2>
           </div>
           <div className="flex items-center space-x-2">
-            <Clock size={24} className={timeLeft <= 10 && !timerPaused ? 'text-red-600' : 'text-blue-600'} />
-            <span className={`text-3xl font-mono font-bold ${timeLeft <= 10 && !timerPaused ? 'text-red-600' : 'text-gray-900'}`}>
-              {formatTime(timeLeft)}
+            <Clock size={24} className={displayTime <= 10 && displayTime > 0 ? 'text-red-600' : 'text-blue-600'} />
+            <span className={`text-3xl font-mono font-bold ${displayTime <= 10 && displayTime > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+              {formatTime(displayTime)}
             </span>
           </div>
         </div>
@@ -140,10 +159,10 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
         )}
 
         {/* Warning when time is low */}
-        {timeLeft <= 30 && timeLeft > 0 && !timerPaused && (
+        {displayTime <= 30 && displayTime > 0 && (
           <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
             <p className="text-yellow-800 text-sm font-medium">
-              ⏰ {timeLeft} seconds remaining
+              ⏰ {displayTime} seconds remaining
             </p>
           </div>
         )}
@@ -154,7 +173,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Dynamic Word Boxes */}
+          {/* Dynamic Word Boxes - Always enabled */}
           {words.map((word, index) => (
             <div key={index} className="flex items-center space-x-2">
               <span className="text-gray-500 font-medium w-8">{index + 1}.</span>
@@ -164,14 +183,12 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
                 onChange={(e) => handleWordChange(index, e.target.value)}
                 placeholder="Enter an information point..."
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={timeLeft === 0 && !timerPaused}
               />
               {words.length > 1 && (
                 <button
                   type="button"
                   onClick={() => handleRemoveWord(index)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  disabled={timeLeft === 0 && !timerPaused}
                 >
                   <Trash2 size={20} />
                 </button>
@@ -179,12 +196,11 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
             </div>
           ))}
 
-          {/* Add Word Button */}
+          {/* Add Word Button - Always enabled */}
           <button
             type="button"
             onClick={handleAddWord}
-            disabled={timeLeft === 0 && !timerPaused}
-            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center space-x-2"
           >
             <Plus size={20} />
             <span>Add Another Information Point</span>
@@ -192,15 +208,21 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
 
           {/* Status Messages */}
           <div className="space-y-2">
-            {!hasContent && (
+            {!hasContent && initialTimeLeft > 0 && (
               <p className="text-sm text-gray-500">
-                Please enter at least one information point to continue.
+                Please enter at least one information point to continue. ({formatTime(initialTimeLeft)} remaining)
               </p>
             )}
 
-            {hasContent && !canContinue && (
+            {!hasContent && initialTimeLeft === 0 && (
+              <p className="text-sm text-orange-600">
+                Time is up. Please enter at least one information point to continue.
+              </p>
+            )}
+
+            {hasContent && isWaitingPhase && (
               <p className="text-sm text-gray-500">
-                Please wait at least 30 seconds before continuing ({getWaitTime()}s remaining).
+                Please wait {waitTimeLeft} seconds before continuing.
               </p>
             )}
 
