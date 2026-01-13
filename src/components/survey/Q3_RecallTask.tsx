@@ -31,17 +31,11 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
 
   // Button activation logic:
   // - Must have content
-  // - If 90 seconds passed: activate immediately when content exists
-  // - If before 90 seconds: activate 30 seconds after writing started
+  // - Always need 30 seconds since writing started (regardless of 90 second timer)
   const canContinue = (() => {
     if (!hasContent) return false;
 
-    const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
-
-    // After 90 seconds: activate immediately if has content
-    if (elapsed >= 90) return true;
-
-    // Before 90 seconds: need 30 seconds since writing started
+    // Always need 30 seconds since writing started
     if (writingStartTime) {
       const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
       return writingElapsed >= 30;
@@ -53,9 +47,6 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   // Calculate seconds until can continue (for display)
   const getSecondsUntilCanContinue = () => {
     if (!hasContent || !writingStartTime) return null;
-
-    const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
-    if (elapsed >= 90) return 0;
 
     const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
     return Math.max(0, 30 - writingElapsed);
@@ -136,14 +127,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
       return 'Please enter at least one information point to continue.';
     }
 
-    const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
-
-    // After 90 seconds with content: can continue
-    if (elapsed >= 90) {
-      return null;
-    }
-
-    // Before 90 seconds with content: show wait time
+    // Show wait time after writing started
     if (secondsUntilContinue !== null && secondsUntilContinue > 0) {
       return `Please wait ${secondsUntilContinue} seconds before continuing.`;
     }
