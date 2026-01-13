@@ -48,9 +48,11 @@ export default function Home() {
         </div>
         {/* Screening Question */}
         {screeningAnswered === null && (
-          <div className="mb-6">
-            <p className="text-lg font-medium text-gray-800 mb-4">
-              This study is for adults who have shopped online at least once.<br />
+          <div className="border-2 border-blue-300 rounded-lg p-6 bg-blue-50/50">
+            <p className="text-gray-600 text-sm mb-3">
+              This study is for adults who have shopped online at least once.
+            </p>
+            <p className="text-xl font-semibold text-gray-900 mb-5">
               Have you ever shopped online?
             </p>
             <div className="flex gap-4">
