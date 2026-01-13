@@ -128,41 +128,51 @@ for (let combIdx = 0; combIdx < BASE_GROUP_COMBINATIONS.length; combIdx++) {
 }
 
 /**
- * Assign participant to condition with perfect counterbalancing
- * Selects 3 groups from 4 groups, and 1 condition from each group
- * For 240 participants: exactly 180 per group, 90 per condition
+ * Assign condition by sequential participant number (권장)
+ * Firebase 카운터에서 받은 순차 번호를 사용하여 완벽한 균등 분배 보장
  */
-export function assignParticipantCondition(participantId: string): ExperimentCondition {
-  const numericMatch = participantId.match(/\d+/);
-  const participantNumber = numericMatch ? parseInt(numericMatch[0]) : Date.now();
-  
+export function assignConditionByNumber(participantId: string, participantNumber: number): ExperimentCondition {
   // Use 240 patterns for perfect counterbalancing
   const patternIndex = participantNumber % 240;
   const pattern = ALL_ASSIGNMENT_PATTERNS[patternIndex];
-  
+
   // Select conditions from chosen groups
   const selectedConditions: StimulusCondition[] = [];
-  
+
   for (let i = 0; i < 3; i++) {
     const groupId = pattern.groupSelection[i];
     const conditionIndex = pattern.conditionPattern[i]; // 0 or 1
-    
+
     const groupConditions = EIGHT_CONDITIONS.filter(c => c.groupId === groupId);
     const selectedCondition = groupConditions[conditionIndex];
-    
+
     selectedConditions.push(selectedCondition);
   }
-  
+
   // Map products to conditions
   const selectedStimuli: SelectedStimulus[] = pattern.productOrder.map((product, index) => ({
     product,
     condition: selectedConditions[index]
   }));
-  
+
+  console.log(`✅ Assigned participant ${participantId} to pattern ${patternIndex}:`,
+    selectedStimuli.map(s => `C${s.condition.conditionId}`).join(', '));
+
   return {
     participantId,
     selectedStimuli
   };
+}
+
+/**
+ * Assign participant to condition with perfect counterbalancing
+ * @deprecated Use assignConditionByNumber with Firebase counter for better distribution
+ */
+export function assignParticipantCondition(participantId: string): ExperimentCondition {
+  const numericMatch = participantId.match(/\d+/);
+  const participantNumber = numericMatch ? parseInt(numericMatch[0]) : Date.now();
+
+  return assignConditionByNumber(participantId, participantNumber);
 }
 
 /**

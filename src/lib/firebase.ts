@@ -1,7 +1,7 @@
 // Firebase configuration and initialization with data management functions
 
 import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, getDocs, Timestamp } from 'firebase/firestore';
+import { getFirestore, collection, doc, setDoc, updateDoc, getDoc, getDocs, Timestamp, runTransaction } from 'firebase/firestore';
 
 // Firebase configuration
 const firebaseConfig = {
@@ -52,6 +52,7 @@ const COLLECTIONS = {
   RECALL_TASKS: 'recall_tasks',
   SURVEY_RESPONSES: 'survey_responses',
   DEMOGRAPHICS: 'demographics',
+  CONDITION_COUNTER: 'condition_counter', // 조건 균등 배치용 카운터
 };
 
 // ============================================================================
@@ -443,7 +444,7 @@ export async function exportAllData(): Promise<ExportData> {
       getAllSurveyResponses(),
       getAllDemographics(),
     ]);
-    
+
     return {
       sessions,
       stimulusExposures: exposures,
@@ -455,5 +456,95 @@ export async function exportAllData(): Promise<ExportData> {
   } catch (error) {
     console.error('Error exporting all data:', error);
     throw new Error('Failed to export all data');
+  }
+}
+
+// ============================================================================
+// Condition Counter (조건 균등 배치용)
+// ============================================================================
+
+/**
+ * 다음 참가자 번호를 가져오고 카운터를 증가시킴 (트랜잭션 사용)
+ * 240개 패턴을 순차적으로 배정하여 완벽한 균등 분배 보장
+ */
+export async function getNextParticipantNumber(): Promise<number> {
+  const counterRef = doc(db, COLLECTIONS.CONDITION_COUNTER, 'global');
+
+  try {
+    const result = await runTransaction(db, async (transaction) => {
+      const counterDoc = await transaction.get(counterRef);
+
+      let currentNumber = 0;
+      if (counterDoc.exists()) {
+        currentNumber = counterDoc.data().nextNumber || 0;
+      }
+
+      // 다음 번호로 업데이트
+      transaction.set(counterRef, {
+        nextNumber: currentNumber + 1,
+        updatedAt: getKSTTimestamp(),
+      }, { merge: true });
+
+      return currentNumber;
+    });
+
+    console.log('✅ Got participant number:', result);
+    return result;
+  } catch (error) {
+    console.error('Error getting next participant number:', error);
+    // 에러 시 timestamp 기반 fallback (덜 정확하지만 작동은 함)
+    return Date.now() % 240;
+  }
+}
+
+/**
+ * 완료된 참가자 수 업데이트 (통계용)
+ */
+export async function incrementCompletedCount(): Promise<void> {
+  const counterRef = doc(db, COLLECTIONS.CONDITION_COUNTER, 'global');
+
+  try {
+    await runTransaction(db, async (transaction) => {
+      const counterDoc = await transaction.get(counterRef);
+
+      let completedCount = 0;
+      if (counterDoc.exists()) {
+        completedCount = counterDoc.data().completedCount || 0;
+      }
+
+      transaction.set(counterRef, {
+        completedCount: completedCount + 1,
+        lastCompletedAt: getKSTTimestamp(),
+      }, { merge: true });
+    });
+
+    console.log('✅ Incremented completed count');
+  } catch (error) {
+    console.error('Error incrementing completed count:', error);
+  }
+}
+
+/**
+ * 현재 카운터 상태 조회 (어드민용)
+ */
+export async function getConditionCounterStatus(): Promise<{
+  nextNumber: number;
+  completedCount: number;
+} | null> {
+  try {
+    const counterRef = doc(db, COLLECTIONS.CONDITION_COUNTER, 'global');
+    const counterDoc = await getDoc(counterRef);
+
+    if (counterDoc.exists()) {
+      const data = counterDoc.data();
+      return {
+        nextNumber: data.nextNumber || 0,
+        completedCount: data.completedCount || 0,
+      };
+    }
+    return { nextNumber: 0, completedCount: 0 };
+  } catch (error) {
+    console.error('Error getting counter status:', error);
+    return null;
   }
 }

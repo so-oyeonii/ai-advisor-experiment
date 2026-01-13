@@ -2,8 +2,8 @@
 import { useState, FormEvent } from 'react';
 import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
-import { assignParticipantCondition } from '@/lib/randomization';
-import { saveSession, getKSTTimestamp } from '@/lib/firebase';
+import { assignConditionByNumber } from '@/lib/randomization';
+import { saveSession, getKSTTimestamp, getNextParticipantNumber } from '@/lib/firebase';
 import { useSurvey } from '@/contexts/SurveyContext';
 
 export default function ConsentPage() {
@@ -23,34 +23,38 @@ export default function ConsentPage() {
 
     try {
       console.log('🚀 Starting consent process...');
-      
+
       // 1. Generate participant ID
       const participantId = uuidv4();
       console.log('✅ Generated participant ID:', participantId);
-      
-      // 2. Assign random condition
-      const experimentCondition = assignParticipantCondition(participantId);
-      console.log('✅ Assigned condition:', experimentCondition);
+
+      // 2. Get sequential participant number from Firebase (균등 분배용)
+      const participantNumber = await getNextParticipantNumber();
+      console.log('✅ Got participant number:', participantNumber);
+
+      // 3. Assign condition using sequential number (완벽한 균등 분배)
+      const experimentCondition = assignConditionByNumber(participantId, participantNumber);
+      console.log('✅ Assigned condition (pattern', participantNumber % 240, '):', experimentCondition);
       
       // Extract condition info from first stimulus (representative)
       const firstCondition = experimentCondition.selectedStimuli[0].condition;
-      
-      // 3. Save to sessionStorage for client-side access (do this first!)
+
+      // 4. Save to sessionStorage for client-side access (do this first!)
       sessionStorage.setItem('participantId', participantId);
       sessionStorage.setItem('experimentCondition', JSON.stringify(experimentCondition));
       sessionStorage.setItem('currentStimulusIndex', '0');
       sessionStorage.setItem('hasConsented', 'true');
       console.log('✅ Saved to sessionStorage');
-      
-      // 4. Initialize SurveyContext
+
+      // 5. Initialize SurveyContext
       initializeSurvey();
       console.log('✅ Initialized SurveyContext');
-      
-      // 5. Navigate to scenario page FIRST (don't wait for Firebase)
+
+      // 6. Navigate to scenario page FIRST (don't wait for Firebase)
       console.log('🔄 Navigating to /scenario...');
       router.push('/scenario');
-      
-      // 6. Try to save to Firebase in background (non-blocking)
+
+      // 7. Try to save to Firebase in background (non-blocking)
       saveSession({
         participantId,
         informedConsent: 'agreed', // 실험참가 개인정보 동의

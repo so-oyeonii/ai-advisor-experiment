@@ -220,12 +220,16 @@ export function SurveyProvider({ children }: SurveyProviderProps) {
       
       // Mark session as completed
       console.log('📝 Updating session as completed...');
-      const { updateSession, getKSTTimestamp } = await import('@/lib/firebase');
+      const { updateSession, getKSTTimestamp, incrementCompletedCount } = await import('@/lib/firebase');
       await updateSession(participantId, {
         completed: true,
         endTime: getKSTTimestamp()
       });
       console.log('✅ Session marked as completed');
+
+      // 완료된 참가자 카운트 증가 (균등 분배 통계용)
+      await incrementCompletedCount();
+      console.log('✅ Completed count incremented');
       
       // Clear localStorage after successful submission
       localStorage.removeItem(STORAGE_KEY);
