@@ -25,7 +25,8 @@ type QuestionStep =
 
 const QUESTION_STEPS: QuestionStep[] = [
   'Q3',
-  'M2a', 'M2b', 'M3', 
+  'M3',           // PPI first
+  'M2a', 'M2b',   // Source Credibility after
   'DV1', 'DV2', 'DV3'
 ];
 
