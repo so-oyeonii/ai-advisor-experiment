@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Download, RefreshCw, Users, FileText, Eye, EyeOff } from 'lucide-react';
-import { getAllSurveyResponses, getAllSessions, SurveyResponseData } from '@/lib/firebase';
+import { getAllSurveyResponses, getAllSessions, getAllStimulusExposures, SurveyResponseData, StimulusExposureData } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
 
 /**
@@ -35,6 +35,7 @@ type ExtendedSurveyResponse = Partial<SurveyResponseData> & {
   purchase_1?: number;
   survey_start_time?: string | Timestamp;
   survey_end_time?: string | Timestamp;
+  stimulus_dwell_time?: number; // 자극물 페이지 체류 시간 (초)
   [key: string]: string | number | boolean | undefined | Timestamp | object;
 };
 
@@ -61,15 +62,24 @@ export default function AdminPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [data, sessions] = await Promise.all([
+      const [data, sessions, exposures] = await Promise.all([
         getAllSurveyResponses(),
-        getAllSessions()
+        getAllSessions(),
+        getAllStimulusExposures()
       ]);
-      
+
       console.log('📊 어드민: Firebase에서 데이터 가져옴');
       console.log('  - 전체 응답 수:', data.length);
       console.log('  - 세션 수:', sessions.length);
-      
+      console.log('  - 자극물 노출 수:', exposures.length);
+
+      // stimulus_exposures를 participantId + exposureOrder로 맵핑
+      const exposureMap = new Map<string, StimulusExposureData>();
+      exposures.forEach(exp => {
+        const key = `${exp.participantId}_${exp.exposureOrder}`;
+        exposureMap.set(key, exp);
+      });
+
       // survey_responses를 참가자별로 그룹화
       const surveyResponsesByParticipant = new Map<string, ExtendedSurveyResponse[]>();
       (data as ExtendedSurveyResponse[]).forEach(response => {
@@ -79,22 +89,28 @@ export default function AdminPage() {
         }
         surveyResponsesByParticipant.get(pid)!.push(response);
       });
-      
+
       // 모든 세션을 기준으로 데이터 구성 (진행중 + 완료)
       const allData: ExtendedSurveyResponse[] = [];
-      
+
       sessions.forEach(session => {
         const pid = session.participantId;
         const participantResponses = surveyResponsesByParticipant.get(pid) || [];
-        
+
         if (participantResponses.length > 0) {
           // 설문 응답이 있으면 해당 응답들 사용
           participantResponses.forEach(response => {
+            // 해당 자극물의 체류 시간 찾기
+            const stimulusOrder = response.stimulus_order ?? response.stimulusOrder ?? 0;
+            const exposureKey = `${pid}_${stimulusOrder}`;
+            const exposure = exposureMap.get(exposureKey);
+
             allData.push({
               ...response,
               survey_start_time: session.startTime,
               survey_end_time: session.endTime,
-              status: session.completed ? 'completed' : 'in_progress'
+              status: session.completed ? 'completed' : 'in_progress',
+              stimulus_dwell_time: exposure?.dwellTime || 0
             });
           });
         } else {
@@ -109,7 +125,7 @@ export default function AdminPage() {
           } as ExtendedSurveyResponse);
         }
       });
-      
+
       const enrichedData = allData;
       
       // 최신순으로 정렬 (참가자의 세션 시작 시간 기준, 그 다음 stimulus_order로 정렬)
@@ -234,7 +250,7 @@ export default function AdminPage() {
         'public_valence',
         
         // 3. 노출 정보
-        'page_dwell_time',
+        'stimulus_dwell_time',
         
         // 4. 인구통계
         'age',
@@ -348,7 +364,7 @@ export default function AdminPage() {
     completedParticipants.forEach(([, responses]) => {
       // 각 자극물의 page_dwell_time을 합산
       const totalTime = responses.reduce((sum, r) => {
-        const dwellTime = r.page_dwell_time || (r as ExtendedSurveyResponse).responseTime || 0;
+        const dwellTime = r.stimulus_dwell_time || 0;
         return sum + Number(dwellTime);
       }, 0);
       if (totalTime > 0) {
@@ -589,7 +605,7 @@ export default function AdminPage() {
               {Array.from(groupedData.entries()).map(([participantId, participantResponses]) => {
                 // 총 소요 시간 계산
                 const totalTime = participantResponses.reduce((sum, r) => {
-                  const dwellTime = r.page_dwell_time || (r as ExtendedSurveyResponse).responseTime || 0;
+                  const dwellTime = r.stimulus_dwell_time || 0;
                   return sum + Number(dwellTime);
                 }, 0);
                 
@@ -693,7 +709,7 @@ export default function AdminPage() {
                               const isCongruent = congruity === 'Congruent' || congruityLower === 'congruent' || congruityLower === 'match';
                               
                               // 소요 시간 정보
-                              const dwellTime = Number(resp.page_dwell_time || (resp as ExtendedSurveyResponse).responseTime || 0);
+                              const dwellTime = Number(resp.stimulus_dwell_time || 0);
                               
                               const formatDuration = (seconds: number) => {
                                 const mins = Math.floor(seconds / 60);
