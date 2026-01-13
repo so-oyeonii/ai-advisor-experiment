@@ -51,7 +51,7 @@ export default function ScenarioPage() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-2">
                   Shopping Situation
                 </h2>
-                <p className="text-gray-800 leading-relaxed">
+                <p className="text-gray-900 leading-relaxed font-medium">
                   You are looking to purchase <span className="font-bold text-blue-700">Protein Powder, Hand Soap, and Tissue</span> on Amazon.
                   These are items you <span className="font-bold">routinely purchase</span>, and you have run out of all three at home.
                 </p>
