@@ -61,12 +61,14 @@ interface SessionWithDemographics extends SessionData {
 interface MergedData {
   // Participant-level info
   participantId: string;
+  informedConsent: string;
   age: string | number;
   gender: string | number;
+  gender_other: string;
   education: string | number;
-  nationality: string | number;
   income: string | number;
-  online_shopping_frequency: string | number;
+  occupation: string | number;
+  occupation_other: string;
   shopping_frequency: string | number;
   ai_usage_frequency: string | number;
   // AI Familiarity scores (1-7 Likert scale)
@@ -247,12 +249,14 @@ export default function AdminExportPage() {
         const row: MergedData = {
           // Participant-level info (same for all 3 rows)
           participantId: session.participantId,
+          informedConsent: session.informedConsent || 'agreed',
           age: participantDemo?.age || '',
           gender: participantDemo?.gender || '',
+          gender_other: participantDemo?.gender_other || '',
           education: participantDemo?.education || '',
-          nationality: participantDemo?.nationality || '',
           income: participantDemo?.income || '',
-          online_shopping_frequency: participantDemo?.online_shopping_frequency || '',
+          occupation: participantDemo?.occupation || '',
+          occupation_other: participantDemo?.occupation_other || '',
           shopping_frequency: participantDemo?.shopping_frequency || '',
           ai_usage_frequency: participantDemo?.ai_usage_frequency || '',
           // AI Familiarity scores
@@ -342,6 +346,7 @@ export default function AdminExportPage() {
     const headers = [
       // 1. 참가자 기본 정보
       'participantId',
+      'informedConsent',
       'status',
       'survey_start_time',
       'survey_end_time',
@@ -393,10 +398,11 @@ export default function AdminExportPage() {
       // 7. 인구통계 정보
       'age',
       'gender',
+      'gender_other',
       'education',
-      'nationality',
       'income',
-      'online_shopping_frequency',
+      'occupation',
+      'occupation_other',
       'shopping_frequency',
       'ai_usage_frequency',
       

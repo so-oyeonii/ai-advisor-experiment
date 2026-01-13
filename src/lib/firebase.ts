@@ -381,10 +381,11 @@ export interface DemographicsData {
   participantId: string;
   age: string;
   gender: string;
+  gender_other?: string;
   education: string;
-  nationality?: string;
   income?: string;
-  online_shopping_frequency?: string;
+  occupation?: string;
+  occupation_other?: string;
   shopping_frequency?: string;
   ai_usage_frequency?: string;
   ai_familiarity_1?: number;
