@@ -34,10 +34,13 @@ export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      {/* Purchase Intention Section */}
-      <h2 className="text-sm font-semibold text-gray-600 mb-3">{purchaseConfig.title}</h2>
+      {/* Purchase Intention - 대표 질문 카드 스타일 */}
       {purchaseConfig.description && (
-        <p className="text-lg font-medium text-gray-800 mb-8">{purchaseConfig.description}</p>
+        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
+          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
+            {purchaseConfig.description}
+          </p>
+        </div>
       )}
 
       {purchaseConfig.warning && (
@@ -60,11 +63,14 @@ export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
           ))}
         </div>
 
-        {/* Decision Confidence Section */}
+        {/* Decision Confidence - 대표 질문 카드 스타일 */}
         <div className="mt-12 pt-8 border-t border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-600 mb-3">{confidenceConfig.title}</h2>
           {confidenceConfig.description && (
-            <p className="text-lg font-medium text-gray-800 mb-8 whitespace-pre-line">{confidenceConfig.description}</p>
+            <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
+              <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
+                {confidenceConfig.description}
+              </p>
+            </div>
           )}
 
           <div className="mb-6">
