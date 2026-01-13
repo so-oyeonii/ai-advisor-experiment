@@ -222,7 +222,7 @@ export const DV3_DecisionConfidence: QuestionBlock = {
 
 export const Q7_AIFamiliarity: QuestionBlock = {
   title: 'AI Familiarity',
-  description: 'Thinking about your general experience with AI technology, please indicate your level of agreement:',
+  description: 'Thinking about your general experience with AI technology, please indicate your level of agreement:\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'ai_familiarity_1',
@@ -247,7 +247,7 @@ export const Q7_AIFamiliarity: QuestionBlock = {
 
 export const Q7_ReviewSkepticism: QuestionBlock = {
   title: 'Review Skepticism',
-  description: 'In general, when you read online product reviews, how much do you agree with the following statements?',
+  description: 'In general, when you read online product reviews, how much do you agree with the following statements?\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'review_skepticism_1',
@@ -276,31 +276,31 @@ export const Q7_ReviewSkepticism: QuestionBlock = {
   ]
 };
 
-export const Q7_AIAttitude: QuestionBlock = {
-  title: 'Attitude Toward AI',
-  description: 'Overall, how do you feel about AI in shopping contexts? Please indicate your level of agreement:',
+export const Q7_MachineHeuristic: QuestionBlock = {
+  title: 'Machine Heuristic',
+  description: 'Below are statements about artificial intelligence (AI).\nPlease indicate your agreement based on your general beliefs about AI.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
-      variable: 'ai_attitude_1',
-      text: 'AI enhances my shopping experience.',
+      variable: 'machine_heuristic_1',
+      text: 'When AI performs a task, the results are more objective than when humans perform the same task.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'ai_attitude_2',
-      text: "I'm comfortable interacting with AI during shopping.",
+      variable: 'machine_heuristic_2',
+      text: 'AI can handle tasks in a more secure and reliable manner than humans.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'ai_attitude_3',
-      text: 'I trust AI-driven product suggestions.',
+      variable: 'machine_heuristic_3',
+      text: 'AI has high precision, so it performs tasks more accurately than humans.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'ai_attitude_4',
-      text: 'AI accurately provides product recommendations.',
+      variable: 'machine_heuristic_4',
+      text: 'AI is less likely to make errors caused by emotions or biases.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -308,7 +308,8 @@ export const Q7_AIAttitude: QuestionBlock = {
 };
 
 export const Q8_UsageHabits: QuestionBlock = {
-  title: 'Shopping and Technology Usage Habits',
+  title: 'Usage Behavior',
+  description: 'Please tell us about your general shopping and technology usage habits:',
   items: [
     {
       variable: 'shopping_frequency',
@@ -433,8 +434,8 @@ export const SURVEY_QUESTIONS = {
   // General Questions (Asked once)
   general: {
     Q7_AIFamiliarity,
+    Q7_MachineHeuristic,
     Q7_ReviewSkepticism,
-    Q7_AIAttitude,
     Q8_UsageHabits
   },
   

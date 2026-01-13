@@ -4,31 +4,37 @@ import { useSurvey } from '@/contexts/SurveyContext';
 import { useEffect } from 'react';
 
 import Q7_AIFamiliarity from '@/components/survey/Q7_AIFamiliarity';
+import Q7_MachineHeuristic from '@/components/survey/Q7_MachineHeuristic';
 import Q7_ReviewSkepticism from '@/components/survey/Q7_ReviewSkepticism';
-import Q7_AIAttitude from '@/components/survey/Q7_AIAttitude';
 import Q8_UsageHabits from '@/components/survey/Q8_UsageHabits';
 
 import type {
   AIFamiliarityResponse,
   ReviewSkepticismResponse,
-  AIAttitudeResponse,
   UsageHabitsResponse,
   GeneralQuestionsResponse
 } from '@/types/survey';
 
-type GeneralStep = 'Q7_AIFamiliarity' | 'Q7_ReviewSkepticism' | 'Q7_AIAttitude' | 'Q8_UsageHabits';
+interface MachineHeuristicResponse {
+  machine_heuristic_1: number;
+  machine_heuristic_2: number;
+  machine_heuristic_3: number;
+  machine_heuristic_4: number;
+}
+
+type GeneralStep = 'Q7_AIFamiliarity' | 'Q7_MachineHeuristic' | 'Q7_ReviewSkepticism' | 'Q8_UsageHabits';
 
 const GENERAL_STEPS: GeneralStep[] = [
   'Q7_AIFamiliarity',
+  'Q7_MachineHeuristic',
   'Q7_ReviewSkepticism',
-  'Q7_AIAttitude',
   'Q8_UsageHabits'
 ];
 
 export default function GeneralQuestionsPage() {
   const router = useRouter();
   const { saveGeneralQuestions } = useSurvey();
-  
+
   const [currentStep, setCurrentStep] = useState<GeneralStep>('Q7_AIFamiliarity');
   const [generalData, setGeneralData] = useState<Partial<GeneralQuestionsResponse>>({});
 
@@ -46,7 +52,7 @@ export default function GeneralQuestionsPage() {
     // Merge the response data
     const updatedData = { ...generalData, ...data };
     setGeneralData(updatedData);
-    
+
     // Move to next step
     const currentIndex = GENERAL_STEPS.indexOf(step);
     if (currentIndex < GENERAL_STEPS.length - 1) {
@@ -60,7 +66,7 @@ export default function GeneralQuestionsPage() {
   const handleFinalSubmit = (finalData: GeneralQuestionsResponse) => {
     // Save to context
     saveGeneralQuestions(finalData);
-    
+
     // Navigate to demographics
     router.push('/demographics');
   };
@@ -82,7 +88,7 @@ export default function GeneralQuestionsPage() {
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
+            <div
               className="bg-green-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
@@ -93,25 +99,25 @@ export default function GeneralQuestionsPage() {
       {/* Question Components */}
       <div className="py-8">
         {currentStep === 'Q7_AIFamiliarity' && (
-          <Q7_AIFamiliarity 
+          <Q7_AIFamiliarity
             onComplete={(data: AIFamiliarityResponse) => handleComplete('Q7_AIFamiliarity', data as unknown as Record<string, unknown>)}
           />
         )}
-        
+
+        {currentStep === 'Q7_MachineHeuristic' && (
+          <Q7_MachineHeuristic
+            onComplete={(data: MachineHeuristicResponse) => handleComplete('Q7_MachineHeuristic', data as unknown as Record<string, unknown>)}
+          />
+        )}
+
         {currentStep === 'Q7_ReviewSkepticism' && (
-          <Q7_ReviewSkepticism 
+          <Q7_ReviewSkepticism
             onComplete={(data: ReviewSkepticismResponse) => handleComplete('Q7_ReviewSkepticism', data as unknown as Record<string, unknown>)}
           />
         )}
-        
-        {currentStep === 'Q7_AIAttitude' && (
-          <Q7_AIAttitude 
-            onComplete={(data: AIAttitudeResponse) => handleComplete('Q7_AIAttitude', data as unknown as Record<string, unknown>)}
-          />
-        )}
-        
+
         {currentStep === 'Q8_UsageHabits' && (
-          <Q8_UsageHabits 
+          <Q8_UsageHabits
             onComplete={(data: UsageHabitsResponse) => handleComplete('Q8_UsageHabits', data as unknown as Record<string, unknown>)}
           />
         )}
