@@ -133,26 +133,14 @@ export default function ScenarioPage() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-8 bg-gray-50 p-6 rounded-lg border border-gray-300">
-            <h3 className="font-semibold text-gray-900 mb-3 text-lg">📋 Study Instructions</h3>
-            <ul className="space-y-2 text-gray-700">
-              <li className="flex items-start">
-                <span className="mr-2">•</span>
-                <span>Please take your time reviewing each product detail page.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">•</span>
-                <span>Check both expert reviews and regular customer reviews.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">•</span>
-                <span>Participate naturally as if you were actually shopping.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="mr-2">•</span>
-                <span>After viewing the products, you will answer some simple questions.</span>
-              </li>
-            </ul>
+          <div className="mt-8 bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
+            <h3 className="font-semibold text-gray-900 mb-3 text-lg">📋 Before You Begin</h3>
+            <p className="text-gray-700 leading-relaxed mb-3">
+              This is a moment to take a short break before entering the shopping page.
+            </p>
+            <p className="text-gray-900 font-semibold leading-relaxed">
+              Once you click &quot;Start Shopping&quot;, please stay focused and continue without interruption.
+            </p>
           </div>
         </div>
 
