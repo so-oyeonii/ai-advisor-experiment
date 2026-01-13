@@ -43,6 +43,16 @@ export default function ScenarioPage() {
         {/* Scenario Card */}
         <div className="bg-white rounded-xl shadow-lg p-5 mb-4 border border-gray-200">
 
+          {/* Page Title */}
+          <div className="text-center mb-5">
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              Before You Start
+            </h1>
+            <p className="text-gray-600">
+              Please read the following information carefully
+            </p>
+          </div>
+
           {/* 1. Shopping Situation - 상단 */}
           <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mb-4">
             <div className="flex items-start space-x-3">
