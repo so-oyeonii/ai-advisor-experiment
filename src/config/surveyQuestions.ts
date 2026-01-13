@@ -60,76 +60,52 @@ export const Q3_RecallTask: QuestionBlock = {
   ]
 };
 
-export const M2a_CredibilityExpertise: QuestionBlock = {
-  title: 'Source Credibility - Expertise',
-  description: 'The following questions are about the SOURCE (reviewer) who created the FEATURED REVIEW at the top. Please rate the source (reviewer) on the following dimensions:',
+export const M2a_MessageCredibility: QuestionBlock = {
+  title: 'Message Credibility',
+  description: 'How well do the following adjectives describe the expert\'s review you just read?\n(1 = describes very poorly, 7 = describes very well)',
   items: [
     {
-      variable: 'credibility_expertise_1',
-      text: 'Not Expert (1) --- Expert (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Not Expert', max: 'Expert' }
+      variable: 'message_credibility_1',
+      text: 'Accurate',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Describes very poorly', max: 'Describes very well' }
     },
     {
-      variable: 'credibility_expertise_2',
-      text: 'Inexperienced (1) --- Experienced (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Inexperienced', max: 'Experienced' }
+      variable: 'message_credibility_2',
+      text: 'Authentic',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Describes very poorly', max: 'Describes very well' }
     },
     {
-      variable: 'credibility_expertise_3',
-      text: 'Unknowledgeable (1) --- Knowledgeable (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unknowledgeable', max: 'Knowledgeable' }
-    },
-    {
-      variable: 'credibility_expertise_4',
-      text: 'Unqualified (1) --- Qualified (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unqualified', max: 'Qualified' }
-    },
-    {
-      variable: 'credibility_expertise_5',
-      text: 'Unskilled (1) --- Skilled (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unskilled', max: 'Skilled' }
+      variable: 'message_credibility_3',
+      text: 'Believable',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Describes very poorly', max: 'Describes very well' }
     }
   ]
 };
 
-export const M2b_CredibilityTrustworthiness: QuestionBlock = {
-  title: 'Source Credibility - Trustworthiness',
-  description: 'Thinking about the source (reviewer) of the FEATURED REVIEW at the top, please rate:',
+export const M2b_Trust: QuestionBlock = {
+  title: 'Trust',
+  description: 'Please rate your agreement with the following statements about the expert reviewer you just saw.\n(1 = Not at all, 7 = Extremely)',
   items: [
     {
-      variable: 'credibility_trust_1',
-      text: 'Undependable (1) --- Dependable (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Undependable', max: 'Dependable' }
+      variable: 'trust_1',
+      text: 'I am confident in this expert reviewer.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
-      variable: 'credibility_trust_2',
-      text: 'Dishonest (1) --- Honest (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Dishonest', max: 'Honest' }
+      variable: 'trust_2',
+      text: 'This expert reviewer is reliable.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
-      variable: 'credibility_trust_3',
-      text: 'Unreliable (1) --- Reliable (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Unreliable', max: 'Reliable' }
-    },
-    {
-      variable: 'credibility_trust_4',
-      text: 'Insincere (1) --- Sincere (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Insincere', max: 'Sincere' }
-    },
-    {
-      variable: 'credibility_trust_5',
-      text: 'Untrustworthy (1) --- Trustworthy (7)',
-      scaleType: 'semantic7',
-      scaleLabels: { min: 'Untrustworthy', max: 'Trustworthy' }
+      variable: 'trust_3',
+      text: 'I can trust this expert reviewer.',
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Not at all', max: 'Extremely' }
     }
   ]
 };
@@ -459,8 +435,8 @@ export const SURVEY_QUESTIONS = {
   // Block A: Stimulus-Specific (Repeated 3 times)
   blockA: {
     Q3_RecallTask,
-    M2a_CredibilityExpertise,
-    M2b_CredibilityTrustworthiness,
+    M2a_MessageCredibility,
+    M2b_Trust,
     M3_PersuasiveIntent,
     DV1_Persuasiveness,
     DV2_PurchaseIntention,
