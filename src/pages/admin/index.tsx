@@ -217,6 +217,7 @@ export default function AdminPage() {
         
         return {
           ...row,
+          informedConsent: 'agree', // 설문 참가한 사람은 모두 동의한 것으로 저장
           survey_start_time: surveyStartTime,
           survey_end_time: surveyEndTime,
           status: status,

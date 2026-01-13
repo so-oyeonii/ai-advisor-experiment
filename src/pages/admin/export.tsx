@@ -254,7 +254,7 @@ export default function AdminExportPage() {
         const row: MergedData = {
           // Participant-level info (same for all 3 rows)
           participantId: session.participantId,
-          informedConsent: session.informedConsent || 'agreed',
+          informedConsent: 'agree', // 설문 참가한 사람은 모두 동의한 것으로 저장
           age: participantDemo?.age || '',
           gender: participantDemo?.gender || '',
           gender_other: participantDemo?.gender_other || '',
