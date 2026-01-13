@@ -10,7 +10,7 @@ export default function ScenarioPage() {
     // Check if participant has consented
     const storedParticipantId = sessionStorage.getItem('participantId');
     const hasConsented = sessionStorage.getItem('hasConsented');
-    
+
     if (!storedParticipantId || hasConsented !== 'true') {
       router.push('/consent');
       return;
@@ -20,7 +20,7 @@ export default function ScenarioPage() {
   const handleContinue = () => {
     // Mark scenario as viewed
     sessionStorage.setItem('scenarioViewed', 'true');
-    
+
     // Proceed to first stimulus
     router.push('/stimulus/0');
   };
@@ -28,119 +28,108 @@ export default function ScenarioPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Amazon-style header */}
-      <header className="bg-[#131921] text-white py-3 px-6 shadow-md">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <ShoppingCart className="w-8 h-8" />
-            <span className="text-2xl font-bold">Amazon</span>
+      <header className="bg-[#131921] text-white py-2 px-4 shadow-md">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <ShoppingCart className="w-6 h-6" />
+            <span className="text-xl font-bold">Amazon</span>
           </div>
-          <div className="flex items-center space-x-2 text-sm">
-            <span className="opacity-80">Welcome, Participant</span>
-          </div>
+          <span className="text-sm opacity-80">Welcome, Participant</span>
         </div>
       </header>
 
-      {/* Main content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        {/* New Feature Badge */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-6 py-2 rounded-full shadow-lg">
-            <Sparkles className="w-5 h-5" />
-            <span className="font-bold text-lg">NEW FEATURE</span>
-            <Sparkles className="w-5 h-5" />
+      {/* Main content - 컴팩트한 레이아웃 */}
+      <main className="max-w-6xl mx-auto px-4 py-4">
+        {/* Header with Badge */}
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-4 py-1.5 rounded-full shadow">
+            <Sparkles className="w-4 h-4" />
+            <span className="font-bold">NEW FEATURE</span>
+            <Sparkles className="w-4 h-4" />
           </div>
         </div>
 
         {/* Scenario Card */}
-        <div className="bg-white rounded-xl shadow-xl p-10 mb-8 border border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+        <div className="bg-white rounded-xl shadow-lg p-5 mb-4 border border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4 text-center">
             Shopping Scenario
           </h1>
 
-          {/* Shopping Context */}
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8 rounded-r-lg">
-            <div className="flex items-start space-x-4">
-              <ShoppingCart className="w-8 h-8 text-blue-600 mt-1 flex-shrink-0" />
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">
-                  Shopping Situation
-                </h2>
-                <p className="text-gray-800 leading-relaxed text-lg mb-4">
-                  You are currently looking to purchase <span className="font-bold text-blue-700">Protein Powder, Hand Soap, and Tissue</span> on Amazon.
-                </p>
-                <p className="text-gray-800 leading-relaxed text-lg">
-                  These three products are items you <span className="font-bold">routinely purchase</span>, and you happen to have run out of all three at home, so you want to buy all three items.
-                </p>
+          {/* 2열 레이아웃: Shopping Context + New Service */}
+          <div className="grid lg:grid-cols-2 gap-4 mb-4">
+            {/* Shopping Context */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+              <div className="flex items-start space-x-3">
+                <ShoppingCart className="w-6 h-6 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                    Shopping Situation
+                  </h2>
+                  <p className="text-gray-800 leading-relaxed mb-2">
+                    You are looking to purchase <span className="font-bold text-blue-700">Protein Powder, Hand Soap, and Tissue</span> on Amazon.
+                  </p>
+                  <p className="text-gray-800 leading-relaxed">
+                    These are items you <span className="font-bold">routinely purchase</span>, and you have run out of all three at home.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* New Service Introduction */}
-          <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-l-4 border-purple-500 p-6 rounded-r-lg">
-            <div className="mb-6">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1 rounded-full text-sm font-bold">
+            {/* New Service Introduction */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-l-4 border-purple-500 p-4 rounded-r-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-0.5 rounded-full text-xs font-bold">
                   NEW
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Amazon&apos;s New Expert Review Service
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Expert Review Service
                 </h2>
               </div>
-              
-              <p className="text-gray-800 leading-relaxed text-lg mb-6">
-                Amazon is offering a new service featuring <span className="font-bold text-purple-700">Expert Reviews</span> on products.
+              <p className="text-gray-800 leading-relaxed mb-3">
+                Amazon offers <span className="font-bold text-purple-700">Expert Reviews</span> on products.
               </p>
 
-              {/* Expert Types */}
-              <div className="grid md:grid-cols-2 gap-4 mb-6">
-                {/* Human Expert */}
-                <div className="bg-white p-5 rounded-lg shadow-sm border-2 border-blue-200">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="bg-blue-100 p-2 rounded-full">
-                      <User className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 text-lg">Human Expert</h3>
+              {/* Expert Types - 컴팩트 버전 */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-white p-3 rounded-lg border border-blue-200">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <User className="w-5 h-5 text-blue-600" />
+                    <span className="font-bold text-gray-900">Human Expert</span>
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    Human experts with specialized knowledge in the field thoroughly analyze products and write detailed reviews.
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    Specialized experts analyze and review products.
                   </p>
                 </div>
-
-                {/* AI Expert */}
-                <div className="bg-white p-5 rounded-lg shadow-sm border-2 border-purple-200">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="bg-purple-100 p-2 rounded-full">
-                      <Bot className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <h3 className="font-bold text-gray-900 text-lg">AI Expert</h3>
+                <div className="bg-white p-3 rounded-lg border border-purple-200">
+                  <div className="flex items-center space-x-2 mb-1">
+                    <Bot className="w-5 h-5 text-purple-600" />
+                    <span className="font-bold text-gray-900">AI Expert</span>
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    Amazon&apos;s AI technology analyzes vast amounts of data to provide objective and detailed reviews.
-                  </p>
-                </div>
-              </div>
-
-              {/* Call to Action */}
-              <div className="bg-white p-5 rounded-lg border-2 border-yellow-300">
-                <div className="flex items-center space-x-3">
-                  <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-                  <p className="text-gray-900 font-semibold text-lg">
-                    Feel free to explore this new Expert Review feature!
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    AI analyzes data for objective reviews.
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Instructions */}
-          <div className="mt-8 bg-yellow-50 p-6 rounded-lg border-2 border-yellow-300">
-            <h3 className="font-semibold text-gray-900 mb-3 text-lg">📋 Before You Begin</h3>
-            <p className="text-gray-700 leading-relaxed mb-3">
-              This is a moment to take a short break before entering the shopping page.
-            </p>
-            <p className="text-gray-900 font-semibold leading-relaxed">
-              Once you click &quot;Start Shopping&quot;, please stay focused and continue without interruption.
-            </p>
+          {/* Call to Action + Instructions - 한 줄로 */}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="bg-white p-3 rounded-lg border-2 border-yellow-300 flex items-center space-x-3">
+              <Star className="w-5 h-5 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+              <p className="text-gray-900 font-semibold">
+                Feel free to explore this new Expert Review feature!
+              </p>
+            </div>
+
+            <div className="bg-yellow-50 p-3 rounded-lg border-2 border-yellow-300">
+              <p className="text-gray-700 text-sm mb-1">
+                📋 This is a moment to take a short break before shopping.
+              </p>
+              <p className="text-gray-900 font-semibold text-sm">
+                Once you click &quot;Start Shopping&quot;, please stay focused.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -148,14 +137,14 @@ export default function ScenarioPage() {
         <div className="flex justify-center">
           <button
             onClick={handleContinue}
-            className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold text-lg px-12 py-4 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold text-lg px-10 py-3 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
             Start Shopping →
           </button>
         </div>
 
         {/* Footer Note */}
-        <p className="text-center text-gray-500 text-sm mt-8">
+        <p className="text-center text-gray-500 text-sm mt-3">
           This study takes approximately 10-15 minutes to complete.
         </p>
       </main>
