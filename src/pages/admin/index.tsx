@@ -101,8 +101,9 @@ export default function AdminPage() {
           // 설문 응답이 있으면 해당 응답들 사용
           participantResponses.forEach(response => {
             // 해당 자극물의 체류 시간 찾기
-            const stimulusOrder = response.stimulus_order ?? response.stimulusOrder ?? 0;
-            const exposureKey = `${pid}_${stimulusOrder}`;
+            // stimulus_order는 1-based (1,2,3), exposureOrder는 0-based (0,1,2)
+            const stimulusOrder = Number(response.stimulus_order ?? response.stimulusOrder ?? 1);
+            const exposureKey = `${pid}_${stimulusOrder - 1}`;
             const exposure = exposureMap.get(exposureKey);
 
             allData.push({
