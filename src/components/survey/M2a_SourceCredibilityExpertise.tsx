@@ -37,13 +37,14 @@ export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps)
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Message Credibility Section */}
+    <div className="max-w-5xl mx-auto p-6">
+      {/* Message Credibility - 대표 질문 카드 스타일 */}
       <div className="mb-10">
-        <h2 className="text-sm font-semibold text-gray-600 mb-3">{M2a_MessageCredibility.title}</h2>
-        <p className="text-lg font-medium text-gray-800 mb-6 whitespace-pre-line">
-          {M2a_MessageCredibility.description}
-        </p>
+        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
+          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
+            {M2a_MessageCredibility.description}
+          </p>
+        </div>
         <div className="space-y-6">
           {M2a_MessageCredibility.items.map((item) => (
             <LikertScale
@@ -58,12 +59,13 @@ export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps)
         </div>
       </div>
 
-      {/* Trust Section */}
+      {/* Trust - 대표 질문 카드 스타일 */}
       <div className="mb-8 pt-8 border-t border-gray-200">
-        <h2 className="text-sm font-semibold text-gray-600 mb-3">{M2b_Trust.title}</h2>
-        <p className="text-lg font-medium text-gray-800 mb-6 whitespace-pre-line">
-          {M2b_Trust.description}
-        </p>
+        <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
+          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
+            {M2b_Trust.description}
+          </p>
+        </div>
         <div className="space-y-6">
           {M2b_Trust.items.map((item) => (
             <LikertScale

@@ -28,11 +28,15 @@ export default function Q7_ReviewSkepticism({ onComplete }: Q7ReviewSkepticismPr
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h2 className="text-sm font-semibold text-gray-600 mb-3">{config.title}</h2>
+      {/* 대표 질문 - 초록색 카드 스타일 (general-questions 테마) */}
       {config.description && (
-        <p className="text-lg font-medium text-gray-800 mb-8">{config.description}</p>
+        <div className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-6 mb-10">
+          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
+            {config.description}
+          </p>
+        </div>
       )}
-      
+
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
           {config.items.map((item) => (

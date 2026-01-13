@@ -27,8 +27,15 @@ export default function Q8_UsageHabits({ onComplete }: Q8Props) {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h2 className="text-sm font-semibold text-gray-600 mb-8">{config.title}</h2>
-      
+      {/* 대표 질문 - 초록색 카드 스타일 (general-questions 테마) */}
+      {config.description && (
+        <div className="bg-green-50 border-l-4 border-green-500 rounded-r-lg p-6 mb-10">
+          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
+            {config.description}
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <div className="space-y-8">
           {config.items.map((item, index) => (
@@ -36,10 +43,10 @@ export default function Q8_UsageHabits({ onComplete }: Q8Props) {
               <p className="text-lg font-medium text-gray-800">
                 {index + 1}. {item.text}
               </p>
-              
+
               <div className="space-y-2 pl-4">
                 {item.options?.map((option) => (
-                  <label 
+                  <label
                     key={option.value}
                     className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 p-3 rounded-lg transition-colors"
                   >

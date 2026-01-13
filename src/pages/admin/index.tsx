@@ -665,17 +665,21 @@ export default function AdminPage() {
             // 참가자별 그룹 보기
             <div className="space-y-4">
               {Array.from(groupedData.entries()).map(([participantId, participantResponses]) => {
-                // 총 소요 시간 계산
-                const totalTime = participantResponses.reduce((sum, r) => {
-                  const dwellTime = r.stimulus_dwell_time || 0;
-                  return sum + Number(dwellTime);
-                }, 0);
-                
+                // 전체 설문 소요 시간 계산 (start_time ~ end_time)
+                const startTime = participantResponses[0]?.survey_start_time as Timestamp | undefined;
+                const endTime = participantResponses[0]?.survey_end_time as Timestamp | undefined;
+                let totalTime = 0;
+                if (startTime && endTime) {
+                  const startMs = startTime instanceof Timestamp ? startTime.toMillis() : new Date(startTime).getTime();
+                  const endMs = endTime instanceof Timestamp ? endTime.toMillis() : new Date(endTime).getTime();
+                  totalTime = Math.floor((endMs - startMs) / 1000); // 초 단위
+                }
+
                 // 3개 조건 그룹 모두 추출 (각 자극물마다 다른 조건, 순서대로)
                 const conditionGroups = participantResponses
                   .sort((a, b) => (a.stimulus_order || 0) - (b.stimulus_order || 0))
                   .map(r => r.condition_group || (r as ExtendedSurveyResponse)?.conditionId || '-');
-                
+
                 // 완료 상태 (3개 자극물 모두 완료 여부)
                 const isCompleted = participantResponses.length === 3;
                 
@@ -721,15 +725,6 @@ export default function AdminPage() {
                             {participantResponses.length}/3 자극물
                           </span>
                         </div>
-                        {/* 전체 설문 시작/끝 시간 표시 */}
-                        {participantResponses[0]?.survey_start_time && (
-                          <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
-                            <span>시작: {participantResponses[0].survey_start_time instanceof Timestamp ? participantResponses[0].survey_start_time.toDate().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }) : '-'}</span>
-                            {participantResponses[0].survey_end_time && (
-                              <span>완료: {participantResponses[0].survey_end_time instanceof Timestamp ? participantResponses[0].survey_end_time.toDate().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', hour12: false }) : '-'}</span>
-                            )}
-                          </div>
-                        )}
                       </div>
                       <div className="text-sm text-gray-500 ml-4">
                         {expandedParticipant === participantId ? '▼ 접기' : '▶ 펼치기'}
