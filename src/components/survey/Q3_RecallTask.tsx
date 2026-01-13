@@ -9,36 +9,67 @@ interface Q3_RecallTaskProps {
 
 export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   const [words, setWords] = useState<string[]>(['']); // Start with one empty box
-  const [displayTimeLeft, setDisplayTimeLeft] = useState(90); // 90 seconds display timer
-  const [writingStartTime, setWritingStartTime] = useState<number | null>(null); // When user started writing
-  const [secondsUntilCanContinue, setSecondsUntilCanContinue] = useState<number | null>(null);
-  const pageLoadTime = useRef(Date.now()); // When page loaded
+  const [timeLeft, setTimeLeft] = useState(90); // 90 seconds countdown
+  const [writingStartTime, setWritingStartTime] = useState<number | null>(null);
+  const pageLoadTime = useRef(Date.now());
 
   // Check if user has entered at least one word
   const hasContent = words.some(word => word.trim().length > 0);
   const filledWords = words.filter(word => word.trim().length > 0);
 
-  // Display timer countdown (90 seconds, then shows time since writing started)
+  // 90 second countdown timer (never resets)
   useEffect(() => {
+    if (timeLeft <= 0) return;
+
     const timer = setInterval(() => {
-      if (!writingStartTime) {
-        // Before writing: count down from 90
-        const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
-        setDisplayTimeLeft(Math.max(0, 90 - elapsed));
-      } else {
-        // After writing started: show remaining time until can continue (30 - elapsed)
-        const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
-        const remaining = Math.max(0, 30 - writingElapsed);
-        setSecondsUntilCanContinue(remaining);
-        setDisplayTimeLeft(remaining);
-      }
+      const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+      setTimeLeft(Math.max(0, 90 - elapsed));
     }, 500);
 
     return () => clearInterval(timer);
-  }, [writingStartTime]);
+  }, [timeLeft]);
 
-  // Can continue when: has content AND 30 seconds have passed since writing started
-  const canContinue = hasContent && writingStartTime !== null && secondsUntilCanContinue === 0;
+  // Button activation logic:
+  // - Must have content
+  // - If 90 seconds passed: activate immediately when content exists
+  // - If before 90 seconds: activate 30 seconds after writing started
+  const canContinue = (() => {
+    if (!hasContent) return false;
+
+    const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+
+    // After 90 seconds: activate immediately if has content
+    if (elapsed >= 90) return true;
+
+    // Before 90 seconds: need 30 seconds since writing started
+    if (writingStartTime) {
+      const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
+      return writingElapsed >= 30;
+    }
+
+    return false;
+  })();
+
+  // Calculate seconds until can continue (for display)
+  const getSecondsUntilCanContinue = () => {
+    if (!hasContent || !writingStartTime) return null;
+
+    const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+    if (elapsed >= 90) return 0;
+
+    const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
+    return Math.max(0, 30 - writingElapsed);
+  };
+
+  const [secondsUntilContinue, setSecondsUntilContinue] = useState<number | null>(null);
+
+  // Update seconds until continue
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSecondsUntilContinue(getSecondsUntilCanContinue());
+    }, 500);
+    return () => clearInterval(timer);
+  }, [writingStartTime, hasContent]);
 
   // Add new word box
   const handleAddWord = () => {
@@ -55,7 +86,6 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
       const hasAnyContent = newWords.some(word => word.trim().length > 0);
       if (!hasAnyContent) {
         setWritingStartTime(null);
-        setSecondsUntilCanContinue(null);
       }
     }
   };
@@ -75,7 +105,6 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     // If user deleted all content, reset writing start time
     if (!hasAnyContent && writingStartTime) {
       setWritingStartTime(null);
-      setSecondsUntilCanContinue(null);
     }
   };
 
@@ -107,11 +136,19 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
       return 'Please enter at least one information point to continue.';
     }
 
-    if (secondsUntilCanContinue !== null && secondsUntilCanContinue > 0) {
-      return `Please wait ${secondsUntilCanContinue} seconds before continuing.`;
+    const elapsed = Math.floor((Date.now() - pageLoadTime.current) / 1000);
+
+    // After 90 seconds with content: can continue
+    if (elapsed >= 90) {
+      return null;
     }
 
-    return null; // canContinue is true
+    // Before 90 seconds with content: show wait time
+    if (secondsUntilContinue !== null && secondsUntilContinue > 0) {
+      return `Please wait ${secondsUntilContinue} seconds before continuing.`;
+    }
+
+    return null;
   };
 
   const statusMessage = getStatusMessage();
@@ -126,9 +163,9 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">{config.title}</h2>
           </div>
           <div className="flex items-center space-x-2">
-            <Clock size={24} className={displayTimeLeft <= 10 && displayTimeLeft > 0 ? 'text-red-600' : 'text-blue-600'} />
-            <span className={`text-3xl font-mono font-bold ${displayTimeLeft <= 10 && displayTimeLeft > 0 ? 'text-red-600' : 'text-gray-900'}`}>
-              {formatTime(displayTimeLeft)}
+            <Clock size={24} className={timeLeft <= 10 && timeLeft > 0 ? 'text-red-600' : 'text-blue-600'} />
+            <span className={`text-3xl font-mono font-bold ${timeLeft <= 10 && timeLeft > 0 ? 'text-red-600' : 'text-gray-900'}`}>
+              {formatTime(timeLeft)}
             </span>
           </div>
         </div>
@@ -138,15 +175,6 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-gray-700 whitespace-pre-line leading-relaxed">
               {config.instruction}
-            </p>
-          </div>
-        )}
-
-        {/* Warning when time is low */}
-        {writingStartTime && secondsUntilCanContinue !== null && secondsUntilCanContinue <= 10 && secondsUntilCanContinue > 0 && (
-          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-            <p className="text-yellow-800 text-sm font-medium">
-              ⏰ {secondsUntilCanContinue} seconds until you can continue
             </p>
           </div>
         )}
