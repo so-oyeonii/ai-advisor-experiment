@@ -198,20 +198,21 @@ export async function saveStimulusExposure(exposureData: Omit<StimulusExposureDa
     
     const exposureRef = doc(db, COLLECTIONS.STIMULUS_EXPOSURES, exposureData.exposureId);
     console.log('🔥 [Firebase] Document reference created');
-    
-    // Test with minimal data first
-    const minimalData = {
-      exposureId: exposureData.exposureId,
-      participantId: exposureData.participantId,
-      productId: exposureData.productId,
-      productName: exposureData.productName,
-      dwellTime: exposureData.dwellTime,
+
+    // Save all exposure data including exposureOrder for matching
+    const fullData = {
+      ...exposureData,
       createdAt: getKSTTimestamp(),
     };
-    
-    console.log('🔥 [Firebase] Attempting to save minimal data:', minimalData);
-    
-    await setDoc(exposureRef, minimalData);
+
+    console.log('🔥 [Firebase] Saving exposure data:', {
+      exposureId: fullData.exposureId,
+      participantId: fullData.participantId,
+      exposureOrder: fullData.exposureOrder,
+      dwellTime: fullData.dwellTime
+    });
+
+    await setDoc(exposureRef, fullData);
     
     console.log('🔥 [Firebase] setDoc completed successfully');
   } catch (error) {

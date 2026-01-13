@@ -233,15 +233,16 @@ export default function AdminPage() {
         });
       });
 
-      // 컬럼 순서 정의 (export.tsx와 동일하게)
-      const priorityColumns = [
+      // 59개 고정 컬럼 (export.tsx와 동일)
+      const columns = [
         // 1. 참가자 기본 정보
         'participant_id',
+        'informedConsent',
         'status',
         'survey_start_time',
         'survey_end_time',
-        
-        // 2. 자극물 정보
+
+        // 2. 자극물 조건 정보
         'stimulus_order',
         'product',
         'condition_group',
@@ -249,23 +250,77 @@ export default function AdminPage() {
         'congruity',
         'advisor_valence',
         'public_valence',
-        
-        // 3. 노출 정보
+
+        // 3. 자극물 노출 정보
         'stimulus_dwell_time',
-        
-        // 4. 인구통계
+
+        // 4. Q3: Recall Task
+        'recalled_words',
+        'word_count',
+        'recall_combined_text',
+        'recall_time_seconds',
+
+        // 5. M3: PPI
+        'ppi_1',
+        'ppi_2',
+        'ppi_3',
+        'ppi_4',
+        'ppi_5',
+        'perceived_error',
+
+        // 6. M2a: Message Credibility
+        'message_credibility_1',
+        'message_credibility_2',
+        'message_credibility_3',
+
+        // 7. M2b: Trust
+        'trust_1',
+        'trust_2',
+        'trust_3',
+
+        // 8. DV1: Persuasiveness
+        'persuasiveness_1',
+        'persuasiveness_2',
+        'persuasiveness_3',
+        'persuasiveness_4',
+
+        // 9. DV2: Purchase Intention
+        'purchase_1',
+        'purchase_2',
+
+        // 10. DV3: Decision Confidence
+        'confidence',
+
+        // 11. Q7: AI Familiarity
+        'ai_familiarity_1',
+        'ai_familiarity_2',
+        'ai_familiarity_3',
+
+        // 12. Q7: Machine Heuristic
+        'machine_heuristic_1',
+        'machine_heuristic_2',
+        'machine_heuristic_3',
+        'machine_heuristic_4',
+
+        // 13. Q7: Review Skepticism
+        'review_skepticism_1',
+        'review_skepticism_2',
+        'review_skepticism_3',
+        'review_skepticism_4',
+
+        // 14. Q8: Usage Habits
+        'shopping_frequency',
+        'ai_usage_frequency',
+
+        // 15. Demographics
         'age',
         'gender',
+        'gender_other',
         'education',
         'income',
-        'occupation'
+        'occupation',
+        'occupation_other'
       ];
-
-      const remainingColumns = Array.from(allColumns)
-        .filter(col => !priorityColumns.includes(col) && col !== 'timestamp')
-        .sort();
-
-      const columns = [...priorityColumns.filter(col => allColumns.has(col)), ...remainingColumns];
       
       console.log('📥 CSV 다운로드 시작');
       console.log('  - 행 수:', enrichedResponses.length);
