@@ -100,9 +100,11 @@ interface MergedData {
   publicValence: string | number;
   dwellTime: string | number;
   exposureTimestamp: string;
-  recalledWords: string;
-  recalledText: string;
-  recallTime: string | number;
+  // Recall data
+  recalled_words: string;
+  word_count: string | number;
+  recall_combined_text: string;
+  recall_time_seconds: string | number;
   recallTimestamp: string;
   surveyTimestamp?: string;
   // Survey responses (dynamic keys like survey_q1, survey_q2, etc.)
@@ -300,19 +302,20 @@ export default function AdminExportPage() {
           // Stimulus exposure data
           dwellTime: exposure?.dwellTime || '',
           exposureTimestamp: toKSTString(exposure?.createdAt),
-          
-          // Recall data
-          recalledWords: recall?.recalledWords ? recall.recalledWords.join(' | ') : '',
-          recalledText: recall?.recalledRecommendation || '',
-          recallTime: recall?.recallTime || '',
+
+          // Recall data - 필드명을 헤더와 일치시킴
+          recalled_words: recall?.recalledWords ? recall.recalledWords.join(' | ') : '',
+          word_count: recall?.recalledWords ? recall.recalledWords.length : '',
+          recall_combined_text: recall?.recalledRecommendation || '',
+          recall_time_seconds: recall?.recallTime || '',
           recallTimestamp: toKSTString(recall?.createdAt),
         };
 
-        // Add survey responses
+        // Add survey responses - 접두사 없이 추가
         if (survey) {
           const responseData: Record<string, string | number> = (survey as unknown as { responseData?: Record<string, string | number> }).responseData || {};
           Object.keys(responseData).forEach(key => {
-            row[`survey_${key}`] = responseData[key];
+            row[key] = responseData[key]; // survey_ 접두사 제거
           });
           row.surveyTimestamp = toKSTString(survey.createdAt);
         }
