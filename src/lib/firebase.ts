@@ -237,57 +237,39 @@ export async function getAllStimulusExposures(): Promise<StimulusExposureData[]>
 }
 
 // ============================================================================
-// Recall Task
+// Recall Task (인터페이스만 유지 - export용)
 // ============================================================================
 
 export interface RecallTaskData {
-  recallId: string; // participantId_product_index
+  recallId: string;
   participantId: string;
   stimulusId: string;
   productId: string;
   productName: string;
-  groupId: number; // 1-4
-  conditionId: number; // 1-8
+  groupId: number;
+  conditionId: number;
   advisorType: 'AI' | 'Human';
   congruity: 'Congruent' | 'Incongruent';
   advisorValence: 'positive' | 'negative';
   publicValence: 'positive' | 'negative';
-  recalledWords: string[]; // Array of words/phrases for analysis
-  recalledRecommendation: string; // Combined text for backward compatibility
-  recallAccuracy?: number; // Optional: computed similarity score (0-1)
-  recallTime: number; // Time taken to complete recall (seconds)
+  recalledWords: string[];
+  recalledRecommendation: string;
+  recallAccuracy?: number;
+  recallTime: number;
   createdAt: Timestamp;
 }
 
 /**
- * Save recall task response
- */
-export async function saveRecallTask(recallData: Omit<RecallTaskData, 'createdAt'>): Promise<void> {
-  try {
-    const recallRef = doc(db, COLLECTIONS.RECALL_TASKS, recallData.recallId);
-    
-    await setDoc(recallRef, {
-      ...recallData,
-      createdAt: getKSTTimestamp(),
-    });
-  } catch (error) {
-    console.error('Error saving recall task:', error);
-    throw new Error('Failed to save recall task');
-  }
-}
-
-/**
- * Get all recall tasks (for admin/export)
+ * Get all recall tasks (for admin/export) - 현재 미사용 컬렉션, 빈 배열 반환
  */
 export async function getAllRecallTasks(): Promise<RecallTaskData[]> {
   try {
     const recallsRef = collection(db, COLLECTIONS.RECALL_TASKS);
     const snapshot = await getDocs(recallsRef);
-    
     return snapshot.docs.map(doc => doc.data() as RecallTaskData);
   } catch (error) {
     console.error('Error getting all recall tasks:', error);
-    throw new Error('Failed to get all recall tasks');
+    return [];
   }
 }
 
@@ -392,7 +374,7 @@ export async function getAllSurveyResponses(): Promise<SurveyResponseData[]> {
 }
 
 // ============================================================================
-// Demographics
+// Demographics (인터페이스만 유지 - export용, 실제 데이터는 survey_responses에 포함)
 // ============================================================================
 
 export interface DemographicsData {
@@ -405,16 +387,13 @@ export interface DemographicsData {
   online_shopping_frequency?: string;
   shopping_frequency?: string;
   ai_usage_frequency?: string;
-  // AI Familiarity (1-7 scale)
   ai_familiarity_1?: number;
   ai_familiarity_2?: number;
   ai_familiarity_3?: number;
-  // Review Skepticism (1-7 scale)
   review_skepticism_1?: number;
   review_skepticism_2?: number;
   review_skepticism_3?: number;
   review_skepticism_4?: number;
-  // Attitude toward AI (1-7 scale)
   attitude_ai_1?: number;
   attitude_ai_2?: number;
   attitude_ai_3?: number;
@@ -423,34 +402,17 @@ export interface DemographicsData {
 }
 
 /**
- * Save demographics data
- */
-export async function saveDemographics(demographicsData: Omit<DemographicsData, 'createdAt'>): Promise<void> {
-  try {
-    const demographicsRef = doc(db, COLLECTIONS.DEMOGRAPHICS, demographicsData.participantId);
-    
-    await setDoc(demographicsRef, {
-      ...demographicsData,
-      createdAt: getKSTTimestamp(),
-    });
-  } catch (error) {
-    console.error('Error saving demographics:', error);
-    throw new Error('Failed to save demographics');
-  }
-}
-
-/**
- * Get all demographics data (for admin/export)
+ * Get all demographics data (for admin/export) - 현재 미사용 컬렉션, 빈 배열 반환
+ * 실제 demographics 데이터는 survey_responses에 포함되어 저장됨
  */
 export async function getAllDemographics(): Promise<DemographicsData[]> {
   try {
     const demographicsRef = collection(db, COLLECTIONS.DEMOGRAPHICS);
     const snapshot = await getDocs(demographicsRef);
-    
     return snapshot.docs.map(doc => doc.data() as DemographicsData);
   } catch (error) {
     console.error('Error getting all demographics:', error);
-    throw new Error('Failed to get all demographics');
+    return [];
   }
 }
 
