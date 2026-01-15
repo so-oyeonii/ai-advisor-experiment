@@ -51,7 +51,7 @@ export default function TestConditionsPage() {
                 )}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
-                {currentCondition.advisorType === 'AI' ? "AI Expert's Review" : "Expert's Review"}
+                {currentCondition.advisorType === 'AI' ? "AI Expert's Review" : "Human Expert's Review"}
               </h2>
               <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-0.5 rounded-full text-xs sm:text-sm font-bold">
                 NEW FEATURE
