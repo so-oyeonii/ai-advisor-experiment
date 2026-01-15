@@ -62,8 +62,7 @@ export default function ScenarioPage() {
                   Shopping Situation
                 </h2>
                 <p className="text-gray-900 leading-relaxed font-medium">
-                  You are looking to purchase <span className="font-bold text-blue-700">Protein Powder, Hand Soap, and Tissue</span> on Amazon.
-                  These are items you <span className="font-bold">routinely purchase</span>, and you have run out of all three at home.
+                  You have run out of three items at home and are looking to purchase <span className="font-bold text-blue-700">Protein Powder, Hand Soap, and Tissue</span> on Amazon.
                 </p>
               </div>
             </div>
@@ -90,7 +89,7 @@ export default function ScenarioPage() {
             {/* Read Carefully 강조 */}
             <div className="bg-yellow-100 border-2 border-yellow-400 rounded-lg p-2 mb-4">
               <p className="text-center font-bold text-gray-900">
-                ⭐ Please Read Carefully: Types of Expert Reviews ⭐
+                ⭐ Please Read Carefully: There are two types of Expert Reviews ⭐
               </p>
             </div>
 
@@ -102,7 +101,7 @@ export default function ScenarioPage() {
                   <div className="bg-blue-100 p-2 rounded-full">
                     <User className="w-6 h-6 text-blue-600" />
                   </div>
-                  <h4 className="font-bold text-gray-900 text-lg">Human Expert</h4>
+                  <h4 className="font-bold text-gray-900 text-lg">Human Expert&apos;s Review</h4>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
                   Human experts with <span className="font-semibold text-blue-700">specialized knowledge</span> in the field thoroughly analyze products and write detailed reviews.
@@ -115,7 +114,7 @@ export default function ScenarioPage() {
                   <div className="bg-purple-100 p-2 rounded-full">
                     <Bot className="w-6 h-6 text-purple-600" />
                   </div>
-                  <h4 className="font-bold text-gray-900 text-lg">AI Expert</h4>
+                  <h4 className="font-bold text-gray-900 text-lg">AI Expert&apos;s Review</h4>
                 </div>
                 <p className="text-gray-700 leading-relaxed">
                   Amazon&apos;s <span className="font-semibold text-purple-700">AI technology</span> analyzes vast amounts of data to provide objective and detailed reviews.
