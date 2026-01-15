@@ -326,24 +326,25 @@ export const Q8_UsageHabits: QuestionBlock = {
   items: [
     {
       variable: 'shopping_frequency',
-      text: 'What is your frequency of online shopping?',
+      text: 'How often do you shop online?',
       scaleType: 'categorical',
       options: [
-        { value: 'less_than_weekly', label: 'Less than once a week' },
-        { value: '1_2_weekly', label: '1-2 times a week' },
-        { value: '3_4_weekly', label: '3-4 times a week' },
-        { value: 'daily', label: 'Daily' }
+        { value: 'more_than_weekly', label: 'More than once a week' },
+        { value: 'weekly_to_monthly', label: 'Once a week to once a month' },
+        { value: 'monthly_to_6months', label: 'Once a month to once every 6 months' },
+        { value: 'less_than_6months', label: 'Less than once every 6 months' }
       ]
     },
     {
       variable: 'ai_usage_frequency',
-      text: 'What is your frequency of using generative AI (e.g., ChatGPT)?',
+      text: 'How often do you use generative AI (e.g., ChatGPT)?',
       scaleType: 'categorical',
       options: [
         { value: 'never', label: 'Never' },
         { value: 'less_than_monthly', label: 'Less than once a month' },
-        { value: 'weekly', label: 'Once a week' },
-        { value: 'daily', label: 'Daily' }
+        { value: '1_3_monthly', label: '1–3 times a month' },
+        { value: '1_3_weekly', label: '1–3 times a week' },
+        { value: 'daily', label: 'Daily or almost daily' }
       ]
     }
   ]

@@ -32,12 +32,12 @@ export type ReviewValence = 'positive' | 'negative';
 /**
  * Shopping frequency categories
  */
-export type ShoppingFrequency = 'less_than_weekly' | '1_2_weekly' | '3_4_weekly' | 'daily';
+export type ShoppingFrequency = 'more_than_weekly' | 'weekly_to_monthly' | 'monthly_to_6months' | 'less_than_6months';
 
 /**
  * AI usage frequency categories
  */
-export type AIUsageFrequency = 'never' | 'less_than_monthly' | 'weekly' | 'daily';
+export type AIUsageFrequency = 'never' | 'less_than_monthly' | '1_3_monthly' | '1_3_weekly' | 'daily';
 
 /**
  * Gender categories
