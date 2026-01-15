@@ -53,6 +53,44 @@ export const Q3_RecallTask: QuestionBlock = {
   ]
 };
 
+export const MV_ReviewHelpfulness: QuestionBlock = {
+  title: 'Review Helpfulness',
+  description: 'The following questions ask about the helpfulness of the expert review you just read.\n\nPlease indicate how helpful the expert\'s review was in understanding and evaluating the product.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  items: [
+    {
+      variable: 'review_helpfulness_1',
+      text: "This expert's review is helpful for me to evaluate the product.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'review_helpfulness_2',
+      text: "This expert's review is helpful in familiarizing me with the product.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'review_helpfulness_3',
+      text: "This expert's review is helpful for me to understand the performance of the product.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const MV_PerceivedError: QuestionBlock = {
+  title: 'Perceived Error',
+  description: 'Please indicate the extent to which you agree with the following statement about the expert\'s review you just read.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  items: [
+    {
+      variable: 'perceived_error',
+      text: "I felt that there was an error in this expert's review.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
 export const M2a_MessageCredibility: QuestionBlock = {
   title: 'Message Credibility',
   description: 'How well do the following adjectives describe the expert\'s review you just read?\n(1 = describes very poorly, 7 = describes very well)',
@@ -136,12 +174,6 @@ export const M3_PersuasiveIntent: QuestionBlock = {
       text: "This expert reviewer may have exaggerated the product's performance.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'perceived_error',
-      text: 'I felt that there was an error in this review.',
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
   ]
 };
@@ -152,25 +184,13 @@ export const DV1_Persuasiveness: QuestionBlock = {
   items: [
     {
       variable: 'persuasiveness_1',
-      text: "The expert's review changed my opinion.",
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'persuasiveness_2',
       text: "I was convinced by the expert's review.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
-      variable: 'persuasiveness_3',
+      variable: 'persuasiveness_2',
       text: "The expert's review influenced me.",
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'persuasiveness_4',
-      text: "I will reconsider my position after reading the expert's review.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -414,8 +434,11 @@ export const Demographics: QuestionBlock = {
  */
 export const SURVEY_QUESTIONS = {
   // Block A: Stimulus-Specific (Repeated 3 times)
+  // Order: Your Thoughts → Review Helpfulness → Perceived Error → Message Credibility → Trust → PPI → Persuasiveness → Purchase → Confidence
   blockA: {
     Q3_RecallTask,
+    MV_ReviewHelpfulness,
+    MV_PerceivedError,
     M2a_MessageCredibility,
     M2b_Trust,
     M3_PersuasiveIntent,
@@ -423,7 +446,7 @@ export const SURVEY_QUESTIONS = {
     DV2_PurchaseIntention,
     DV3_DecisionConfidence
   },
-  
+
   // General Questions (Asked once)
   general: {
     Q7_AIFamiliarity,
@@ -431,7 +454,7 @@ export const SURVEY_QUESTIONS = {
     Q7_ReviewSkepticism,
     Q8_UsageHabits
   },
-  
+
   // Demographics (Asked once)
   demographics: Demographics
 };

@@ -6,6 +6,8 @@ import { useEffect } from 'react';
 
 // Import all Block A survey components
 import Q3_RecallTask from '@/components/survey/Q3_RecallTask';
+import MV_ReviewHelpfulness from '@/components/survey/MV_ReviewHelpfulness';
+import MV_PerceivedError from '@/components/survey/MV_PerceivedError';
 import M2a_SourceCredibilityExpertise from '@/components/survey/M2a_SourceCredibilityExpertise';
 import M3_PersuasiveIntent from '@/components/survey/M3_PersuasiveIntent';
 import DV1_Persuasiveness from '@/components/survey/DV1_Persuasiveness';
@@ -17,15 +19,23 @@ import type {
 } from '@/types/survey';
 
 type QuestionStep =
-  | 'Q3'
-  | 'M2a' | 'M3'
-  | 'DV1' | 'DV2'; // DV3는 DV2에 통합됨
+  | 'Q3'           // Your Thoughts
+  | 'MV_Help'      // Review Helpfulness
+  | 'MV_Error'     // Perceived Error
+  | 'M2a'          // Message Credibility + Trust
+  | 'M3'           // PPI
+  | 'DV1'          // Persuasiveness
+  | 'DV2';         // Purchase + Confidence
 
+// 순서: Your Thoughts → Review Helpfulness → Perceived Error → Message Credibility + Trust → PPI → Persuasiveness → Purchase + Confidence
 const QUESTION_STEPS: QuestionStep[] = [
   'Q3',
-  'M3',           // PPI first
-  'M2a',          // Message Credibility + Trust (combined)
-  'DV1', 'DV2'    // DV2에 Purchase + Confidence 통합
+  'MV_Help',
+  'MV_Error',
+  'M2a',
+  'M3',
+  'DV1',
+  'DV2'
 ];
 
 export default function SurveyPage() {
@@ -145,11 +155,23 @@ export default function SurveyPage() {
       {/* Question Components */}
       <div className="py-8">
         {currentStep === 'Q3' && (
-          <Q3_RecallTask 
+          <Q3_RecallTask
             onComplete={(data) => handleComplete('Q3', data as unknown as Record<string, unknown>)}
           />
         )}
-        
+
+        {currentStep === 'MV_Help' && (
+          <MV_ReviewHelpfulness
+            onComplete={(data) => handleComplete('MV_Help', data as unknown as Record<string, unknown>)}
+          />
+        )}
+
+        {currentStep === 'MV_Error' && (
+          <MV_PerceivedError
+            onComplete={(data) => handleComplete('MV_Error', data as unknown as Record<string, unknown>)}
+          />
+        )}
+
         {currentStep === 'M2a' && (
           <M2a_SourceCredibilityExpertise
             onComplete={(data) => handleComplete('M2a', data as unknown as Record<string, unknown>)}
@@ -157,17 +179,17 @@ export default function SurveyPage() {
         )}
 
         {currentStep === 'M3' && (
-          <M3_PersuasiveIntent 
+          <M3_PersuasiveIntent
             onComplete={(data) => handleComplete('M3', data as unknown as Record<string, unknown>)}
           />
         )}
-        
+
         {currentStep === 'DV1' && (
-          <DV1_Persuasiveness 
+          <DV1_Persuasiveness
             onComplete={(data) => handleComplete('DV1', data as unknown as Record<string, unknown>)}
           />
         )}
-        
+
         {currentStep === 'DV2' && (
           <DV2_PurchaseIntention
             onComplete={(data) => handleComplete('DV2', data as unknown as Record<string, unknown>)}
