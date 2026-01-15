@@ -178,14 +178,18 @@ export default function CompletePage() {
           </div>
         </div>
 
-        {/* Action Button */}
+        {/* Cloud Research Redirect Button */}
+        {/* TODO: 아래 URL을 Cloud Research에서 제공하는 completion URL로 변경해주세요 */}
         <div className="mt-6">
           <button
             onClick={() => window.location.href = 'https://www.google.com'}
             className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 transition font-semibold text-lg shadow-md"
           >
-            Continue to Survey Platform
+            Complete Survey & Return to Platform
           </button>
+          <p className="text-center text-gray-500 text-sm mt-2">
+            Click the button above to complete your participation
+          </p>
         </div>
       </div>
     </div>

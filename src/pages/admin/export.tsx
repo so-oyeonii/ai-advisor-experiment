@@ -56,11 +56,13 @@ interface Stats {
 interface SessionWithDemographics extends SessionData {
   age?: string;
   exposures?: StimulusExposureData[];
+  workerId?: string;
 }
 
 interface MergedData {
   // Participant-level info
   participantId: string;
+  workerId: string; // Cloud Research worker ID
   informedConsent: string;
   age: string | number;
   gender: string | number;
@@ -254,6 +256,7 @@ export default function AdminExportPage() {
         const row: MergedData = {
           // Participant-level info (same for all 3 rows)
           participantId: session.participantId,
+          workerId: session.workerId || '', // Cloud Research worker ID
           informedConsent: 'agree', // 설문 참가한 사람은 모두 동의한 것으로 저장
           age: participantDemo?.age || '',
           gender: participantDemo?.gender || '',
@@ -367,6 +370,7 @@ export default function AdminExportPage() {
     const headers = [
       // 1. 참가자 기본 정보
       'participantId',
+      'workerId', // Cloud Research worker ID
       'informedConsent',
       'status',
       'survey_start_time',
@@ -692,6 +696,7 @@ export default function AdminExportPage() {
                   <thead className="bg-gray-100 border-b-2 border-gray-300">
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">참가자 ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Worker ID</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">나이</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">제품 순서 (그룹/조건/타입/일치성)</th>
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">상태</th>
@@ -705,6 +710,9 @@ export default function AdminExportPage() {
                       <tr key={session.participantId} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                         <td className="px-4 py-3 text-sm font-mono text-gray-900">
                           {session.participantId.substring(0, 8)}...
+                        </td>
+                        <td className="px-4 py-3 text-sm text-purple-700 font-medium">
+                          {session.workerId || '-'}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900">
                           {session.age || 'N/A'}

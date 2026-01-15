@@ -13,6 +13,18 @@ export default function ConsentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Cloud Research URL 파라미터에서 workerId 추출
+  const getCloudResearchParams = () => {
+    if (!router.isReady) return { workerId: '', assignmentId: '', hitId: '' };
+
+    // Cloud Research에서 보내는 일반적인 파라미터들
+    const workerId = (router.query.workerId || router.query.worker_id || router.query.PROLIFIC_PID || '') as string;
+    const assignmentId = (router.query.assignmentId || router.query.assignment_id || '') as string;
+    const hitId = (router.query.hitId || router.query.hit_id || '') as string;
+
+    return { workerId, assignmentId, hitId };
+  };
+
   const handleContinue = async (e: FormEvent) => {
     e.preventDefault();
     
@@ -23,6 +35,12 @@ export default function ConsentPage() {
 
     try {
       console.log('🚀 Starting consent process...');
+
+      // 0. Get Cloud Research parameters
+      const { workerId, assignmentId, hitId } = getCloudResearchParams();
+      if (workerId) {
+        console.log('✅ Cloud Research workerId:', workerId);
+      }
 
       // 1. Generate participant ID
       const participantId = uuidv4();
@@ -57,6 +75,9 @@ export default function ConsentPage() {
       // 7. Try to save to Firebase in background (non-blocking)
       saveSession({
         participantId,
+        workerId: workerId || '', // Cloud Research worker ID
+        assignmentId: assignmentId || '', // Cloud Research assignment ID
+        hitId: hitId || '', // Cloud Research hit ID
         informedConsent: 'agreed', // 실험참가 개인정보 동의
         conditionNumber: experimentCondition.selectedStimuli[0].condition.conditionId,
         groupId: firstCondition.groupId,
