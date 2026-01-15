@@ -378,11 +378,11 @@ export default function AdminExportPage() {
     if (data.length === 0) return '';
 
     // Define explicit column order - 설문 순서와 동일하게 정렬
-    // Order: Your Thoughts → Review Helpfulness → Perceived Error → Message Credibility → Trust → PPI → Persuasiveness → Purchase → Confidence
+    // Survey Flow: Your Thoughts → Review Helpfulness + Perceived Error → Message Credibility + Trust → PPI → Persuasiveness + Purchase + Confidence
     const headers = [
       // 1. 참가자 기본 정보
       'participantId',
-      'workerId', // Cloud Research worker ID
+      'workerId',
       'informedConsent',
       'status',
       'survey_start_time',
@@ -408,65 +408,59 @@ export default function AdminExportPage() {
       'word_count',
       'recall_combined_text',
       'recall_time_seconds',
+      'recallTimestamp',
 
-      // 5. MV: Review Helpfulness (3 items)
+      // 5. MV: Review Helpfulness + Perceived Error (한 페이지)
       'review_helpfulness_1',
       'review_helpfulness_2',
       'review_helpfulness_3',
-
-      // 6. MV: Perceived Error (1 item)
       'perceived_error',
 
-      // 7. M2a: Message Credibility (3 items)
+      // 6. M2a + M2b: Message Credibility + Trust (한 페이지)
       'message_credibility_1',
       'message_credibility_2',
       'message_credibility_3',
-
-      // 8. M2b: Trust (3 items)
       'trust_1',
       'trust_2',
       'trust_3',
 
-      // 9. M3: PPI - Perceived Persuasive Intent (5 items)
+      // 7. M3: PPI - Perceived Persuasive Intent (5 items)
       'ppi_1',
       'ppi_2',
       'ppi_3',
       'ppi_4',
       'ppi_5',
 
-      // 10. DV1: Perceived Persuasiveness (2 items)
+      // 8. DV: Persuasiveness + Purchase + Confidence (한 페이지)
       'persuasiveness_1',
       'persuasiveness_2',
-
-      // 11. DV2: Purchase Intention (2 items)
       'purchase_1',
       'purchase_2',
-
-      // 12. DV3: Decision Confidence (1 item)
       'confidence',
+      'surveyTimestamp',
 
-      // 13. Q7: AI Familiarity (3 items)
+      // 9. General Questions - AI Familiarity (3 items)
       'ai_familiarity_1',
       'ai_familiarity_2',
       'ai_familiarity_3',
 
-      // 14. Q7: Machine Heuristic (4 items)
+      // 10. General Questions - Machine Heuristic (4 items)
       'machine_heuristic_1',
       'machine_heuristic_2',
       'machine_heuristic_3',
       'machine_heuristic_4',
 
-      // 15. Q7: Review Skepticism (4 items)
+      // 11. General Questions - Review Skepticism (4 items)
       'review_skepticism_1',
       'review_skepticism_2',
       'review_skepticism_3',
       'review_skepticism_4',
 
-      // 16. Q8: Usage Habits (2 items)
+      // 12. General Questions - Usage Habits (2 items)
       'shopping_frequency',
       'ai_usage_frequency',
 
-      // 17. Demographics
+      // 13. Demographics
       'age',
       'gender',
       'gender_other',
