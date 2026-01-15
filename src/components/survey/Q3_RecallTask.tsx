@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, FormEvent } from 'react';
-import { Clock, Plus, Trash2 } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { Q3_RecallTask as config } from '@/config/surveyQuestions';
 import type { RecallTaskResponse } from '@/types/survey';
 
@@ -8,14 +8,13 @@ interface Q3_RecallTaskProps {
 }
 
 export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
-  const [words, setWords] = useState<string[]>(['']); // Start with one empty box
+  const [thoughts, setThoughts] = useState('');
   const [timeLeft, setTimeLeft] = useState(90); // 90 seconds countdown
   const [writingStartTime, setWritingStartTime] = useState<number | null>(null);
   const pageLoadTime = useRef(Date.now());
 
-  // Check if user has entered at least one word
-  const hasContent = words.some(word => word.trim().length > 0);
-  const filledWords = words.filter(word => word.trim().length > 0);
+  // Check if user has entered content
+  const hasContent = thoughts.trim().length > 0;
 
   // 90 second countdown timer (never resets)
   useEffect(() => {
@@ -62,33 +61,12 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     return () => clearInterval(timer);
   }, [writingStartTime, hasContent]);
 
-  // Add new word box
-  const handleAddWord = () => {
-    setWords([...words, '']);
-  };
-
-  // Remove word box
-  const handleRemoveWord = (index: number) => {
-    if (words.length > 1) {
-      const newWords = words.filter((_, i) => i !== index);
-      setWords(newWords);
-
-      // If all content was removed, reset writing start time
-      const hasAnyContent = newWords.some(word => word.trim().length > 0);
-      if (!hasAnyContent) {
-        setWritingStartTime(null);
-      }
-    }
-  };
-
-  // Update word value
-  const handleWordChange = (index: number, value: string) => {
-    const newWords = [...words];
-    newWords[index] = value;
-    setWords(newWords);
+  // Handle text change
+  const handleTextChange = (value: string) => {
+    setThoughts(value);
 
     // Check if this is the first time user started writing
-    const hasAnyContent = newWords.some(word => word.trim().length > 0);
+    const hasAnyContent = value.trim().length > 0;
     if (hasAnyContent && !writingStartTime) {
       setWritingStartTime(Date.now());
     }
@@ -104,11 +82,12 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
     if (!canContinue) return;
 
     const totalTime = Math.round((Date.now() - pageLoadTime.current) / 1000);
+    const words = thoughts.trim().split(/\s+/).filter(w => w.length > 0);
 
     const recallData: RecallTaskResponse = {
-      recalled_words: filledWords,
-      word_count: filledWords.length,
-      recall_combined_text: filledWords.join(' | '),
+      recalled_words: words,
+      word_count: words.length,
+      recall_combined_text: thoughts.trim(),
       recall_time_seconds: totalTime
     };
 
@@ -124,7 +103,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   // Status message logic
   const getStatusMessage = () => {
     if (!hasContent) {
-      return 'Please enter at least one information point to continue.';
+      return 'Please share your thoughts to continue.';
     }
 
     // Show wait time after writing started
@@ -154,53 +133,29 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
           </div>
         </div>
 
-        {/* Instructions */}
+        {/* Question/Instruction */}
         {config.instruction && (
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-gray-700 whitespace-pre-line leading-relaxed">
+            <p className="text-lg text-gray-800 font-medium">
               {config.instruction}
             </p>
           </div>
         )}
 
-        {/* Word Count */}
-        <div className="mb-4 text-sm text-gray-600">
-          <span className="font-semibold">{filledWords.length}</span> information point{filledWords.length !== 1 ? 's' : ''} entered
-        </div>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Dynamic Word Boxes - Always enabled */}
-          {words.map((word, index) => (
-            <div key={index} className="flex items-center space-x-2">
-              <span className="text-gray-500 font-medium w-8">{index + 1}.</span>
-              <input
-                type="text"
-                value={word}
-                onChange={(e) => handleWordChange(index, e.target.value)}
-                placeholder="Enter an information point..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {words.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveWord(index)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash2 size={20} />
-                </button>
-              )}
+          {/* Single Large Textarea */}
+          <div>
+            <textarea
+              value={thoughts}
+              onChange={(e) => handleTextChange(e.target.value)}
+              placeholder="Write your thoughts here..."
+              rows={8}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-base leading-relaxed"
+            />
+            <div className="mt-2 text-sm text-gray-500 text-right">
+              {thoughts.trim().split(/\s+/).filter(w => w.length > 0).length} words
             </div>
-          ))}
-
-          {/* Add Word Button - Always enabled */}
-          <button
-            type="button"
-            onClick={handleAddWord}
-            className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center space-x-2"
-          >
-            <Plus size={20} />
-            <span>Add Another Information Point</span>
-          </button>
+          </div>
 
           {/* Status Messages */}
           <div className="space-y-2">

@@ -45,18 +45,11 @@ export interface QuestionBlock {
  */
 
 export const Q3_RecallTask: QuestionBlock = {
-  title: 'Recall Task',
-  instruction: 'Please recall the set of reviews you just read and list as many information points as you can remember.\n\nExamples include product features, advantages and disadvantages, usage experiences, specifications or numerical information, comparisons, and cautions.\n\nPlease write one point per box within 90 seconds:',
+  title: 'Your Thoughts',
+  instruction: 'What do you think of the reviews you just saw on this product page?',
   timeLimit: 90,
   items: [
-    { variable: 'recall_1', text: 'Information point 1:', scaleType: 'text' },
-    { variable: 'recall_2', text: 'Information point 2:', scaleType: 'text' },
-    { variable: 'recall_3', text: 'Information point 3:', scaleType: 'text' },
-    { variable: 'recall_4', text: 'Information point 4:', scaleType: 'text' },
-    { variable: 'recall_5', text: 'Information point 5:', scaleType: 'text' },
-    { variable: 'recall_6', text: 'Information point 6:', scaleType: 'text' },
-    { variable: 'recall_7', text: 'Information point 7:', scaleType: 'text' },
-    { variable: 'recall_8', text: 'Information point 8:', scaleType: 'text' }
+    { variable: 'thoughts_text', text: 'Your thoughts:', scaleType: 'text' }
   ]
 };
 
