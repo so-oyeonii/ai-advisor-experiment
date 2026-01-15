@@ -18,7 +18,15 @@ export default function ConsentPage() {
     if (!router.isReady) return { workerId: '', assignmentId: '', hitId: '' };
 
     // Cloud Research에서 보내는 일반적인 파라미터들
-    const workerId = (router.query.workerId || router.query.worker_id || router.query.PROLIFIC_PID || '') as string;
+    // participant, participantId, workerId 등 다양한 이름 지원
+    const workerId = (
+      router.query.participant ||      // Cloud Research
+      router.query.participantId ||    // Cloud Research 대체
+      router.query.workerId ||
+      router.query.worker_id ||
+      router.query.PROLIFIC_PID ||     // Prolific
+      ''
+    ) as string;
     const assignmentId = (router.query.assignmentId || router.query.assignment_id || '') as string;
     const hitId = (router.query.hitId || router.query.hit_id || '') as string;
 
