@@ -3,6 +3,8 @@ import { Clock } from 'lucide-react';
 import { Q3_RecallTask as config } from '@/config/surveyQuestions';
 import type { RecallTaskResponse } from '@/types/survey';
 
+const MIN_WORDS = 10; // 최소 10단어 필요
+
 interface Q3_RecallTaskProps {
   onComplete: (data: RecallTaskResponse) => void;
 }
@@ -12,6 +14,10 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   const [timeLeft, setTimeLeft] = useState(90); // 90 seconds countdown
   const [writingStartTime, setWritingStartTime] = useState<number | null>(null);
   const pageLoadTime = useRef(Date.now());
+
+  // Calculate word count
+  const wordCount = thoughts.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const hasMinWords = wordCount >= MIN_WORDS;
 
   // Check if user has entered content
   const hasContent = thoughts.trim().length > 0;
@@ -29,10 +35,10 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   }, [timeLeft]);
 
   // Button activation logic:
-  // - Must have content
+  // - Must have at least MIN_WORDS words
   // - Always need 30 seconds since writing started (regardless of 90 second timer)
   const canContinue = (() => {
-    if (!hasContent) return false;
+    if (!hasMinWords) return false;
 
     // Always need 30 seconds since writing started
     if (writingStartTime) {
@@ -45,7 +51,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
 
   // Calculate seconds until can continue (for display)
   const getSecondsUntilCanContinue = () => {
-    if (!hasContent || !writingStartTime) return null;
+    if (!hasMinWords || !writingStartTime) return null;
 
     const writingElapsed = Math.floor((Date.now() - writingStartTime) / 1000);
     return Math.max(0, 30 - writingElapsed);
@@ -59,7 +65,7 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
       setSecondsUntilContinue(getSecondsUntilCanContinue());
     }, 500);
     return () => clearInterval(timer);
-  }, [writingStartTime, hasContent]);
+  }, [writingStartTime, hasMinWords]);
 
   // Handle text change
   const handleTextChange = (value: string) => {
@@ -103,7 +109,12 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
   // Status message logic
   const getStatusMessage = () => {
     if (!hasContent) {
-      return 'Please share your thoughts to continue.';
+      return `Please write at least ${MIN_WORDS} words to continue.`;
+    }
+
+    if (!hasMinWords) {
+      const wordsNeeded = MIN_WORDS - wordCount;
+      return `Please write ${wordsNeeded} more word${wordsNeeded > 1 ? 's' : ''} to continue. (Minimum: ${MIN_WORDS} words)`;
     }
 
     // Show wait time after writing started
@@ -152,8 +163,8 @@ export default function Q3_RecallTask({ onComplete }: Q3_RecallTaskProps) {
               rows={8}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-base leading-relaxed"
             />
-            <div className="mt-2 text-sm text-gray-500 text-right">
-              {thoughts.trim().split(/\s+/).filter(w => w.length > 0).length} words
+            <div className={`mt-2 text-sm text-right font-medium ${hasMinWords ? 'text-green-600' : 'text-red-500'}`}>
+              {wordCount} / {MIN_WORDS} words {hasMinWords ? '✓' : ''}
             </div>
           </div>
 
