@@ -13,10 +13,8 @@ export default function ConsentPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Consent checkboxes
-  const [personalInfoConsent, setPersonalInfoConsent] = useState<string>('');
-  const [futureDataConsent, setFutureDataConsent] = useState<string>('');
-  const [finalAgreement, setFinalAgreement] = useState(false);
+  // Single consent checkbox - 하나만 체크하면 됨
+  const [agreed, setAgreed] = useState(false);
 
   // Expandable sections
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -54,13 +52,10 @@ export default function ConsentPage() {
     return { workerId, assignmentId, hitId };
   };
 
-  // Check if form is valid
-  const isFormValid = personalInfoConsent === 'no_pii' && futureDataConsent !== '' && finalAgreement;
-
   const handleContinue = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!isFormValid) return;
+    if (!agreed) return;
 
     setIsSubmitting(true);
     setError(null);
@@ -310,51 +305,12 @@ export default function ConsentPage() {
                   </ul>
                 </div>
 
-                {/* Personal Information Consent */}
-                <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-300">
-                  <p className="font-semibold text-gray-900 mb-3">
-                    * Consent to the Collection of Personal Information <span className="text-red-500">(Required)</span>
+                {/* Personal Information Note */}
+                <div className="mt-4 bg-green-50 border border-green-200 p-4 rounded-lg">
+                  <p className="text-sm text-green-800">
+                    <strong>Note:</strong> This study does NOT collect any personally identifiable information (PII).
+                    Only anonymous research data (survey responses, behavioral data) will be recorded.
                   </p>
-                  <div className="space-y-3">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="personalInfoConsent"
-                        value="no_pii"
-                        checked={personalInfoConsent === 'no_pii'}
-                        onChange={(e) => setPersonalInfoConsent(e.target.value)}
-                        className="mt-1 h-4 w-4 text-blue-600"
-                      />
-                      <span className="text-sm text-gray-700">
-                        I agree to the recording of research data (e.g., survey responses), but I do not agree to the
-                        collection of personally identifiable information. <strong>(Note: This study operates under this principle.)</strong>
-                      </span>
-                    </label>
-                    <label className="flex items-start gap-3 cursor-pointer opacity-50">
-                      <input
-                        type="radio"
-                        name="personalInfoConsent"
-                        value="with_pii"
-                        disabled
-                        className="mt-1 h-4 w-4 text-gray-400"
-                      />
-                      <span className="text-sm text-gray-500">
-                        I agree to the collection of personally identifiable information as it is necessary for the nature of this research.
-                      </span>
-                    </label>
-                    <label className="flex items-start gap-3 cursor-pointer opacity-50">
-                      <input
-                        type="radio"
-                        name="personalInfoConsent"
-                        value="decline"
-                        disabled
-                        className="mt-1 h-4 w-4 text-gray-400"
-                      />
-                      <span className="text-sm text-gray-500">
-                        I do not agree to the collection of personal information and therefore will not participate in this research.
-                      </span>
-                    </label>
-                  </div>
                 </div>
               </div>
             )}
@@ -454,69 +410,15 @@ export default function ConsentPage() {
             <SectionHeader id="futureUse" title="11. Consent for Future Use of Data" icon={FileText} />
             {expandedSections.futureUse && (
               <div className="p-4 text-gray-700 leading-relaxed">
-                <p className="mb-4">
-                  If the current research yields significant findings, your data may be utilized in future studies to
-                  contribute to further scientific advancements. Please indicate your preference regarding the use of
-                  your data for future research:
+                <p>
+                  If the current research yields significant findings, your anonymized data may be utilized in future
+                  studies to contribute to further scientific advancements.
                 </p>
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-300">
-                  <p className="font-semibold text-gray-900 mb-3">
-                    Select one option <span className="text-red-500">(Required)</span>
+                <div className="mt-4 bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    By participating in this study, you consent to the potential use of your anonymized data for
+                    future research conducted by Sungkyunkwan University researchers.
                   </p>
-                  <div className="space-y-3">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="futureDataConsent"
-                        value="all"
-                        checked={futureDataConsent === 'all'}
-                        onChange={(e) => setFutureDataConsent(e.target.value)}
-                        className="mt-1 h-4 w-4 text-blue-600"
-                      />
-                      <span className="text-sm text-gray-700">
-                        I consent to provide my data for all future research studies.
-                      </span>
-                    </label>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="futureDataConsent"
-                        value="skku_only"
-                        checked={futureDataConsent === 'skku_only'}
-                        onChange={(e) => setFutureDataConsent(e.target.value)}
-                        className="mt-1 h-4 w-4 text-blue-600"
-                      />
-                      <span className="text-sm text-gray-700">
-                        I consent to provide my data only to researchers affiliated with Sungkyunkwan University.
-                      </span>
-                    </label>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="futureDataConsent"
-                        value="this_study_only"
-                        checked={futureDataConsent === 'this_study_only'}
-                        onChange={(e) => setFutureDataConsent(e.target.value)}
-                        className="mt-1 h-4 w-4 text-blue-600"
-                      />
-                      <span className="text-sm text-gray-700">
-                        I consent to provide my data only to the researchers of this specific study.
-                      </span>
-                    </label>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="futureDataConsent"
-                        value="no_consent"
-                        checked={futureDataConsent === 'no_consent'}
-                        onChange={(e) => setFutureDataConsent(e.target.value)}
-                        className="mt-1 h-4 w-4 text-blue-600"
-                      />
-                      <span className="text-sm text-gray-700">
-                        I do not consent.
-                      </span>
-                    </label>
-                  </div>
                 </div>
               </div>
             )}
@@ -561,39 +463,28 @@ export default function ConsentPage() {
             </div>
           )}
 
-          {/* Validation Messages */}
-          {!personalInfoConsent && (
-            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-md p-3">
-              <p className="text-amber-800 text-sm">Please select an option in Section 4 (Confidentiality of Personal Information).</p>
-            </div>
-          )}
-          {!futureDataConsent && personalInfoConsent && (
-            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-md p-3">
-              <p className="text-amber-800 text-sm">Please select an option in Section 11 (Consent for Future Use of Data).</p>
-            </div>
-          )}
-
-          {/* Final Agreement */}
+          {/* Simple Agreement - 체크박스 하나만 */}
           <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6 mb-6">
-            <h3 className="font-bold text-gray-900 text-lg mb-4">Final Consent</h3>
-            <p className="text-gray-700 mb-4">
-              By signing this consent form, you will receive a copy of the signed document for your records.
+            <h3 className="font-bold text-gray-900 text-lg mb-4">Consent to Participate</h3>
+            <p className="text-gray-700 mb-4 text-sm">
+              By checking the box below, you confirm that:
             </p>
-            <p className="text-gray-700 mb-6">
-              I confirm that I have received an explanation of this consent form, have read and understood its contents,
-              and have received answers to any questions I had. I voluntarily agree to participate in this study and
-              therefore sign this consent form.
-            </p>
-            <label className="flex items-start gap-3 cursor-pointer">
+            <ul className="text-gray-600 text-sm mb-6 space-y-1 list-disc pl-5">
+              <li>You have read and understood the information provided above</li>
+              <li>You agree to participate voluntarily in this study</li>
+              <li>You understand you may withdraw at any time without penalty</li>
+              <li>You consent to the recording of anonymous research data</li>
+            </ul>
+            <label className="flex items-start gap-3 cursor-pointer bg-white p-4 rounded-lg border-2 border-blue-200 hover:border-blue-400 transition">
               <input
                 type="checkbox"
-                checked={finalAgreement}
-                onChange={(e) => setFinalAgreement(e.target.checked)}
-                disabled={!personalInfoConsent || !futureDataConsent || isSubmitting}
-                className="mt-1 h-5 w-5 text-blue-600 rounded"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                disabled={isSubmitting}
+                className="mt-0.5 h-5 w-5 text-blue-600 rounded"
               />
               <span className="font-semibold text-gray-900">
-                I have read and understood all the information above, and I voluntarily agree to participate in this study.
+                I agree to participate in this study
               </span>
             </label>
           </div>
@@ -601,20 +492,16 @@ export default function ConsentPage() {
           <form onSubmit={handleContinue}>
             <button
               type="submit"
-              disabled={!isFormValid || isSubmitting}
+              disabled={!agreed || isSubmitting}
               className={`w-full py-4 px-6 rounded-xl text-lg font-bold transition-all ${
-                isFormValid && !isSubmitting
+                agreed && !isSubmitting
                   ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl cursor-pointer'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              {isSubmitting ? 'Initializing Study...' : 'I Agree - Start Study'}
+              {isSubmitting ? 'Initializing Study...' : 'Start Study'}
             </button>
           </form>
-
-          <p className="text-center text-gray-500 text-sm mt-4">
-            By clicking the button above, you confirm your consent to participate in this research study.
-          </p>
         </div>
 
       </div>
