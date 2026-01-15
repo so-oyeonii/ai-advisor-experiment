@@ -55,23 +55,23 @@ export const Q3_RecallTask: QuestionBlock = {
 
 export const MV_ReviewHelpfulness: QuestionBlock = {
   title: 'Review Helpfulness',
-  description: 'The following questions ask about the helpfulness of the expert review you just read.\n\nPlease indicate how helpful the expert\'s review was in understanding and evaluating the product.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  description: 'The following questions ask about the helpfulness of **the expert review** you just read.\n\nPlease indicate how helpful **the expert\'s review** was in understanding and evaluating the product.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'review_helpfulness_1',
-      text: "This expert's review is helpful for me to evaluate the product.",
+      text: "This **expert's review** is helpful for me to evaluate the product.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'review_helpfulness_2',
-      text: "This expert's review is helpful in familiarizing me with the product.",
+      text: "This **expert's review** is helpful in familiarizing me with the product.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'review_helpfulness_3',
-      text: "This expert's review is helpful for me to understand the performance of the product.",
+      text: "This **expert's review** is helpful for me to understand the performance of the product.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -80,11 +80,11 @@ export const MV_ReviewHelpfulness: QuestionBlock = {
 
 export const MV_PerceivedError: QuestionBlock = {
   title: 'Perceived Error',
-  description: 'Please indicate the extent to which you agree with the following statement about the expert\'s review you just read.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  description: 'Please indicate the extent to which you agree with the following statement about **the expert\'s review** you just read.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'perceived_error',
-      text: "I felt that there was an error in this expert's review.",
+      text: "I felt that there was an error in this **expert's review**.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -93,7 +93,7 @@ export const MV_PerceivedError: QuestionBlock = {
 
 export const M2a_MessageCredibility: QuestionBlock = {
   title: 'Message Credibility',
-  description: 'How well do the following adjectives describe the expert\'s review you just read?\n(1 = describes very poorly, 7 = describes very well)',
+  description: 'How well do the following adjectives describe **the expert\'s review** you just read?\n(1 = describes very poorly, 7 = describes very well)',
   items: [
     {
       variable: 'message_credibility_1',
@@ -118,23 +118,23 @@ export const M2a_MessageCredibility: QuestionBlock = {
 
 export const M2b_Trust: QuestionBlock = {
   title: 'Trust',
-  description: 'Please rate your agreement with the following statements about the expert reviewer you just saw.\n(1 = Not at all, 7 = Extremely)',
+  description: 'Please rate your agreement with the following statements about **the expert reviewer** you just saw.\n(1 = Not at all, 7 = Extremely)',
   items: [
     {
       variable: 'trust_1',
-      text: 'I am confident in this expert reviewer.',
+      text: 'I am confident in this **expert reviewer**.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
       variable: 'trust_2',
-      text: 'This expert reviewer is reliable.',
+      text: 'This **expert reviewer** is reliable.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
       variable: 'trust_3',
-      text: 'I can trust this expert reviewer.',
+      text: 'I can trust this **expert reviewer**.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Not at all', max: 'Extremely' }
     }
@@ -147,31 +147,31 @@ export const M3_PersuasiveIntent: QuestionBlock = {
   items: [
     {
       variable: 'ppi_1',
-      text: 'This expert reviewer was primarily trying to persuade me either to buy or not to buy the product.',
+      text: 'This **expert reviewer** was primarily trying to persuade me either to buy or not to buy the product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_2',
-      text: 'This expert reviewer had an ulterior motive for the review.',
+      text: 'This **expert reviewer** had an ulterior motive for the review.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_3',
-      text: "This expert reviewer's statements seem suspicious.",
+      text: "This **expert reviewer's** statements seem suspicious.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_4',
-      text: 'This expert reviewer was trying to manipulate my opinion.',
+      text: 'This **expert reviewer** was trying to manipulate my opinion.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_5',
-      text: "This expert reviewer may have exaggerated the product's performance.",
+      text: "This **expert reviewer** may have exaggerated the product's performance.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -180,17 +180,17 @@ export const M3_PersuasiveIntent: QuestionBlock = {
 
 export const DV1_Persuasiveness: QuestionBlock = {
   title: 'Perceived Persuasiveness',
-  description: 'Please indicate how persuasive you found the expert\'s review.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  description: 'Please indicate how persuasive you found **the expert\'s review**.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'persuasiveness_1',
-      text: "I was convinced by the expert's review.",
+      text: "I was convinced by **the expert's review**.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_2',
-      text: "The expert's review influenced me.",
+      text: "**The expert's review** influenced me.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -218,7 +218,7 @@ export const DV2_PurchaseIntention: QuestionBlock = {
 
 export const DV3_DecisionConfidence: QuestionBlock = {
   title: 'Decision Confidence',
-  description: 'How confident are you in the judgment you made based on the expert\'s review?\nPlease indicate your level of confidence in your evaluation of the product after reading the expert\'s review.\n(1 = Not at all confident, 7 = Very confident)',
+  description: 'How confident are you in the judgment you made based on **the expert\'s review**?\nPlease indicate your level of confidence in your evaluation of the product after reading **the expert\'s review**.\n(1 = Not at all confident, 7 = Very confident)',
   items: [
     {
       variable: 'confidence',

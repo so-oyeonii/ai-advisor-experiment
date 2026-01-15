@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
+import TextWithBold from '../TextWithBold';
 import { DV2_PurchaseIntention as purchaseConfig, DV3_DecisionConfidence as confidenceConfig } from '@/config/surveyQuestions';
 import { PurchaseIntentionResponse, DecisionConfidenceResponse } from '@/types/survey';
 
@@ -37,9 +38,11 @@ export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
       {/* Purchase Intention - 대표 질문 카드 스타일 */}
       {purchaseConfig.description && (
         <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
-          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
-            {purchaseConfig.description}
-          </p>
+          <TextWithBold
+            text={purchaseConfig.description}
+            as="p"
+            className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
+          />
         </div>
       )}
 
@@ -67,9 +70,11 @@ export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
         <div className="mt-12 pt-8 border-t border-gray-200">
           {confidenceConfig.description && (
             <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
-              <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
-                {confidenceConfig.description}
-              </p>
+              <TextWithBold
+                text={confidenceConfig.description}
+                as="p"
+                className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
+              />
             </div>
           )}
 

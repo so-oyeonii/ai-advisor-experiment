@@ -1,4 +1,5 @@
 import { ChangeEvent } from 'react';
+import TextWithBold from './TextWithBold';
 
 interface LikertScaleProps {
   name: string;
@@ -8,16 +9,18 @@ interface LikertScaleProps {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export default function LikertScale({ 
-  name, 
-  question, 
-  leftLabel = 'Strongly Disagree', 
-  rightLabel = 'Strongly Agree', 
-  onChange 
+export default function LikertScale({
+  name,
+  question,
+  leftLabel = 'Strongly Disagree',
+  rightLabel = 'Strongly Agree',
+  onChange
 }: LikertScaleProps) {
   return (
     <div className="mb-8">
-      <p className="text-lg font-medium text-gray-900 mb-4">{question}</p>
+      <p className="text-lg font-medium text-gray-900 mb-4">
+        <TextWithBold text={question} />
+      </p>
       <div className="flex items-center justify-between gap-6">
         <span className="text-base text-gray-700 w-36 text-right flex-shrink-0">{leftLabel}</span>
         <div className="flex space-x-6 sm:space-x-8 md:space-x-10 justify-center">

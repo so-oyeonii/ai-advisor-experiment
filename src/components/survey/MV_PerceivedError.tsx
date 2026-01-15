@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
+import TextWithBold from '../TextWithBold';
 import { MV_PerceivedError as config } from '@/config/surveyQuestions';
 import { PerceivedErrorResponse } from '@/types/survey';
 
@@ -30,9 +31,11 @@ export default function MV_PerceivedError({ onComplete }: MVProps) {
     <div className="max-w-5xl mx-auto p-6">
       {config.description && (
         <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
-          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
-            {config.description}
-          </p>
+          <TextWithBold
+            text={config.description}
+            as="p"
+            className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
+          />
         </div>
       )}
 

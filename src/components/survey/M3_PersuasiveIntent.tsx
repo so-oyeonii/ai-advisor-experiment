@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
+import TextWithBold from '../TextWithBold';
 import { M3_PersuasiveIntent as config } from '@/config/surveyQuestions';
 import { PersuasiveIntentResponse } from '@/types/survey';
 
@@ -16,8 +17,8 @@ export default function M3_PersuasiveIntent({ onComplete }: M3Props) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    
-    const allAnswered = config.items.every(item => 
+
+    const allAnswered = config.items.every(item =>
       responses[item.variable as keyof PersuasiveIntentResponse] !== undefined
     );
 
@@ -31,9 +32,11 @@ export default function M3_PersuasiveIntent({ onComplete }: M3Props) {
       {/* 대표 질문 - 눈에 띄는 카드 스타일 */}
       {config.description && (
         <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
-          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
-            {config.description}
-          </p>
+          <TextWithBold
+            text={config.description}
+            as="p"
+            className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
+          />
         </div>
       )}
 
