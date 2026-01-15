@@ -17,8 +17,15 @@ export default function StimulusPage() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [showExpertPopup, setShowExpertPopup] = useState<boolean>(true);
   
-  // Dwell time tracking - start immediately on mount
-  const dwellStartTime = useRef<number>(Date.now());
+  // Dwell time tracking - starts when popup is closed
+  const dwellStartTime = useRef<number | null>(null);
+
+  // Start dwell time tracking when popup is closed
+  const handleClosePopup = () => {
+    setShowExpertPopup(false);
+    dwellStartTime.current = Date.now();
+    console.log('📊 Dwell time tracking started (popup closed)');
+  };
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -77,9 +84,11 @@ export default function StimulusPage() {
     }
     
     try {
-      // Calculate dwell time in seconds
-      const dwellTime = (Date.now() - dwellStartTime.current) / 1000;
-      console.log('  - dwellTime:', dwellTime, 'seconds');
+      // Calculate dwell time in seconds (only time after popup was closed)
+      const dwellTime = dwellStartTime.current
+        ? (Date.now() - dwellStartTime.current) / 1000
+        : 0;
+      console.log('  - dwellTime (after popup):', dwellTime, 'seconds');
       
       // Get full condition info
       const storedFullCondition = sessionStorage.getItem(`condition_${currentIndex}`);
@@ -106,7 +115,9 @@ export default function StimulusPage() {
         reasoning: stimulusData.advisorReview.substring(0, 1000), // Limit length
         exposureOrder: currentIndex,
         dwellTime,
-        exposureStartTime: Timestamp.fromMillis(dwellStartTime.current),
+        exposureStartTime: dwellStartTime.current
+          ? Timestamp.fromMillis(dwellStartTime.current)
+          : getKSTTimestamp(),
         exposureEndTime: getKSTTimestamp(),
       };
       
@@ -147,7 +158,7 @@ export default function StimulusPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg sm:max-w-xl w-full p-4 sm:p-6 relative animate-fadeIn max-h-[90vh] overflow-y-auto">
             <button
-              onClick={() => setShowExpertPopup(false)}
+              onClick={handleClosePopup}
               className="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-gray-600 transition"
             >
               <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,7 +232,7 @@ export default function StimulusPage() {
 
             <div className="mt-4 flex justify-center">
               <button
-                onClick={() => setShowExpertPopup(false)}
+                onClick={handleClosePopup}
                 className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-black font-bold px-6 py-2 sm:px-8 sm:py-2.5 rounded-lg shadow-lg text-sm sm:text-base"
               >
                 Continue to Product Page
