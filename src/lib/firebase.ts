@@ -61,9 +61,9 @@ const COLLECTIONS = {
 
 export interface SessionData {
   participantId: string;
-  workerId?: string; // Cloud Research worker ID
+  workerId?: string; // Cloud Research worker ID (participantId from URL)
   assignmentId?: string; // Cloud Research assignment ID
-  hitId?: string; // Cloud Research hit ID
+  projectId?: string; // Cloud Research project ID
   informedConsent: string; // 실험참가 개인정보 동의 ("agreed")
   conditionNumber: number;
   groupId: number; // 1-4: Which of the 4 groups (2x2 grid)

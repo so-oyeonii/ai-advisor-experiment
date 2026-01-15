@@ -34,9 +34,9 @@ export default function ConsentPage() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Cloud Research URL 파라미터에서 workerId 추출
+  // Cloud Research URL 파라미터에서 ID 추출
   const getCloudResearchParams = () => {
-    if (!router.isReady) return { workerId: '', assignmentId: '', hitId: '' };
+    if (!router.isReady) return { workerId: '', assignmentId: '', projectId: '' };
 
     const workerId = (
       router.query.participant ||
@@ -47,9 +47,9 @@ export default function ConsentPage() {
       ''
     ) as string;
     const assignmentId = (router.query.assignmentId || router.query.assignment_id || '') as string;
-    const hitId = (router.query.hitId || router.query.hit_id || '') as string;
+    const projectId = (router.query.projectId || router.query.project_id || '') as string;
 
-    return { workerId, assignmentId, hitId };
+    return { workerId, assignmentId, projectId };
   };
 
   const handleContinue = async (e: FormEvent) => {
@@ -63,7 +63,7 @@ export default function ConsentPage() {
     try {
       console.log('🚀 Starting consent process...');
 
-      const { workerId, assignmentId, hitId } = getCloudResearchParams();
+      const { workerId, assignmentId, projectId } = getCloudResearchParams();
       if (workerId) {
         console.log('✅ Cloud Research workerId:', workerId);
       }
@@ -95,7 +95,7 @@ export default function ConsentPage() {
         participantId,
         workerId: workerId || '',
         assignmentId: assignmentId || '',
-        hitId: hitId || '',
+        projectId: projectId || '',
         informedConsent: 'agreed',
         conditionNumber: experimentCondition.selectedStimuli[0].condition.conditionId,
         groupId: firstCondition.groupId,
