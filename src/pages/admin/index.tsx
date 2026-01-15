@@ -17,6 +17,7 @@ import { Timestamp } from 'firebase/firestore';
 type ExtendedSurveyResponse = Partial<SurveyResponseData> & {
   participant_id?: string;
   participantId?: string;
+  workerId?: string; // Cloud Research worker ID
   stimulus_order?: number;
   product?: string;
   advisor_type?: string;
@@ -108,6 +109,7 @@ export default function AdminPage() {
 
             allData.push({
               ...response,
+              workerId: session.workerId || '', // Cloud Research worker ID
               survey_start_time: session.startTime,
               survey_end_time: session.endTime,
               status: session.completed ? 'completed' : 'in_progress',
@@ -119,6 +121,7 @@ export default function AdminPage() {
           allData.push({
             participantId: pid,
             participant_id: pid,
+            workerId: session.workerId || '', // Cloud Research worker ID
             survey_start_time: session.startTime,
             survey_end_time: session.endTime,
             status: 'in_progress',
@@ -234,10 +237,11 @@ export default function AdminPage() {
         });
       });
 
-      // 59개 고정 컬럼 (export.tsx와 동일)
+      // 고정 컬럼 (export.tsx와 동일)
       const columns = [
         // 1. 참가자 기본 정보
         'participant_id',
+        'workerId', // Cloud Research worker ID
         'informedConsent',
         'status',
         'survey_start_time',
@@ -691,11 +695,16 @@ export default function AdminPage() {
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
                           {expandedParticipant === participantId ? <EyeOff className="w-4 h-4 text-gray-600" /> : <Eye className="w-4 h-4 text-gray-600" />}
                           <p className="font-semibold text-gray-800">
                             참가자: <span className="font-mono text-blue-600">{participantId.substring(0, 12)}...</span>
                           </p>
+                          {participantResponses[0]?.workerId && (
+                            <span className="px-2 py-1 rounded text-xs font-bold bg-purple-100 text-purple-700">
+                              Worker: {participantResponses[0].workerId}
+                            </span>
+                          )}
                           <span className={`px-2 py-1 rounded text-xs font-bold ${
                             isCompleted ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
                           }`}>
