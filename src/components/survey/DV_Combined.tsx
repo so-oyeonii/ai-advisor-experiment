@@ -1,15 +1,21 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
 import TextWithBold from '../TextWithBold';
-import { DV2_PurchaseIntention as purchaseConfig, DV3_DecisionConfidence as confidenceConfig } from '@/config/surveyQuestions';
-import { PurchaseIntentionResponse, DecisionConfidenceResponse } from '@/types/survey';
+import {
+  DV1_Persuasiveness as persuasivenessConfig,
+  DV2_PurchaseIntention as purchaseConfig,
+  DV3_DecisionConfidence as confidenceConfig
+} from '@/config/surveyQuestions';
+import { PersuasivenessResponse, PurchaseIntentionResponse, DecisionConfidenceResponse } from '@/types/survey';
 
-interface DV2Props {
-  onComplete: (responses: PurchaseIntentionResponse & DecisionConfidenceResponse) => void;
+type CombinedResponse = PersuasivenessResponse & PurchaseIntentionResponse & DecisionConfidenceResponse;
+
+interface DVCombinedProps {
+  onComplete: (responses: CombinedResponse) => void;
 }
 
-export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
-  const [responses, setResponses] = useState<Partial<PurchaseIntentionResponse & DecisionConfidenceResponse>>({});
+export default function DV_Combined({ onComplete }: DVCombinedProps) {
+  const [responses, setResponses] = useState<Partial<CombinedResponse>>({});
 
   const handleChange = (variable: string, value: number) => {
     setResponses(prev => ({ ...prev, [variable]: value }));
@@ -18,16 +24,21 @@ export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    // Check purchase questions
+    // Check Persuasiveness questions
+    const persuasivenessAnswered = persuasivenessConfig.items.every(item =>
+      responses[item.variable as keyof PersuasivenessResponse] !== undefined
+    );
+
+    // Check Purchase Intention questions
     const purchaseAnswered = purchaseConfig.items.every(item =>
       responses[item.variable as keyof PurchaseIntentionResponse] !== undefined
     );
 
-    // Check confidence question
+    // Check Decision Confidence question
     const confidenceAnswered = responses.confidence !== undefined;
 
-    if (purchaseAnswered && confidenceAnswered) {
-      onComplete(responses as PurchaseIntentionResponse & DecisionConfidenceResponse);
+    if (persuasivenessAnswered && purchaseAnswered && confidenceAnswered) {
+      onComplete(responses as CombinedResponse);
     }
   };
 
@@ -35,26 +46,20 @@ export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      {/* Purchase Intention - 대표 질문 카드 스타일 */}
-      {purchaseConfig.description && (
+      {/* Persuasiveness Section */}
+      {persuasivenessConfig.description && (
         <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
           <TextWithBold
-            text={purchaseConfig.description}
+            text={persuasivenessConfig.description}
             as="p"
             className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
           />
         </div>
       )}
 
-      {purchaseConfig.warning && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-          <p className="text-yellow-800 text-sm font-medium">{purchaseConfig.warning}</p>
-        </div>
-      )}
-
       <form onSubmit={handleSubmit}>
         <div className="space-y-6">
-          {purchaseConfig.items.map((item) => (
+          {persuasivenessConfig.items.map((item) => (
             <LikertScale
               key={item.variable}
               name={item.variable}
@@ -66,7 +71,39 @@ export default function DV2_PurchaseIntention({ onComplete }: DV2Props) {
           ))}
         </div>
 
-        {/* Decision Confidence - 대표 질문 카드 스타일 */}
+        {/* Purchase Intention Section */}
+        <div className="mt-12 pt-8 border-t border-gray-200">
+          {purchaseConfig.description && (
+            <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
+              <TextWithBold
+                text={purchaseConfig.description}
+                as="p"
+                className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
+              />
+            </div>
+          )}
+
+          {purchaseConfig.warning && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+              <p className="text-yellow-800 text-sm font-medium">{purchaseConfig.warning}</p>
+            </div>
+          )}
+
+          <div className="space-y-6">
+            {purchaseConfig.items.map((item) => (
+              <LikertScale
+                key={item.variable}
+                name={item.variable}
+                question={item.text}
+                leftLabel={item.scaleLabels?.min}
+                rightLabel={item.scaleLabels?.max}
+                onChange={(e) => handleChange(item.variable, parseInt(e.target.value))}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Decision Confidence Section */}
         <div className="mt-12 pt-8 border-t border-gray-200">
           {confidenceConfig.description && (
             <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">

@@ -30,11 +30,11 @@ export default function Home() {
           <ul className="text-blue-800 space-y-3">
             <li className="flex items-start">
               <span className="mr-2">🔹</span>
-              <span><strong>Duration:</strong> 15–20 minutes</span>
+              <span><strong>Duration:</strong> 10–15 minutes</span>
             </li>
             <li className="flex items-start">
               <span className="mr-2">🔹</span>
-              <span><strong>Compensation:</strong> $1.50 upon completion</span>
+              <span><strong>Compensation:</strong> $2.00 upon completion</span>
             </li>
             <li className="flex items-start">
               <span className="mr-2">🔹</span>

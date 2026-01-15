@@ -96,6 +96,29 @@ export default function GeneralQuestionsPage() {
         </div>
       </div>
 
+      {/* Important Notice - 첫 번째 섹션에서만 표시 */}
+      {currentStep === 'Q7_AIFamiliarity' && (
+        <div className="max-w-4xl mx-auto px-6 pt-8">
+          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400 rounded-xl p-6 shadow-lg">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <div className="w-12 h-12 bg-amber-400 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">📢</span>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-amber-900 mb-2">Important Notice</h3>
+                <p className="text-amber-800 text-base leading-relaxed">
+                  From now on, I&apos;d like to ask you about <span className="font-bold underline">YOUR GENERAL attitudes and experiences</span>,
+                  <span className="font-bold text-red-700"> NOT</span> about the specific reviews you just saw.
+                  Please answer based on your <span className="font-bold">overall opinions</span>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Question Components */}
       <div className="py-8">
         {currentStep === 'Q7_AIFamiliarity' && (

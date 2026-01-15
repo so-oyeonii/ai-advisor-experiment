@@ -1,15 +1,15 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
 import TextWithBold from '../TextWithBold';
-import { M3_PersuasiveIntent as config } from '@/config/surveyQuestions';
-import { PersuasiveIntentResponse } from '@/types/survey';
+import { MV_ReviewHelpfulness as config } from '@/config/surveyQuestions';
+import { ReviewHelpfulnessResponse } from '@/types/survey';
 
-interface M3Props {
-  onComplete: (responses: PersuasiveIntentResponse) => void;
+interface MVProps {
+  onComplete: (responses: ReviewHelpfulnessResponse) => void;
 }
 
-export default function M3_PersuasiveIntent({ onComplete }: M3Props) {
-  const [responses, setResponses] = useState<Partial<PersuasiveIntentResponse>>({});
+export default function MV_ReviewHelpfulness({ onComplete }: MVProps) {
+  const [responses, setResponses] = useState<Partial<ReviewHelpfulnessResponse>>({});
 
   const handleChange = (variable: string, value: number) => {
     setResponses(prev => ({ ...prev, [variable]: value }));
@@ -19,17 +19,16 @@ export default function M3_PersuasiveIntent({ onComplete }: M3Props) {
     e.preventDefault();
 
     const allAnswered = config.items.every(item =>
-      responses[item.variable as keyof PersuasiveIntentResponse] !== undefined
+      responses[item.variable as keyof ReviewHelpfulnessResponse] !== undefined
     );
 
     if (allAnswered) {
-      onComplete(responses as PersuasiveIntentResponse);
+      onComplete(responses as ReviewHelpfulnessResponse);
     }
   };
 
   return (
     <div className="max-w-5xl mx-auto p-6">
-      {/* 대표 질문 - 눈에 띄는 카드 스타일 */}
       {config.description && (
         <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
           <TextWithBold

@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import LikertScale from '../LikertScale';
+import TextWithBold from '../TextWithBold';
 import { M2a_MessageCredibility, M2b_Trust } from '@/config/surveyQuestions';
 
 interface CombinedCredibilityResponse {
@@ -41,9 +42,11 @@ export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps)
       {/* Message Credibility - 대표 질문 카드 스타일 */}
       <div className="mb-10">
         <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
-          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
-            {M2a_MessageCredibility.description}
-          </p>
+          <TextWithBold
+            text={M2a_MessageCredibility.description || ''}
+            as="p"
+            className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
+          />
         </div>
         <div className="space-y-6">
           {M2a_MessageCredibility.items.map((item) => (
@@ -62,9 +65,11 @@ export default function M2a_SourceCredibilityExpertise({ onComplete }: M2aProps)
       {/* Trust - 대표 질문 카드 스타일 */}
       <div className="mb-8 pt-8 border-t border-gray-200">
         <div className="bg-blue-50 border-l-4 border-blue-500 rounded-r-lg p-6 mb-10">
-          <p className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed">
-            {M2b_Trust.description}
-          </p>
+          <TextWithBold
+            text={M2b_Trust.description || ''}
+            as="p"
+            className="text-xl font-semibold text-gray-900 whitespace-pre-line leading-relaxed"
+          />
         </div>
         <div className="space-y-6">
           {M2b_Trust.items.map((item) => (

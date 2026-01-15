@@ -178,17 +178,29 @@ export default function CompletePage() {
           </div>
         </div>
 
+        {/* Backup Completion Code */}
+        <div className="mt-6 bg-white rounded-xl shadow-lg p-6">
+          <h3 className="font-bold text-gray-900 text-lg mb-3 text-center">Completion Code (Backup)</h3>
+          <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+            <p className="text-2xl font-mono font-bold text-blue-600 tracking-wider select-all">
+              7DE64B7FBE
+            </p>
+          </div>
+          <p className="text-center text-gray-500 text-sm mt-2">
+            If automatic redirect fails, copy and paste this code to Cloud Research
+          </p>
+        </div>
+
         {/* Cloud Research Redirect Button */}
-        {/* TODO: 아래 URL을 Cloud Research에서 제공하는 completion URL로 변경해주세요 */}
         <div className="mt-6">
           <button
-            onClick={() => window.location.href = 'https://www.google.com'}
-            className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl hover:bg-blue-700 transition font-semibold text-lg shadow-md"
+            onClick={() => window.location.href = 'https://connect.cloudresearch.com/participant/project/7DE64B7FBE/complete'}
+            className="w-full bg-green-600 text-white px-6 py-4 rounded-xl hover:bg-green-700 transition font-semibold text-lg shadow-md"
           >
-            Complete Survey & Return to Platform
+            Complete Survey & Return to Cloud Research
           </button>
           <p className="text-center text-gray-500 text-sm mt-2">
-            Click the button above to complete your participation
+            Click the button above to complete your participation and receive compensation
           </p>
         </div>
       </div>

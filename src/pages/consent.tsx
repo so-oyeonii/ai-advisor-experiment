@@ -34,9 +34,9 @@ export default function ConsentPage() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Cloud Research URL 파라미터에서 workerId 추출
+  // Cloud Research URL 파라미터에서 ID 추출
   const getCloudResearchParams = () => {
-    if (!router.isReady) return { workerId: '', assignmentId: '', hitId: '' };
+    if (!router.isReady) return { workerId: '', assignmentId: '', projectId: '' };
 
     const workerId = (
       router.query.participant ||
@@ -47,9 +47,9 @@ export default function ConsentPage() {
       ''
     ) as string;
     const assignmentId = (router.query.assignmentId || router.query.assignment_id || '') as string;
-    const hitId = (router.query.hitId || router.query.hit_id || '') as string;
+    const projectId = (router.query.projectId || router.query.project_id || '') as string;
 
-    return { workerId, assignmentId, hitId };
+    return { workerId, assignmentId, projectId };
   };
 
   const handleContinue = async (e: FormEvent) => {
@@ -63,7 +63,7 @@ export default function ConsentPage() {
     try {
       console.log('🚀 Starting consent process...');
 
-      const { workerId, assignmentId, hitId } = getCloudResearchParams();
+      const { workerId, assignmentId, projectId } = getCloudResearchParams();
       if (workerId) {
         console.log('✅ Cloud Research workerId:', workerId);
       }
@@ -95,7 +95,7 @@ export default function ConsentPage() {
         participantId,
         workerId: workerId || '',
         assignmentId: assignmentId || '',
-        hitId: hitId || '',
+        projectId: projectId || '',
         informedConsent: 'agreed',
         conditionNumber: experimentCondition.selectedStimuli[0].condition.conditionId,
         groupId: firstCondition.groupId,
@@ -179,7 +179,7 @@ export default function ConsentPage() {
               <Clock className="w-8 h-8 opacity-80" />
               <div>
                 <p className="text-blue-100 text-sm">Duration</p>
-                <p className="font-semibold">5-15 minutes</p>
+                <p className="font-semibold">10-15 minutes</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -242,7 +242,7 @@ export default function ConsentPage() {
                     <li>Conducted via a standard PC web browser</li>
                     <li>No additional equipment or software installation required</li>
                     <li>No personally identifiable information (PII) will be collected</li>
-                    <li>Total estimated time: approximately 5 to 15 minutes</li>
+                    <li>Total estimated time: approximately 10 to 15 minutes</li>
                   </ul>
                 </div>
               </div>
@@ -334,7 +334,7 @@ export default function ConsentPage() {
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">B. Potential Discomforts and Safeguards</h4>
                   <p className="text-sm">
-                    Since the study requires viewing a PC screen for approximately 5 to 15 minutes, some participants may
+                    Since the study requires viewing a PC screen for approximately 10 to 15 minutes, some participants may
                     experience minor discomforts such as temporary eye fatigue or mild boredom. If you experience any
                     discomfort, you may pause the experiment to rest or choose to withdraw from the study at any time.
                   </p>

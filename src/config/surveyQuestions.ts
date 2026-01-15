@@ -45,24 +45,55 @@ export interface QuestionBlock {
  */
 
 export const Q3_RecallTask: QuestionBlock = {
-  title: 'Recall Task',
-  instruction: 'Please recall the set of reviews you just read and list as many information points as you can remember.\n\nExamples include product features, advantages and disadvantages, usage experiences, specifications or numerical information, comparisons, and cautions.\n\nPlease write one point per box within 90 seconds:',
+  title: 'Your Thoughts',
+  instruction: 'What do you think of the reviews you just saw on this product page?',
   timeLimit: 90,
   items: [
-    { variable: 'recall_1', text: 'Information point 1:', scaleType: 'text' },
-    { variable: 'recall_2', text: 'Information point 2:', scaleType: 'text' },
-    { variable: 'recall_3', text: 'Information point 3:', scaleType: 'text' },
-    { variable: 'recall_4', text: 'Information point 4:', scaleType: 'text' },
-    { variable: 'recall_5', text: 'Information point 5:', scaleType: 'text' },
-    { variable: 'recall_6', text: 'Information point 6:', scaleType: 'text' },
-    { variable: 'recall_7', text: 'Information point 7:', scaleType: 'text' },
-    { variable: 'recall_8', text: 'Information point 8:', scaleType: 'text' }
+    { variable: 'thoughts_text', text: 'Your thoughts:', scaleType: 'text' }
+  ]
+};
+
+export const MV_ReviewHelpfulness: QuestionBlock = {
+  title: 'Review Helpfulness',
+  description: 'The following questions ask about the helpfulness of **the expert review** you just read.\n\nPlease indicate how helpful **the expert\'s review** was in understanding and evaluating the product.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  items: [
+    {
+      variable: 'review_helpfulness_1',
+      text: "This **expert's review** is helpful for me to evaluate the product.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'review_helpfulness_2',
+      text: "This **expert's review** is helpful in familiarizing me with the product.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    },
+    {
+      variable: 'review_helpfulness_3',
+      text: "This **expert's review** is helpful for me to understand the performance of the product.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
+  ]
+};
+
+export const MV_PerceivedError: QuestionBlock = {
+  title: 'Perceived Error',
+  description: 'Please indicate the extent to which you agree with the following statement about **the expert\'s review** you just read.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  items: [
+    {
+      variable: 'perceived_error',
+      text: "I felt that there was an error in this **expert's review**.",
+      scaleType: 'likert7',
+      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
+    }
   ]
 };
 
 export const M2a_MessageCredibility: QuestionBlock = {
   title: 'Message Credibility',
-  description: 'How well do the following adjectives describe the expert\'s review you just read?\n(1 = describes very poorly, 7 = describes very well)',
+  description: 'How well do the following adjectives describe **the expert\'s review** you just read?\n(1 = describes very poorly, 7 = describes very well)',
   items: [
     {
       variable: 'message_credibility_1',
@@ -87,23 +118,23 @@ export const M2a_MessageCredibility: QuestionBlock = {
 
 export const M2b_Trust: QuestionBlock = {
   title: 'Trust',
-  description: 'Please rate your agreement with the following statements about the expert reviewer you just saw.\n(1 = Not at all, 7 = Extremely)',
+  description: 'Please rate your agreement with the following statements about **the expert reviewer** you just saw.\n(1 = Not at all, 7 = Extremely)',
   items: [
     {
       variable: 'trust_1',
-      text: 'I am confident in this expert reviewer.',
+      text: 'I am confident in this **expert reviewer**.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
       variable: 'trust_2',
-      text: 'This expert reviewer is reliable.',
+      text: 'This **expert reviewer** is reliable.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Not at all', max: 'Extremely' }
     },
     {
       variable: 'trust_3',
-      text: 'I can trust this expert reviewer.',
+      text: 'I can trust this **expert reviewer**.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Not at all', max: 'Extremely' }
     }
@@ -116,37 +147,31 @@ export const M3_PersuasiveIntent: QuestionBlock = {
   items: [
     {
       variable: 'ppi_1',
-      text: 'This expert reviewer was primarily trying to persuade me either to buy or not to buy the product.',
+      text: 'This **expert reviewer** was primarily trying to persuade me either to buy or not to buy the product.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_2',
-      text: 'This expert reviewer had an ulterior motive for the review.',
+      text: 'This **expert reviewer** had an ulterior motive for the review.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_3',
-      text: "This expert reviewer's statements seem suspicious.",
+      text: "This **expert reviewer's** statements seem suspicious.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_4',
-      text: 'This expert reviewer was trying to manipulate my opinion.',
+      text: 'This **expert reviewer** was trying to manipulate my opinion.',
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'ppi_5',
-      text: "This expert reviewer may have exaggerated the product's performance.",
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'perceived_error',
-      text: 'I felt that there was an error in this review.',
+      text: "This **expert reviewer** may have exaggerated the product's performance.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -155,29 +180,17 @@ export const M3_PersuasiveIntent: QuestionBlock = {
 
 export const DV1_Persuasiveness: QuestionBlock = {
   title: 'Perceived Persuasiveness',
-  description: 'Please indicate how persuasive you found the expert\'s review.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
+  description: 'Please indicate how persuasive you found **the expert\'s review**.\n(1 = Strongly Disagree, 7 = Strongly Agree)',
   items: [
     {
       variable: 'persuasiveness_1',
-      text: "The expert's review changed my opinion.",
+      text: "I was convinced by **the expert's review**.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     },
     {
       variable: 'persuasiveness_2',
-      text: "I was convinced by the expert's review.",
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'persuasiveness_3',
-      text: "The expert's review influenced me.",
-      scaleType: 'likert7',
-      scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
-    },
-    {
-      variable: 'persuasiveness_4',
-      text: "I will reconsider my position after reading the expert's review.",
+      text: "**The expert's review** influenced me.",
       scaleType: 'likert7',
       scaleLabels: { min: 'Strongly Disagree', max: 'Strongly Agree' }
     }
@@ -205,7 +218,7 @@ export const DV2_PurchaseIntention: QuestionBlock = {
 
 export const DV3_DecisionConfidence: QuestionBlock = {
   title: 'Decision Confidence',
-  description: 'How confident are you in the judgment you made based on the expert\'s review?\nPlease indicate your level of confidence in your evaluation of the product after reading the expert\'s review.\n(1 = Not at all confident, 7 = Very confident)',
+  description: 'How confident are you in the judgment you made based on **the expert\'s review**?\nPlease indicate your level of confidence in your evaluation of the product after reading **the expert\'s review**.\n(1 = Not at all confident, 7 = Very confident)',
   items: [
     {
       variable: 'confidence',
@@ -313,24 +326,25 @@ export const Q8_UsageHabits: QuestionBlock = {
   items: [
     {
       variable: 'shopping_frequency',
-      text: 'What is your frequency of online shopping?',
+      text: 'How often do you shop online?',
       scaleType: 'categorical',
       options: [
-        { value: 'less_than_weekly', label: 'Less than once a week' },
-        { value: '1_2_weekly', label: '1-2 times a week' },
-        { value: '3_4_weekly', label: '3-4 times a week' },
-        { value: 'daily', label: 'Daily' }
+        { value: 'more_than_weekly', label: 'More than once a week' },
+        { value: 'weekly_to_monthly', label: 'Once a week to once a month' },
+        { value: 'monthly_to_6months', label: 'Once a month to once every 6 months' },
+        { value: 'less_than_6months', label: 'Less than once every 6 months' }
       ]
     },
     {
       variable: 'ai_usage_frequency',
-      text: 'What is your frequency of using generative AI (e.g., ChatGPT)?',
+      text: 'How often do you use generative AI (e.g., ChatGPT)?',
       scaleType: 'categorical',
       options: [
         { value: 'never', label: 'Never' },
         { value: 'less_than_monthly', label: 'Less than once a month' },
-        { value: 'weekly', label: 'Once a week' },
-        { value: 'daily', label: 'Daily' }
+        { value: '1_3_monthly', label: '1–3 times a month' },
+        { value: '1_3_weekly', label: '1–3 times a week' },
+        { value: 'daily', label: 'Daily or almost daily' }
       ]
     }
   ]
@@ -421,8 +435,11 @@ export const Demographics: QuestionBlock = {
  */
 export const SURVEY_QUESTIONS = {
   // Block A: Stimulus-Specific (Repeated 3 times)
+  // Order: Your Thoughts → Review Helpfulness → Perceived Error → Message Credibility → Trust → PPI → Persuasiveness → Purchase → Confidence
   blockA: {
     Q3_RecallTask,
+    MV_ReviewHelpfulness,
+    MV_PerceivedError,
     M2a_MessageCredibility,
     M2b_Trust,
     M3_PersuasiveIntent,
@@ -430,7 +447,7 @@ export const SURVEY_QUESTIONS = {
     DV2_PurchaseIntention,
     DV3_DecisionConfidence
   },
-  
+
   // General Questions (Asked once)
   general: {
     Q7_AIFamiliarity,
@@ -438,7 +455,7 @@ export const SURVEY_QUESTIONS = {
     Q7_ReviewSkepticism,
     Q8_UsageHabits
   },
-  
+
   // Demographics (Asked once)
   demographics: Demographics
 };

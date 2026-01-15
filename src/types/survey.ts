@@ -32,12 +32,12 @@ export type ReviewValence = 'positive' | 'negative';
 /**
  * Shopping frequency categories
  */
-export type ShoppingFrequency = 'less_than_weekly' | '1_2_weekly' | '3_4_weekly' | 'daily';
+export type ShoppingFrequency = 'more_than_weekly' | 'weekly_to_monthly' | 'monthly_to_6months' | 'less_than_6months';
 
 /**
  * AI usage frequency categories
  */
-export type AIUsageFrequency = 'never' | 'less_than_monthly' | 'weekly' | 'daily';
+export type AIUsageFrequency = 'never' | 'less_than_monthly' | '1_3_monthly' | '1_3_weekly' | 'daily';
 
 /**
  * Gender categories
@@ -91,13 +91,29 @@ export interface ExperimentalCondition {
 }
 
 /**
- * Q3: Recall Task (dynamic word array)
+ * Q3: Recall Task (Your Thoughts - single text area)
  */
 export interface RecallTaskResponse {
   recalled_words: string[];
   word_count: number;
   recall_combined_text: string;
   recall_time_seconds: number;
+}
+
+/**
+ * MV: Review Helpfulness (3 items, 1-7 scale)
+ */
+export interface ReviewHelpfulnessResponse {
+  review_helpfulness_1: number;
+  review_helpfulness_2: number;
+  review_helpfulness_3: number;
+}
+
+/**
+ * MV: Perceived Error (1 item, 1-7 scale)
+ */
+export interface PerceivedErrorResponse {
+  perceived_error: number;
 }
 
 /**
@@ -119,7 +135,7 @@ export interface TrustResponse {
 }
 
 /**
- * M3: Perceived Persuasive Intent (6 items, 1-7 scale)
+ * M3: Perceived Persuasive Intent (5 items, 1-7 scale)
  */
 export interface PersuasiveIntentResponse {
   ppi_1: number;
@@ -127,17 +143,14 @@ export interface PersuasiveIntentResponse {
   ppi_3: number;
   ppi_4: number;
   ppi_5: number;
-  perceived_error: number;
 }
 
 /**
- * DV1: Perceived Persuasiveness (4 items, 1-7 scale)
+ * DV1: Perceived Persuasiveness (2 items, 1-7 scale)
  */
 export interface PersuasivenessResponse {
   persuasiveness_1: number;
   persuasiveness_2: number;
-  persuasiveness_3: number;
-  persuasiveness_4: number;
 }
 
 /**
@@ -158,9 +171,12 @@ export interface DecisionConfidenceResponse {
 /**
  * Block A: All stimulus-specific survey responses
  * (Repeated for each of the 3 stimuli)
+ * Order: Your Thoughts → Review Helpfulness → Perceived Error → Message Credibility → Trust → PPI → Persuasiveness → Purchase → Confidence
  */
 export interface BlockAResponse extends
   RecallTaskResponse,
+  ReviewHelpfulnessResponse,
+  PerceivedErrorResponse,
   MessageCredibilityResponse,
   TrustResponse,
   PersuasiveIntentResponse,

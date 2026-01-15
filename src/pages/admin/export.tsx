@@ -322,13 +322,24 @@ export default function AdminExportPage() {
           // survey 객체에서 직접 필드 추출 (responseData 안에 있지 않음)
           const surveyData = survey as unknown as Record<string, unknown>;
 
-          // Survey response fields
+          // Survey response fields - 새로운 순서
+          // Your Thoughts → Review Helpfulness → Perceived Error → Message Credibility → Trust → PPI → Persuasiveness → Purchase → Confidence
           const surveyFields = [
-            'ppi_1', 'ppi_2', 'ppi_3', 'ppi_4', 'ppi_5', 'perceived_error',
+            // Review Helpfulness (NEW)
+            'review_helpfulness_1', 'review_helpfulness_2', 'review_helpfulness_3',
+            // Perceived Error (separate block now)
+            'perceived_error',
+            // Message Credibility
             'message_credibility_1', 'message_credibility_2', 'message_credibility_3',
+            // Trust
             'trust_1', 'trust_2', 'trust_3',
-            'persuasiveness_1', 'persuasiveness_2', 'persuasiveness_3', 'persuasiveness_4',
+            // PPI (5 items, no perceived_error)
+            'ppi_1', 'ppi_2', 'ppi_3', 'ppi_4', 'ppi_5',
+            // Persuasiveness (2 items now)
+            'persuasiveness_1', 'persuasiveness_2',
+            // Purchase Intention
             'purchase_1', 'purchase_2',
+            // Decision Confidence
             'confidence'
           ];
 
@@ -367,10 +378,11 @@ export default function AdminExportPage() {
     if (data.length === 0) return '';
 
     // Define explicit column order - 설문 순서와 동일하게 정렬
+    // Survey Flow: Your Thoughts → Review Helpfulness + Perceived Error → Message Credibility + Trust → PPI → Persuasiveness + Purchase + Confidence
     const headers = [
       // 1. 참가자 기본 정보
       'participantId',
-      'workerId', // Cloud Research worker ID
+      'workerId',
       'informedConsent',
       'status',
       'survey_start_time',
@@ -391,65 +403,64 @@ export default function AdminExportPage() {
       'exposureTimestamp',
       'dwellTime',
 
-      // 4. Q3: Recall Task
+      // 4. Q3: Your Thoughts (Recall Task)
       'recalled_words',
       'word_count',
       'recall_combined_text',
       'recall_time_seconds',
+      'recallTimestamp',
 
-      // 5. M3: PPI (Perceived Persuasive Intent)
+      // 5. MV: Review Helpfulness + Perceived Error (한 페이지)
+      'review_helpfulness_1',
+      'review_helpfulness_2',
+      'review_helpfulness_3',
+      'perceived_error',
+
+      // 6. M2a + M2b: Message Credibility + Trust (한 페이지)
+      'message_credibility_1',
+      'message_credibility_2',
+      'message_credibility_3',
+      'trust_1',
+      'trust_2',
+      'trust_3',
+
+      // 7. M3: PPI - Perceived Persuasive Intent (5 items)
       'ppi_1',
       'ppi_2',
       'ppi_3',
       'ppi_4',
       'ppi_5',
-      'perceived_error',
 
-      // 6. M2a: Message Credibility
-      'message_credibility_1',
-      'message_credibility_2',
-      'message_credibility_3',
-
-      // 7. M2b: Trust
-      'trust_1',
-      'trust_2',
-      'trust_3',
-
-      // 8. DV1: Persuasiveness
+      // 8. DV: Persuasiveness + Purchase + Confidence (한 페이지)
       'persuasiveness_1',
       'persuasiveness_2',
-      'persuasiveness_3',
-      'persuasiveness_4',
-
-      // 9. DV2: Purchase Intention
       'purchase_1',
       'purchase_2',
-
-      // 10. DV3: Decision Confidence
       'confidence',
+      'surveyTimestamp',
 
-      // 11. Q7: AI Familiarity
+      // 9. General Questions - AI Familiarity (3 items)
       'ai_familiarity_1',
       'ai_familiarity_2',
       'ai_familiarity_3',
 
-      // 12. Q7: Machine Heuristic
+      // 10. General Questions - Machine Heuristic (4 items)
       'machine_heuristic_1',
       'machine_heuristic_2',
       'machine_heuristic_3',
       'machine_heuristic_4',
 
-      // 13. Q7: Review Skepticism
+      // 11. General Questions - Review Skepticism (4 items)
       'review_skepticism_1',
       'review_skepticism_2',
       'review_skepticism_3',
       'review_skepticism_4',
 
-      // 14. Q8: Usage Habits
+      // 12. General Questions - Usage Habits (2 items)
       'shopping_frequency',
       'ai_usage_frequency',
 
-      // 15. Demographics
+      // 13. Demographics
       'age',
       'gender',
       'gender_other',

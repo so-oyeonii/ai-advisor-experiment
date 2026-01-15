@@ -110,7 +110,7 @@ export default function StimulusPage() {
         congruity: condition.congruity,
         advisorValence: condition.advisorValence,
         publicValence: condition.publicValence,
-        advisorName: condition.advisorType === 'AI' ? 'AI-Generated Review' : 'Expert Review',
+        advisorName: condition.advisorType === 'AI' ? 'AI-Generated Review' : 'Human Expert Review',
         recommendation: condition.advisorValence,
         reasoning: stimulusData.advisorReview.substring(0, 1000), // Limit length
         exposureOrder: currentIndex,
@@ -179,7 +179,7 @@ export default function StimulusPage() {
                 )}
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
-                {condition.advisorType === 'AI' ? "AI Expert's Review" : "Expert's Review"}
+                {condition.advisorType === 'AI' ? "AI Expert's Review" : "Human Expert's Review"}
               </h2>
               <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 py-0.5 rounded-full text-xs sm:text-sm font-bold">
                 NEW FEATURE
@@ -325,7 +325,7 @@ export default function StimulusPage() {
                   )}
                   <div className="flex-1">
                     <h3 className="font-semibold text-gray-900 mb-2">
-                      {condition.advisorType === 'AI' ? "AI Expert's Review" : "Expert's Review"}
+                      {condition.advisorType === 'AI' ? "AI Expert's Review" : "Human Expert's Review"}
                     </h3>
                     <div className="flex items-center space-x-2 mb-3 flex-wrap">
                       <div className="flex">
