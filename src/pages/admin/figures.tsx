@@ -1,5 +1,6 @@
-// Figure export page for paper: renders the exact stimuli used in the experiment
-// and allows high-resolution PNG downloads (2x default, 3x optional) for figures.
+// Admin-only figure export page for paper: renders the exact stimuli used in the
+// experiment and allows high-resolution PNG downloads (2x default, 3x optional).
+// Protected by the same NEXT_PUBLIC_ADMIN_PASSWORD gate as /admin/export.
 // Views available: Scenario intro, Advisor popups (AI / Human), and all 24 stimulus variants.
 
 import { useRef, useState, useCallback } from 'react';
@@ -15,6 +16,7 @@ import {
   Sparkles,
   Download,
   Package,
+  Lock,
 } from 'lucide-react';
 import { getAllConditions, StimulusCondition } from '@/lib/randomization';
 import {
@@ -457,7 +459,81 @@ function StimulusView({
 // ----------------------------------------------------------------------------
 // Main page
 // ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// Password gate — identical pattern to /admin/export
+// ----------------------------------------------------------------------------
+function LoginScreen({ onAuthenticated }: { onAuthenticated: () => void }) {
+  const [password, setPassword] = useState('');
+
+  const handleLogin = () => {
+    if (password === process.env.NEXT_PUBLIC_ADMIN_PASSWORD) {
+      onAuthenticated();
+    } else {
+      alert('잘못된 비밀번호입니다.');
+      setPassword('');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') handleLogin();
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-3">
+            <div className="bg-blue-100 p-3 rounded-full">
+              <Lock className="w-8 h-8 text-blue-600" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">관리자 로그인</h1>
+          <p className="text-gray-600 text-sm">
+            논문 figure 추출 페이지입니다. 비밀번호를 입력하세요.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-gray-700 font-medium mb-2 text-sm">비밀번호</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-base"
+              placeholder="비밀번호 입력"
+              autoFocus
+            />
+          </div>
+
+          <button
+            onClick={handleLogin}
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold text-base shadow-md"
+          >
+            로그인
+          </button>
+
+          <p className="text-xs text-gray-500 text-center mt-2">
+            💡 비밀번호는 .env.local의 NEXT_PUBLIC_ADMIN_PASSWORD 값입니다
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function FiguresPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  if (!isAuthenticated) {
+    return <LoginScreen onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
+
+  return <FiguresPageInner />;
+}
+
+function FiguresPageInner() {
   const conditions = getAllConditions();
   const [view, setView] = useState<ViewType>('stimulus');
   const [conditionId, setConditionId] = useState<number>(1);
